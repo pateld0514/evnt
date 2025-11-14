@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Heart, Sparkles, MessageSquare, User } from "lucide-react";
+import { Home, Heart, Sparkles, MessageSquare, User, Calendar } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -10,8 +10,8 @@ export default function Layout({ children, currentPageName }) {
     { name: "Home", path: createPageUrl("Home"), icon: Home },
     { name: "Swipe", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
+    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
-    { name: "Profile", path: createPageUrl("Profile"), icon: User },
   ];
 
   return (
@@ -27,6 +27,9 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-2xl font-black text-white tracking-tighter">
                 EVNT
               </span>
+            </Link>
+            <Link to={createPageUrl("Profile")}>
+              <User className="w-6 h-6 text-white hover:text-gray-300 transition-colors" />
             </Link>
           </div>
         </div>
@@ -48,13 +51,13 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
                     isActive
                       ? "text-white"
                       : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? "fill-white" : ""}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
                   <span className="text-xs font-medium">{item.name}</span>
                 </Link>
               );

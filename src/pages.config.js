@@ -5,6 +5,7 @@ import VendorSetup from './pages/VendorSetup';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
+import Bookings from './pages/Bookings';
 import Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "Messages": Messages,
     "Profile": Profile,
     "Onboarding": Onboarding,
+    "Bookings": Bookings,
 }
 
 export const pagesConfig = {

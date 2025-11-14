@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import BookingForm from "../booking/BookingForm";
 
 const categoryIcons = {
   venue: "🏛️",
@@ -25,6 +26,7 @@ const categoryIcons = {
 
 export default function SwipeCard({ vendor, onSwipe }) {
   const [showDetails, setShowDetails] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -116,17 +118,27 @@ export default function SwipeCard({ vendor, onSwipe }) {
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full border-2 border-black hover:bg-black hover:text-white font-bold"
-              onClick={() => setShowDetails(true)}
-            >
-              View Details
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                onClick={() => setShowDetails(true)}
+              >
+                View Details
+              </Button>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 font-bold"
+                onClick={() => setBookingOpen(true)}
+              >
+                <Calendar className="w-4 h-4 mr-1" />
+                Book
+              </Button>
+            </div>
           </div>
         </Card>
       </motion.div>
 
+      {/* Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-4 border-black">
           <DialogHeader>
@@ -216,7 +228,35 @@ export default function SwipeCard({ vendor, onSwipe }) {
                 )}
               </div>
             </div>
+
+            <Button
+              onClick={() => {
+                setShowDetails(false);
+                setBookingOpen(true);
+              }}
+              className="w-full bg-black text-white hover:bg-gray-800 font-bold"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Book This Vendor
+            </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Dialog */}
+      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+        <DialogContent className="max-w-2xl border-4 border-black max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">
+              Book {vendor.business_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <BookingForm
+            vendor={vendor}
+            onSuccess={() => setBookingOpen(false)}
+            onCancel={() => setBookingOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

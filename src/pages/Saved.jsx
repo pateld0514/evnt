@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Trash2, MessageSquare, MapPin, Loader2 } from "lucide-react";
+import { Heart, Trash2, MessageSquare, MapPin, Loader2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import BookingForm from "../components/booking/BookingForm";
 
 const categoryIcons = {
   venue: "🏛️",
@@ -34,6 +35,7 @@ export default function SavedPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
     queryKey: ['saved-vendors'],
@@ -65,6 +67,11 @@ export default function SavedPage() {
 
   const handleMessage = (vendor) => {
     navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`);
+  };
+
+  const handleBook = (vendor) => {
+    setSelectedVendor(vendor);
+    setBookingOpen(true);
   };
 
   const handleViewDetails = (saved) => {
@@ -186,20 +193,29 @@ export default function SavedPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
+                      size="sm"
                       className="border-2 border-black hover:bg-black hover:text-white font-bold"
                       onClick={() => handleViewDetails(saved)}
                     >
-                      Details
+                      View
                     </Button>
                     <Button
-                      className="bg-black text-white hover:bg-gray-800 font-bold"
+                      size="sm"
+                      variant="outline"
+                      className="border-2 border-black hover:bg-black hover:text-white font-bold"
                       onClick={() => handleMessage(vendor)}
                     >
-                      <MessageSquare className="w-4 h-4 mr-1" />
-                      Message
+                      <MessageSquare className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-black text-white hover:bg-gray-800 font-bold"
+                      onClick={() => handleBook(vendor)}
+                    >
+                      <Calendar className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -209,6 +225,7 @@ export default function SavedPage() {
         </div>
       )}
 
+      {/* Vendor Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-4 border-black">
           {selectedVendor && (
@@ -243,7 +260,52 @@ export default function SavedPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      setDetailsOpen(false);
+                      handleBook(selectedVendor);
+                    }}
+                    className="flex-1 bg-black text-white hover:bg-gray-800 font-bold"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Book Now
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setDetailsOpen(false);
+                      handleMessage(selectedVendor);
+                    }}
+                    variant="outline"
+                    className="flex-1 border-2 border-black hover:bg-black hover:text-white font-bold"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
+                </div>
               </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Dialog */}
+      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+        <DialogContent className="max-w-2xl border-4 border-black max-h-[90vh] overflow-y-auto">
+          {selectedVendor && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">
+                  Book {selectedVendor.business_name}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <BookingForm
+                vendor={selectedVendor}
+                onSuccess={() => setBookingOpen(false)}
+                onCancel={() => setBookingOpen(false)}
+              />
             </>
           )}
         </DialogContent>
