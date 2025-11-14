@@ -1,84 +1,106 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Sparkles, ArrowRight, PartyPopper, Cake, Baby } from "lucide-react";
+import { Heart, Sparkles, ArrowRight, PartyPopper, Cake, Baby, Loader2 } from "lucide-react";
 
 const eventTypes = [
   {
     name: "Wedding",
     icon: Heart,
-    color: "from-rose-400 to-pink-600",
     description: "Find the perfect vendors for your special day"
   },
   {
     name: "Sweet 16",
     icon: PartyPopper,
-    color: "from-purple-400 to-indigo-600",
     description: "Make their milestone celebration unforgettable"
   },
   {
     name: "Baby Shower",
     icon: Baby,
-    color: "from-blue-400 to-cyan-600",
     description: "Celebrate the new arrival in style"
   },
   {
     name: "Birthday",
     icon: Cake,
-    color: "from-orange-400 to-red-600",
     description: "Throw an amazing birthday bash"
   },
   {
     name: "Anniversary",
     icon: Sparkles,
-    color: "from-amber-400 to-yellow-600",
     description: "Honor your years together"
   },
   {
     name: "Other",
     icon: PartyPopper,
-    color: "from-teal-400 to-emerald-600",
     description: "Any celebration you can imagine"
   }
 ];
 
 export default function Home() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        
+        if (!currentUser.onboarding_complete) {
+          navigate(createPageUrl("SignUp"));
+        }
+      } catch (error) {
+        navigate(createPageUrl("SignUp"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkUser();
+  }, [navigate]);
 
   const handleEventSelect = (eventType) => {
     navigate(createPageUrl("Swipe") + `?event=${eventType.toLowerCase().replace(/\s+/g, '-')}`);
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20" />
+      <div className="relative overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
           <div className="text-center space-y-6 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-pink-200">
-              <Sparkles className="w-4 h-4 text-pink-600" />
-              <span className="text-sm font-medium text-pink-600">Event Planning Made Simple</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-200">
+              <Sparkles className="w-4 h-4 text-black" />
+              <span className="text-sm font-bold text-black">Event Planning Simplified</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold">
-              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Swipe Your Way
-              </span>
+            <h1 className="text-5xl md:text-7xl font-black text-white">
+              Swipe Your Way
               <br />
-              <span className="text-gray-900">To The Perfect Event</span>
+              To The Perfect Event
             </h1>
             
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               No more calling hundreds of vendors or endless emails. Find DJs, venues, caterers, and more with a simple swipe.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-lg h-14 px-8"
+                className="bg-white text-black hover:bg-gray-100 text-lg h-14 px-8 font-bold"
                 onClick={() => navigate(createPageUrl("Swipe"))}
               >
                 Start Swiping
@@ -92,7 +114,7 @@ export default function Home() {
       {/* Event Types Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-black text-black mb-4">
             What Are You Planning?
           </h2>
           <p className="text-lg text-gray-600">
@@ -106,29 +128,27 @@ export default function Home() {
             return (
               <Card
                 key={index}
-                className="group relative overflow-hidden border-2 border-transparent hover:border-pink-200 transition-all duration-300 cursor-pointer hover:shadow-xl"
+                className="group relative overflow-hidden border-2 border-black hover:bg-black transition-all duration-300 cursor-pointer hover:shadow-2xl"
                 onClick={() => handleEventSelect(event.name)}
               >
                 <div className="p-8">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${event.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-lg bg-black group-hover:bg-white flex items-center justify-center mb-6 transition-colors">
+                    <Icon className="w-8 h-8 text-white group-hover:text-black transition-colors" />
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-2xl font-bold text-black group-hover:text-white mb-2 transition-colors">
                     {event.name}
                   </h3>
                   
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-gray-600 group-hover:text-gray-300 mb-6 transition-colors">
                     {event.description}
                   </p>
                   
-                  <div className="flex items-center text-pink-600 font-medium group-hover:gap-3 gap-2 transition-all">
+                  <div className="flex items-center text-black group-hover:text-white font-bold group-hover:gap-3 gap-2 transition-all">
                     <span>Start Planning</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
-                
-                <div className={`absolute inset-0 bg-gradient-to-br ${event.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
               </Card>
             );
           })}
@@ -136,10 +156,10 @@ export default function Home() {
       </div>
 
       {/* How It Works */}
-      <div className="bg-white/50 py-16">
+      <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-black text-black mb-4">
               How It Works
             </h2>
             <p className="text-lg text-gray-600">
@@ -149,7 +169,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-black">
                 1
               </div>
               <h3 className="text-xl font-bold mb-2">Browse Vendors</h3>
@@ -159,7 +179,7 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-black">
                 2
               </div>
               <h3 className="text-xl font-bold mb-2">Save Your Favorites</h3>
@@ -169,12 +189,12 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-black">
                 3
               </div>
-              <h3 className="text-xl font-bold mb-2">Book & Connect</h3>
+              <h3 className="text-xl font-bold mb-2">Connect & Book</h3>
               <p className="text-gray-600">
-                Contact your saved vendors and book everything in one place
+                Message your saved vendors and book everything in one place
               </p>
             </div>
           </div>

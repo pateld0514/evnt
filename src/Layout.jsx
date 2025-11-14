@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Heart, Sparkles } from "lucide-react";
+import { Home, Heart, Sparkles, MessageSquare, User } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -10,20 +10,22 @@ export default function Layout({ children, currentPageName }) {
     { name: "Home", path: createPageUrl("Home"), icon: Home },
     { name: "Swipe", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
+    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
+    { name: "Profile", path: createPageUrl("Profile"), icon: User },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-white">
       {/* Top Bar */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0 z-50">
+      <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to={createPageUrl("Home")} className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center transform rotate-12">
-                <Heart className="w-5 h-5 text-white transform -rotate-12" fill="white" />
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-2xl font-black text-black">E</span>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                EventSwipe
+              <span className="text-2xl font-black text-white tracking-tighter">
+                EVNT
               </span>
             </Link>
           </div>
@@ -36,7 +38,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-pink-100 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-around items-center py-3">
             {navItems.map((item) => {
@@ -48,11 +50,11 @@ export default function Layout({ children, currentPageName }) {
                   to={item.path}
                   className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${
                     isActive
-                      ? "text-pink-600"
-                      : "text-gray-400 hover:text-pink-500"
+                      ? "text-white"
+                      : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? "fill-pink-600" : ""}`} />
+                  <Icon className={`w-6 h-6 ${isActive ? "fill-white" : ""}`} />
                   <span className="text-xs font-medium">{item.name}</span>
                 </Link>
               );

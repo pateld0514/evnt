@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { X, Heart, Loader2, Filter, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { X, Heart, Loader2, SlidersHorizontal } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import SwipeCard from "../components/swipe/SwipeCard";
 import { toast } from "sonner";
 
@@ -23,8 +26,13 @@ const categories = [
 export default function SwipePage() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    category: "all",
+    priceRange: "all",
+    minPrice: "",
+    maxPrice: "",
+    location: ""
+  });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
 
@@ -71,8 +79,21 @@ export default function SwipePage() {
 
   const filteredVendors = vendors.filter(vendor => {
     const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id);
-    const matchesCategory = selectedCategory === "all" || vendor.category === selectedCategory;
-    return notSwiped && matchesCategory;
+    const matchesCategory = filters.category === "all" || vendor.category === filters.category;
+    const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
+    
+    let matchesPrice = true;
+    if (filters.minPrice && vendor.starting_price) {
+      matchesPrice = vendor.starting_price >= parseFloat(filters.minPrice);
+    }
+    if (filters.maxPrice && vendor.starting_price) {
+      matchesPrice = matchesPrice && vendor.starting_price <= parseFloat(filters.maxPrice);
+    }
+    
+    const matchesLocation = !filters.location || 
+      vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
+    
+    return notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation;
   });
 
   const currentVendor = filteredVendors[currentIndex];
@@ -91,23 +112,28 @@ export default function SwipePage() {
 
   const handleReset = () => {
     setCurrentIndex(0);
-    setSelectedCategory("all");
+    setFilters({
+      category: "all",
+      priceRange: "all",
+      minPrice: "",
+      maxPrice: "",
+      location: ""
+    });
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Find Your Perfect {eventType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Vendors
+        <h1 className="text-3xl font-black text-black mb-2">
+          Find Your Perfect Vendors
         </h1>
         <p className="text-gray-600">
           Swipe right to save, left to pass
@@ -116,39 +142,104 @@ export default function SwipePage() {
 
       {/* Filters */}
       <div className="mb-6">
-        <Button
-          variant="outline"
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-center gap-2"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          Filter by Category
-          {selectedCategory !== "all" && (
-            <span className="ml-2 px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs">
-              {categories.find(c => c.value === selectedCategory)?.label}
-            </span>
-          )}
-        </Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2 border-2 border-black hover:bg-black hover:text-white font-bold"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {(filters.category !== "all" || filters.priceRange !== "all" || filters.location) && (
+                <span className="ml-2 px-2 py-0.5 bg-black text-white rounded-full text-xs">
+                  Active
+                </span>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="text-2xl font-black">Filter Vendors</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-6 mt-6">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger className="border-2 border-gray-300">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {showFilters && (
-          <div className="mt-4 p-4 bg-white rounded-xl border border-pink-100">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
-              Vendor Category
-            </label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+              <div className="space-y-2">
+                <Label>Price Range</Label>
+                <Select value={filters.priceRange} onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}>
+                  <SelectTrigger className="border-2 border-gray-300">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Prices</SelectItem>
+                    <SelectItem value="$">$ - Budget</SelectItem>
+                    <SelectItem value="$$">$$ - Moderate</SelectItem>
+                    <SelectItem value="$$$">$$$ - Premium</SelectItem>
+                    <SelectItem value="$$$$">$$$$ - Luxury</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Budget Range</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-gray-500">Min ($)</Label>
+                    <Input
+                      type="number"
+                      value={filters.minPrice}
+                      onChange={(e) => setFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                      placeholder="Min"
+                      className="border-2 border-gray-300"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500">Max ($)</Label>
+                    <Input
+                      type="number"
+                      value={filters.maxPrice}
+                      onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                      placeholder="Max"
+                      className="border-2 border-gray-300"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input
+                  value={filters.location}
+                  onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="e.g. Washington, DC"
+                  className="border-2 border-gray-300"
+                />
+              </div>
+
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="w-full border-2 border-black"
+              >
+                Reset All Filters
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Swipe Card */}
@@ -159,25 +250,22 @@ export default function SwipePage() {
             onSwipe={handleSwipe}
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-2 border-dashed border-pink-200">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-4 border-dashed border-gray-300">
             <div className="text-center px-8">
-              <div className="w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Heart className="w-12 h-12 text-pink-500" />
+              <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                <Heart className="w-12 h-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                You've Seen All Vendors!
+              <h3 className="text-2xl font-black text-black mb-3">
+                No More Vendors!
               </h3>
               <p className="text-gray-600 mb-6">
-                {selectedCategory !== "all" 
-                  ? `No more ${categories.find(c => c.value === selectedCategory)?.label.toLowerCase()} to show.`
-                  : "No more vendors to show in this category."
-                }
+                You've seen all vendors matching your filters.
               </p>
               <Button
                 onClick={handleReset}
-                className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+                className="bg-black text-white hover:bg-gray-800 font-bold"
               >
-                Change Filters
+                Reset Filters
               </Button>
             </div>
           </div>
@@ -190,15 +278,15 @@ export default function SwipePage() {
           <Button
             size="lg"
             variant="outline"
-            className="w-20 h-20 rounded-full border-2 border-gray-200 hover:border-red-300 hover:bg-red-50"
+            className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50"
             onClick={() => handleSwipe("left")}
           >
-            <X className="w-8 h-8 text-red-500" />
+            <X className="w-8 h-8 text-black" />
           </Button>
           
           <Button
             size="lg"
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+            className="w-20 h-20 rounded-full bg-black hover:bg-gray-800"
             onClick={() => handleSwipe("right")}
           >
             <Heart className="w-8 h-8 text-white" fill="white" />
@@ -206,8 +294,7 @@ export default function SwipePage() {
         </div>
       )}
 
-      {/* Progress */}
-      <div className="text-center mt-6 text-sm text-gray-500">
+      <div className="text-center mt-6 text-sm text-gray-500 font-medium">
         {filteredVendors.length > 0 && (
           <>
             {currentIndex + 1} / {filteredVendors.length} vendors

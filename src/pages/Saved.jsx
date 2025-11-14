@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Trash2, Mail, Phone, MapPin, ExternalLink, Loader2 } from "lucide-react";
+import { Heart, Trash2, MessageSquare, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -27,6 +29,7 @@ const categoryIcons = {
 };
 
 export default function SavedPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedVendor, setSelectedVendor] = useState(null);
@@ -60,6 +63,10 @@ export default function SavedPage() {
     return allVendors.find(v => v.id === vendorId);
   };
 
+  const handleMessage = (vendor) => {
+    navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`);
+  };
+
   const handleViewDetails = (saved) => {
     const vendor = getVendorDetails(saved.vendor_id);
     if (vendor) {
@@ -69,65 +76,65 @@ export default function SavedPage() {
   };
 
   const categories = [
-    { value: "all", label: "All", icon: "❤️" },
-    { value: "venue", label: "Venues", icon: "🏛️" },
-    { value: "dj", label: "DJs", icon: "🎧" },
-    { value: "caterer", label: "Caterers", icon: "🍽️" },
-    { value: "photographer", label: "Photographers", icon: "📸" },
+    { value: "all", label: "All" },
+    { value: "venue", label: "Venues" },
+    { value: "dj", label: "DJs" },
+    { value: "caterer", label: "Caterers" },
+    { value: "photographer", label: "Photos" },
   ];
 
   if (loadingSaved) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 mb-4">
-          <Heart className="w-8 h-8 text-pink-600" fill="currentColor" />
+          <Heart className="w-8 h-8 text-black" fill="black" />
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Your Favorite Vendors
+        <h1 className="text-4xl font-black text-black mb-2">
+          Your Favorites
         </h1>
         <p className="text-lg text-gray-600">
           {savedVendors.length} vendor{savedVendors.length !== 1 ? 's' : ''} saved
         </p>
       </div>
 
-      {/* Category Tabs */}
       <div className="mb-8 flex justify-center">
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-2xl">
-          <TabsList className="grid w-full grid-cols-5 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-gray-100 border-2 border-black">
             {categories.map(cat => (
-              <TabsTrigger key={cat.value} value={cat.value} className="py-2">
-                <span className="mr-1">{cat.icon}</span>
-                <span className="hidden sm:inline">{cat.label}</span>
+              <TabsTrigger 
+                key={cat.value} 
+                value={cat.value} 
+                className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
+              >
+                {cat.label}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
       </div>
 
-      {/* Vendors Grid */}
       {filteredSaved.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-24 h-24 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Heart className="w-12 h-12 text-pink-300" />
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
+            <Heart className="w-12 h-12 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <h3 className="text-2xl font-black text-black mb-2">
             No Saved Vendors Yet
           </h3>
           <p className="text-gray-600 mb-6">
             Start swiping to find and save your favorite vendors!
           </p>
           <Button
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
-            onClick={() => window.location.href = '/swipe'}
+            className="bg-black text-white hover:bg-gray-800 font-bold"
+            onClick={() => navigate(createPageUrl("Swipe"))}
           >
             Start Swiping
           </Button>
@@ -139,7 +146,7 @@ export default function SavedPage() {
             if (!vendor) return null;
 
             return (
-              <Card key={saved.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+              <Card key={saved.id} className="overflow-hidden hover:shadow-2xl transition-shadow border-2 border-black">
                 <div className="relative h-48">
                   <img
                     src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=400&h=300&fit=crop`}
@@ -147,14 +154,14 @@ export default function SavedPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-3 right-3">
-                    <Badge className="bg-white/90 backdrop-blur-sm text-gray-900">
-                      {categoryIcons[vendor.category]} {vendor.category}
+                    <Badge className="bg-white text-black border-2 border-black font-bold">
+                      {categoryIcons[vendor.category]}
                     </Badge>
                   </div>
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm hover:bg-red-50"
+                    className="absolute top-3 left-3 bg-white hover:bg-red-50 border-2 border-black"
                     onClick={() => deleteMutation.mutate(saved.id)}
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
@@ -162,7 +169,7 @@ export default function SavedPage() {
                 </div>
 
                 <CardContent className="p-5">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-xl font-black text-black mb-2">
                     {vendor.business_name}
                   </h3>
                   
@@ -177,34 +184,24 @@ export default function SavedPage() {
                         {vendor.location}
                       </div>
                     )}
-                    {vendor.contact_email && (
-                      <a
-                        href={`mailto:${vendor.contact_email}`}
-                        className="flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700"
-                      >
-                        <Mail className="w-4 h-4" />
-                        Email
-                      </a>
-                    )}
-                    {vendor.contact_phone && (
-                      <a
-                        href={`tel:${vendor.contact_phone}`}
-                        className="flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700"
-                      >
-                        <Phone className="w-4 h-4" />
-                        Call
-                      </a>
-                    )}
                   </div>
 
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleViewDetails(saved)}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Details
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                      onClick={() => handleViewDetails(saved)}
+                    >
+                      Details
+                    </Button>
+                    <Button
+                      className="bg-black text-white hover:bg-gray-800 font-bold"
+                      onClick={() => handleMessage(vendor)}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      Message
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -212,13 +209,12 @@ export default function SavedPage() {
         </div>
       )}
 
-      {/* Vendor Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-4 border-black">
           {selectedVendor && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedVendor.business_name}</DialogTitle>
+                <DialogTitle className="text-2xl font-black">{selectedVendor.business_name}</DialogTitle>
               </DialogHeader>
               
               <div className="space-y-6">
@@ -226,74 +222,27 @@ export default function SavedPage() {
                   <img
                     src={selectedVendor.image_url}
                     alt={selectedVendor.business_name}
-                    className="w-full h-64 object-cover rounded-lg"
+                    className="w-full h-64 object-cover rounded-lg border-2 border-black"
                   />
                 )}
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">About</h3>
+                  <h3 className="font-bold text-lg mb-2">About</h3>
                   <p className="text-gray-700">{selectedVendor.description}</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  {selectedVendor.location && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-5 h-5 text-pink-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Location</p>
-                        <p className="text-gray-600">{selectedVendor.location}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {selectedVendor.specialties && selectedVendor.specialties.length > 0 && (
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Specialties</h3>
+                    <h3 className="font-bold text-lg mb-2">Specialties</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedVendor.specialties.map((specialty, idx) => (
-                        <Badge key={idx} variant="secondary">
+                        <Badge key={idx} className="bg-black text-white">
                           {specialty}
                         </Badge>
                       ))}
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-3">Contact</h3>
-                  <div className="space-y-2">
-                    {selectedVendor.contact_email && (
-                      <a
-                        href={`mailto:${selectedVendor.contact_email}`}
-                        className="flex items-center gap-2 text-pink-600 hover:text-pink-700"
-                      >
-                        <Mail className="w-4 h-4" />
-                        {selectedVendor.contact_email}
-                      </a>
-                    )}
-                    {selectedVendor.contact_phone && (
-                      <a
-                        href={`tel:${selectedVendor.contact_phone}`}
-                        className="flex items-center gap-2 text-pink-600 hover:text-pink-700"
-                      >
-                        <Phone className="w-4 h-4" />
-                        {selectedVendor.contact_phone}
-                      </a>
-                    )}
-                    {selectedVendor.website && (
-                      <a
-                        href={selectedVendor.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-pink-600 hover:text-pink-700"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Visit Website
-                      </a>
-                    )}
-                  </div>
-                </div>
               </div>
             </>
           )}
