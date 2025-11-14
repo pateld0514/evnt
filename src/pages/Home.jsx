@@ -51,10 +51,10 @@ export default function Home() {
         setUser(currentUser);
         
         if (!currentUser.onboarding_complete) {
-          navigate(createPageUrl("SignUp"));
+          navigate(createPageUrl("Onboarding"));
         }
       } catch (error) {
-        navigate(createPageUrl("SignUp"));
+        console.error(error);
       } finally {
         setLoading(false);
       }
