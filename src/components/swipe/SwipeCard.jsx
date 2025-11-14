@@ -13,15 +13,33 @@ import {
 import BookingForm from "../booking/BookingForm";
 
 const categoryIcons = {
-  venue: "🏛️",
   dj: "🎧",
-  caterer: "🍽️",
   photographer: "📸",
   videographer: "🎥",
-  florist: "🌸",
+  photo_booth: "📷",
+  caterer: "🍽️",
+  food_truck: "🚚",
   baker: "🎂",
-  decorator: "✨",
-  planner: "📋"
+  balloon_decorator: "🎈",
+  event_stylist: "✨",
+  banquet_hall: "🏛️",
+  rental_services: "🪑",
+  event_planner: "📋"
+};
+
+const categoryLabels = {
+  dj: "DJ",
+  photographer: "Photographer",
+  videographer: "Videographer",
+  photo_booth: "Photo Booth",
+  caterer: "Caterer",
+  food_truck: "Food Truck",
+  baker: "Baker",
+  balloon_decorator: "Balloon Decorator",
+  event_stylist: "Event Stylist",
+  banquet_hall: "Banquet Hall",
+  rental_services: "Rental Services",
+  event_planner: "Event Planner"
 };
 
 export default function SwipeCard({ vendor, onSwipe }) {
@@ -58,7 +76,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
             
             <div className="absolute top-4 right-4">
               <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
-                {categoryIcons[vendor.category]} {vendor.category}
+                {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
               </Badge>
             </div>
 

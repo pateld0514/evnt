@@ -12,15 +12,18 @@ import { toast } from "sonner";
 
 const categories = [
   { value: "all", label: "All Vendors" },
-  { value: "venue", label: "Venues" },
   { value: "dj", label: "DJs" },
-  { value: "caterer", label: "Caterers" },
   { value: "photographer", label: "Photographers" },
   { value: "videographer", label: "Videographers" },
-  { value: "florist", label: "Florists" },
+  { value: "photo_booth", label: "Photo Booth" },
+  { value: "caterer", label: "Caterers" },
+  { value: "food_truck", label: "Food Trucks" },
   { value: "baker", label: "Bakers" },
-  { value: "decorator", label: "Decorators" },
-  { value: "planner", label: "Event Planners" }
+  { value: "balloon_decorator", label: "Balloon Decorators" },
+  { value: "event_stylist", label: "Event Stylists" },
+  { value: "banquet_hall", label: "Banquet Halls" },
+  { value: "rental_services", label: "Rental Services" },
+  { value: "event_planner", label: "Event Planners" }
 ];
 
 export default function SwipePage() {

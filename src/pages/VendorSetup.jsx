@@ -11,6 +11,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+const categories = [
+  { value: "dj", label: "DJ", group: "Entertainment" },
+  { value: "photographer", label: "Photographer", group: "Entertainment" },
+  { value: "videographer", label: "Videographer", group: "Entertainment" },
+  { value: "photo_booth", label: "Photo Booth Operator", group: "Entertainment" },
+  { value: "caterer", label: "Caterer (Full-Service & Buffet)", group: "Food" },
+  { value: "food_truck", label: "Food Truck", group: "Food" },
+  { value: "baker", label: "Baker / Cake Designer", group: "Food" },
+  { value: "balloon_decorator", label: "Balloon Decorator", group: "Décor" },
+  { value: "event_stylist", label: "Event Stylist / Backdrop Designer", group: "Décor" },
+  { value: "banquet_hall", label: "Banquet Hall / Event Space", group: "Venue" },
+  { value: "rental_services", label: "Tables + Chairs + Tents Rentals", group: "Rentals" },
+  { value: "event_planner", label: "Event Planner / Coordinator", group: "Services" }
+];
+
 export default function VendorSetupPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -77,6 +92,12 @@ export default function VendorSetupPage() {
     }
   };
 
+  const groupedCategories = categories.reduce((acc, cat) => {
+    if (!acc[cat.group]) acc[cat.group] = [];
+    acc[cat.group].push(cat);
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-3xl mx-auto">
@@ -117,15 +138,18 @@ export default function VendorSetupPage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="venue">Venue</SelectItem>
-                    <SelectItem value="dj">DJ</SelectItem>
-                    <SelectItem value="caterer">Caterer</SelectItem>
-                    <SelectItem value="photographer">Photographer</SelectItem>
-                    <SelectItem value="videographer">Videographer</SelectItem>
-                    <SelectItem value="florist">Florist</SelectItem>
-                    <SelectItem value="baker">Baker</SelectItem>
-                    <SelectItem value="decorator">Decorator</SelectItem>
-                    <SelectItem value="planner">Event Planner</SelectItem>
+                    {Object.entries(groupedCategories).map(([group, cats]) => (
+                      <div key={group}>
+                        <div className="px-2 py-1.5 text-xs font-bold text-gray-500 uppercase">
+                          {group}
+                        </div>
+                        {cats.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
