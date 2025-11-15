@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
 import Bookings from './pages/Bookings';
 import About from './pages/About';
+import VendorDashboard from './pages/VendorDashboard';
 import Layout from './Layout.jsx';
 
 
@@ -20,6 +21,7 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Bookings": Bookings,
     "About": About,
+    "VendorDashboard": VendorDashboard,
 }
 
 export const pagesConfig = {

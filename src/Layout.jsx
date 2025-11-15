@@ -1,18 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashboard } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const [userType, setUserType] = useState(null);
 
-  const navItems = [
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setUserType(user.user_type);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadUser();
+  }, []);
+
+  const clientNavItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
     { name: "Swipe", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
     { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
   ];
+
+  const vendorNavItems = [
+    { name: "Dashboard", path: createPageUrl("VendorDashboard"), icon: LayoutDashboard },
+    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
+    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
+  ];
+
+  const navItems = userType === "vendor" ? vendorNavItems : clientNavItems;
 
   return (
     <div className="min-h-screen bg-white">

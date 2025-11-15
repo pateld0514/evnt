@@ -52,6 +52,8 @@ export default function Home() {
         
         if (!currentUser.onboarding_complete) {
           navigate(createPageUrl("Onboarding"));
+        } else if (currentUser.user_type === "vendor") {
+          navigate(createPageUrl("VendorDashboard"));
         }
       } catch (error) {
         console.error(error);
