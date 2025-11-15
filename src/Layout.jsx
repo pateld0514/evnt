@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Heart, Sparkles, MessageSquare, User, Calendar } from "lucide-react";
+import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -28,9 +28,17 @@ export default function Layout({ children, currentPageName }) {
                 EVNT
               </span>
             </Link>
-            <Link to={createPageUrl("Profile")}>
-              <User className="w-6 h-6 text-white hover:text-gray-300 transition-colors" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link 
+                to={createPageUrl("About")}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <Info className="w-6 h-6" />
+              </Link>
+              <Link to={createPageUrl("Profile")}>
+                <User className="w-6 h-6 text-white hover:text-gray-300 transition-colors" />
+              </Link>
+            </div>
           </div>
         </div>
       </header>

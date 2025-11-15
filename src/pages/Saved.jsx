@@ -18,15 +18,35 @@ import {
 import BookingForm from "../components/booking/BookingForm";
 
 const categoryIcons = {
-  venue: "🏛️",
   dj: "🎧",
-  caterer: "🍽️",
   photographer: "📸",
   videographer: "🎥",
-  florist: "🌸",
+  photo_booth: "📷",
+  caterer: "🍽️",
+  food_truck: "🚚",
   baker: "🎂",
-  decorator: "✨",
-  planner: "📋"
+  balloon_decorator: "🎈",
+  event_stylist: "✨",
+  banquet_hall: "🏛️",
+  rental_services: "🪑",
+  event_planner: "📋",
+  luxury_car_rental: "🚗"
+};
+
+const categoryLabels = {
+  dj: "DJ",
+  photographer: "Photographer",
+  videographer: "Videographer",
+  photo_booth: "Photo Booth",
+  caterer: "Caterer",
+  food_truck: "Food Truck",
+  baker: "Baker",
+  balloon_decorator: "Balloon Decorator",
+  event_stylist: "Event Stylist",
+  banquet_hall: "Banquet Hall",
+  rental_services: "Rental Services",
+  event_planner: "Event Planner",
+  luxury_car_rental: "Luxury Car Rental"
 };
 
 export default function SavedPage() {
@@ -57,6 +77,13 @@ export default function SavedPage() {
     },
   });
 
+  // Get unique categories from saved vendors
+  const availableCategories = React.useMemo(() => {
+    const categories = savedVendors.map(saved => saved.vendor_category).filter(Boolean);
+    const uniqueCategories = [...new Set(categories)];
+    return uniqueCategories;
+  }, [savedVendors]);
+
   const filteredSaved = savedVendors.filter(saved => 
     selectedCategory === "all" || saved.vendor_category === selectedCategory
   );
@@ -82,14 +109,6 @@ export default function SavedPage() {
     }
   };
 
-  const categories = [
-    { value: "all", label: "All" },
-    { value: "venue", label: "Venues" },
-    { value: "dj", label: "DJs" },
-    { value: "caterer", label: "Caterers" },
-    { value: "photographer", label: "Photos" },
-  ];
-
   if (loadingSaved) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -112,21 +131,29 @@ export default function SavedPage() {
         </p>
       </div>
 
-      <div className="mb-8 flex justify-center">
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-2xl">
-          <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-gray-100 border-2 border-black">
-            {categories.map(cat => (
+      {savedVendors.length > 0 && availableCategories.length > 0 && (
+        <div className="mb-8 flex justify-center">
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-4xl">
+            <TabsList className="grid w-full h-auto p-1 bg-gray-100 border-2 border-black" style={{ gridTemplateColumns: `repeat(${availableCategories.length + 1}, minmax(0, 1fr))` }}>
               <TabsTrigger 
-                key={cat.value} 
-                value={cat.value} 
+                value="all" 
                 className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
               >
-                {cat.label}
+                All
               </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+              {availableCategories.map(cat => (
+                <TabsTrigger 
+                  key={cat} 
+                  value={cat} 
+                  className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
+                >
+                  {categoryLabels[cat] || cat}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
       {filteredSaved.length === 0 ? (
         <div className="text-center py-16">

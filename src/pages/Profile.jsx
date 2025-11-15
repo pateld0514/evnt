@@ -19,13 +19,14 @@ export default function ProfilePage() {
         setUser(currentUser);
 
         if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
-          const { data: vendors } = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
+          const vendors = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
           if (vendors && vendors.length > 0) {
             setVendor(vendors[0]);
           }
         }
       } catch (error) {
         console.error("Error loading profile:", error);
+        base44.auth.redirectToLogin();
       } finally {
         setLoading(false);
       }
@@ -34,9 +35,8 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  const handleLogout = async () => {
-    await base44.auth.logout();
-    navigate(createPageUrl("SignUp"));
+  const handleLogout = () => {
+    base44.auth.redirectToLogin();
   };
 
   if (loading) {
