@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Loader2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Upload, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 const categories = [
@@ -23,7 +24,20 @@ const categories = [
   { value: "event_stylist", label: "Event Stylist / Backdrop Designer", group: "Décor" },
   { value: "banquet_hall", label: "Banquet Hall / Event Space", group: "Venue" },
   { value: "rental_services", label: "Tables + Chairs + Tents Rentals", group: "Rentals" },
-  { value: "event_planner", label: "Event Planner / Coordinator", group: "Services" }
+  { value: "event_planner", label: "Event Planner / Coordinator", group: "Services" },
+  { value: "luxury_car_rental", label: "Luxury Car Rental", group: "Transportation" }
+];
+
+const locations = [
+  "Washington, DC",
+  "Arlington, VA",
+  "Alexandria, VA",
+  "Fairfax, VA",
+  "Bethesda, MD",
+  "Silver Spring, MD",
+  "Rockville, MD",
+  "Baltimore, MD",
+  "DMV Area"
 ];
 
 export default function VendorSetupPage() {
@@ -41,8 +55,14 @@ export default function VendorSetupPage() {
     contact_phone: "",
     website: "",
     specialties: "",
-    starting_price: ""
+    pricing_type: "contact",
+    hourly_rate: "",
+    per_person_rate: "",
+    starting_price: "",
+    packages: []
   });
+
+  const [newPackage, setNewPackage] = useState({ name: "", price: "", description: "" });
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -60,6 +80,23 @@ export default function VendorSetupPage() {
     }
   };
 
+  const addPackage = () => {
+    if (newPackage.name && newPackage.price) {
+      setFormData(prev => ({
+        ...prev,
+        packages: [...prev.packages, { ...newPackage, price: parseFloat(newPackage.price) }]
+      }));
+      setNewPackage({ name: "", price: "", description: "" });
+    }
+  };
+
+  const removePackage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      packages: prev.packages.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -71,9 +108,21 @@ export default function VendorSetupPage() {
         .filter(s => s);
 
       const vendorData = {
-        ...formData,
+        business_name: formData.business_name,
+        category: formData.category,
+        description: formData.description,
+        image_url: formData.image_url,
+        price_range: formData.price_range,
+        location: formData.location,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone,
+        website: formData.website,
         specialties: specialtiesArray,
-        starting_price: formData.starting_price ? parseFloat(formData.starting_price) : undefined
+        pricing_type: formData.pricing_type,
+        starting_price: formData.starting_price ? parseFloat(formData.starting_price) : undefined,
+        hourly_rate: formData.pricing_type === "hourly" && formData.hourly_rate ? parseFloat(formData.hourly_rate) : undefined,
+        per_person_rate: formData.pricing_type === "per_person" && formData.per_person_rate ? parseFloat(formData.per_person_rate) : undefined,
+        packages: formData.pricing_type === "package" ? formData.packages : undefined
       };
 
       const vendor = await base44.entities.Vendor.create(vendorData);
@@ -112,7 +161,7 @@ export default function VendorSetupPage() {
 
         <Card className="border-2 border-black">
           <CardHeader className="bg-black">
-            <CardTitle className="text-white">Business Information</CardTitle>
+            <CardTitle className="text-white font-black">Business Information</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -204,14 +253,22 @@ export default function VendorSetupPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location *</Label>
-                  <Input
-                    id="location"
+                  <Select
                     value={formData.location}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
                     required
-                    className="border-2 border-gray-300 focus:border-black"
-                    placeholder="e.g. Washington, DC"
-                  />
+                  >
+                    <SelectTrigger className="border-2 border-gray-300 focus:border-black">
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map(loc => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -232,6 +289,104 @@ export default function VendorSetupPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Pricing Structure */}
+              <div className="space-y-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                <Label className="text-lg font-bold">Pricing Structure *</Label>
+                <RadioGroup value={formData.pricing_type} onValueChange={(value) => setFormData(prev => ({ ...prev, pricing_type: value }))}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="contact" id="contact" />
+                    <Label htmlFor="contact" className="font-normal cursor-pointer">Contact for Rate</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hourly" id="hourly" />
+                    <Label htmlFor="hourly" className="font-normal cursor-pointer">Hourly Rate</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="per_person" id="per_person" />
+                    <Label htmlFor="per_person" className="font-normal cursor-pointer">Per Person Rate</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixed" id="fixed" />
+                    <Label htmlFor="fixed" className="font-normal cursor-pointer">Fixed Price</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="package" id="package" />
+                    <Label htmlFor="package" className="font-normal cursor-pointer">Package Deals</Label>
+                  </div>
+                </RadioGroup>
+
+                {formData.pricing_type === "hourly" && (
+                  <Input
+                    type="number"
+                    placeholder="Hourly rate ($)"
+                    value={formData.hourly_rate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, hourly_rate: e.target.value }))}
+                    className="border-2 border-gray-300"
+                  />
+                )}
+
+                {formData.pricing_type === "per_person" && (
+                  <Input
+                    type="number"
+                    placeholder="Per person rate ($)"
+                    value={formData.per_person_rate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, per_person_rate: e.target.value }))}
+                    className="border-2 border-gray-300"
+                  />
+                )}
+
+                {formData.pricing_type === "fixed" && (
+                  <Input
+                    type="number"
+                    placeholder="Starting price ($)"
+                    value={formData.starting_price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, starting_price: e.target.value }))}
+                    className="border-2 border-gray-300"
+                  />
+                )}
+
+                {formData.pricing_type === "package" && (
+                  <div className="space-y-4">
+                    {formData.packages.map((pkg, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-3 bg-white border-2 border-gray-300 rounded">
+                        <div className="flex-1">
+                          <p className="font-bold">{pkg.name} - ${pkg.price}</p>
+                          <p className="text-sm text-gray-600">{pkg.description}</p>
+                        </div>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => removePackage(idx)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Package name"
+                        value={newPackage.name}
+                        onChange={(e) => setNewPackage(prev => ({ ...prev, name: e.target.value }))}
+                        className="border-2 border-gray-300"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Price ($)"
+                        value={newPackage.price}
+                        onChange={(e) => setNewPackage(prev => ({ ...prev, price: e.target.value }))}
+                        className="border-2 border-gray-300"
+                      />
+                      <Input
+                        placeholder="Description (optional)"
+                        value={newPackage.description}
+                        onChange={(e) => setNewPackage(prev => ({ ...prev, description: e.target.value }))}
+                        className="border-2 border-gray-300"
+                      />
+                      <Button type="button" onClick={addPackage} variant="outline" className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Package
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -277,18 +432,6 @@ export default function VendorSetupPage() {
                   onChange={(e) => setFormData(prev => ({ ...prev, specialties: e.target.value }))}
                   className="border-2 border-gray-300 focus:border-black"
                   placeholder="e.g. Weddings, Corporate Events, Sweet 16"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="starting_price">Starting Price ($)</Label>
-                <Input
-                  id="starting_price"
-                  type="number"
-                  value={formData.starting_price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, starting_price: e.target.value }))}
-                  className="border-2 border-gray-300 focus:border-black"
-                  placeholder="e.g. 500"
                 />
               </div>
 
