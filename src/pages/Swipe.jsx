@@ -23,7 +23,8 @@ const categories = [
   { value: "event_stylist", label: "Event Stylists" },
   { value: "banquet_hall", label: "Banquet Halls" },
   { value: "rental_services", label: "Rental Services" },
-  { value: "event_planner", label: "Event Planners" }
+  { value: "event_planner", label: "Event Planners" },
+  { value: "luxury_car_rental", label: "Luxury Car Rental" }
 ];
 
 export default function SwipePage() {
@@ -123,6 +124,11 @@ export default function SwipePage() {
       location: ""
     });
   };
+
+  // Reset index when filters change
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [filters]);
 
   if (isLoading) {
     return (
