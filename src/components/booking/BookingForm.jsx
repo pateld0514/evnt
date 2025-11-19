@@ -141,11 +141,23 @@ export default function BookingForm({ vendor, onSuccess, onCancel }) {
           <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
           <Input
             id="location"
+            list="locations"
             value={formData.location}
             onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
             className="border-2 border-gray-300 focus:border-black pl-10"
             placeholder="City, State"
           />
+          <datalist id="locations">
+            <option value="Washington, DC" />
+            <option value="Arlington, VA" />
+            <option value="Alexandria, VA" />
+            <option value="Fairfax, VA" />
+            <option value="Bethesda, MD" />
+            <option value="Silver Spring, MD" />
+            <option value="Rockville, MD" />
+            <option value="Baltimore, MD" />
+            <option value="DMV Area" />
+          </datalist>
         </div>
       </div>
 
