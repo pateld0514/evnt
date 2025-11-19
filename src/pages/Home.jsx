@@ -66,7 +66,12 @@ export default function Home() {
   }, [navigate]);
 
   const handleEventSelect = (eventType) => {
-    navigate(createPageUrl("Swipe") + `?event=${eventType.toLowerCase().replace(/\s+/g, '-')}`);
+    const eventSlug = eventType.toLowerCase().replace(/\s+/g, '-');
+    if (eventType === "Other") {
+      navigate(createPageUrl("Swipe") + `?event=${eventSlug}`);
+    } else {
+      navigate(createPageUrl("EventVendors") + `?event=${eventSlug}`);
+    }
   };
 
   if (loading) {
