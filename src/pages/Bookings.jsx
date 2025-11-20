@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import Invoice from "../components/documents/Invoice";
+import ServiceAgreement from "../components/documents/ServiceAgreement";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +33,9 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [vendorResponse, setVendorResponse] = useState("");
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [showContract, setShowContract] = useState(false);
+  const [currentVendor, setCurrentVendor] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -52,6 +57,12 @@ export default function BookingsPage() {
       }
     },
     enabled: !!currentUser,
+    initialData: [],
+  });
+
+  const { data: vendors = [] } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
   });
 
@@ -85,7 +96,18 @@ export default function BookingsPage() {
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setVendorResponse(booking.vendor_response || "");
+    const vendor = vendors.find(v => v.id === booking.vendor_id);
+    setCurrentVendor(vendor);
     setDetailsOpen(true);
+  };
+
+  const handlePrintDocument = (type) => {
+    if (type === 'invoice') {
+      setShowInvoice(true);
+    } else {
+      setShowContract(true);
+    }
+    setTimeout(() => window.print(), 100);
   };
 
   if (isLoading || !currentUser) {
@@ -305,6 +327,31 @@ export default function BookingsPage() {
                     <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
                       {selectedBooking.vendor_response}
                     </p>
+                  </div>
+                )}
+
+                {/* Documents Section */}
+                {(selectedBooking.status === "accepted" || selectedBooking.status === "completed") && (
+                  <div className="border-t-2 border-gray-200 pt-6">
+                    <h3 className="font-bold text-lg mb-4">Documents</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant="outline"
+                        className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                        onClick={() => handlePrintDocument('invoice')}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Invoice
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                        onClick={() => handlePrintDocument('contract')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        View Contract
+                      </Button>
+                    </div>
                   </div>
                 )}
 
