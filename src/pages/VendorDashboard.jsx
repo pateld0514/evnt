@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MessageSquare, Heart, TrendingUp, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, MessageSquare, Heart, TrendingUp, Loader2, Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -74,9 +75,18 @@ export default function VendorDashboard() {
   if (!vendor) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-black mb-4">No Vendor Profile Found</h2>
-          <p className="text-gray-600">Please complete your vendor setup.</p>
+        <div className="text-center max-w-md px-4">
+          <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+            <Store className="w-12 h-12 text-white" />
+          </div>
+          <h2 className="text-3xl font-black text-black mb-3">No Vendor Profile Found</h2>
+          <p className="text-gray-600 mb-8">Complete your vendor setup to start receiving bookings and connecting with clients.</p>
+          <Button
+            onClick={() => navigate(createPageUrl("VendorSetup"))}
+            className="bg-black text-white hover:bg-gray-800 h-12 text-lg font-bold"
+          >
+            Sign Up Now
+          </Button>
         </div>
       </div>
     );
