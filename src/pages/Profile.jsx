@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Store, LogOut, Loader2 } from "lucide-react";
+import { User, Store, LogOut, Loader2, RefreshCw } from "lucide-react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -34,6 +34,12 @@ export default function ProfilePage() {
 
     loadProfile();
   }, []);
+
+  const handleSwitchMode = async () => {
+    const newType = user.user_type === "vendor" ? "client" : "vendor";
+    await base44.auth.updateMe({ user_type: newType });
+    window.location.reload();
+  };
 
   const handleLogout = () => {
     base44.auth.redirectToLogin();
@@ -108,14 +114,34 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      <Button
-        onClick={handleLogout}
-        variant="outline"
-        className="w-full border-2 border-black hover:bg-black hover:text-white font-bold"
-      >
-        <LogOut className="w-5 h-5 mr-2" />
-        Log Out
-      </Button>
+      <div className="space-y-3">
+        <Card className="border-2 border-purple-600 bg-purple-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-purple-900">🧪 Testing Mode</p>
+                <p className="text-sm text-purple-700">Switch between vendor and client view</p>
+              </div>
+              <Button
+                onClick={handleSwitchMode}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Switch to {user?.user_type === "vendor" ? "Client" : "Vendor"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="w-full border-2 border-black hover:bg-black hover:text-white font-bold"
+        >
+          <LogOut className="w-5 h-5 mr-2" />
+          Log Out
+        </Button>
+      </div>
     </div>
   );
 }
