@@ -104,10 +104,18 @@ export default function BookingsPage() {
   const handlePrintDocument = (type) => {
     if (type === 'invoice') {
       setShowInvoice(true);
+      setShowContract(false);
     } else {
       setShowContract(true);
+      setShowInvoice(false);
     }
-    setTimeout(() => window.print(), 100);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setShowInvoice(false);
+        setShowContract(false);
+      }, 500);
+    }, 100);
   };
 
   if (isLoading || !currentUser) {
