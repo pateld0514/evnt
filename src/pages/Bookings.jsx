@@ -403,6 +403,18 @@ export default function BookingsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Print Views */}
+      {showInvoice && selectedBooking && (
+        <div className="hidden print:block">
+          <Invoice booking={selectedBooking} />
+        </div>
+      )}
+      {showContract && selectedBooking && currentVendor && (
+        <div className="hidden print:block">
+          <ServiceAgreement booking={selectedBooking} vendor={currentVendor} />
+        </div>
+      )}
     </div>
   );
 }
