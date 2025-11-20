@@ -59,7 +59,8 @@ export default function VendorSetupPage() {
     hourly_rate: "",
     per_person_rate: "",
     starting_price: "",
-    packages: []
+    packages: [],
+    id_document_url: ""
   });
 
   const [newPackage, setNewPackage] = useState({ name: "", price: "", description: "" });
@@ -75,6 +76,22 @@ export default function VendorSetupPage() {
       toast.success("Image uploaded!");
     } catch (error) {
       toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleIdUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, id_document_url: file_url }));
+      toast.success("ID document uploaded!");
+    } catch (error) {
+      toast.error("Failed to upload ID");
     } finally {
       setUploading(false);
     }
@@ -127,12 +144,15 @@ export default function VendorSetupPage() {
 
       const vendor = await base44.entities.Vendor.create(vendorData);
       
+      // Auto-verify for testing (in production, this would be manual review)
       await base44.auth.updateMe({
         vendor_id: vendor.id,
-        onboarding_complete: true
+        onboarding_complete: true,
+        vendor_verified: true,
+        verification_status: "approved"
       });
 
-      toast.success("Vendor profile created!");
+      toast.success("Vendor profile created and verified! 🎉");
       navigate(createPageUrl("Profile"));
     } catch (error) {
       toast.error("Failed to create profile. Please try again.");
@@ -435,10 +455,58 @@ export default function VendorSetupPage() {
                 />
               </div>
 
+              {/* ID Verification */}
+              <div className="space-y-2 p-4 border-2 border-purple-300 rounded-lg bg-purple-50">
+                <Label className="text-lg font-bold">Identity Verification *</Label>
+                <p className="text-sm text-gray-600 mb-3">
+                  Upload a government-issued ID (Driver's License, Passport, or State ID) for verification
+                </p>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-white">
+                  {formData.id_document_url ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center gap-2 text-green-600">
+                        <Upload className="w-6 h-6" />
+                        <span className="font-bold">ID Document Uploaded ✓</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFormData(prev => ({ ...prev, id_document_url: "" }))}
+                      >
+                        Upload Different Document
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <label htmlFor="id-upload" className="cursor-pointer">
+                        <span className="text-black font-bold hover:underline">
+                          {uploading ? "Uploading..." : "Click to upload ID"}
+                        </span>
+                        <input
+                          id="id-upload"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleIdUpload}
+                          className="hidden"
+                          disabled={uploading}
+                        />
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Accepted formats: JPG, PNG, PDF
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-purple-700">
+                  🧪 Testing Mode: Your profile will be auto-verified immediately
+                </p>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full bg-black text-white hover:bg-gray-800 h-12 text-lg font-bold"
-                disabled={loading}
+                disabled={loading || !formData.id_document_url}
               >
                 {loading ? (
                   <>
