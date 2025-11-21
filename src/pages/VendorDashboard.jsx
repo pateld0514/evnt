@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MessageSquare, Heart, TrendingUp, Loader2, Store } from "lucide-react";
+import { Calendar, MessageSquare, Heart, TrendingUp, Loader2, Store, DollarSign, BarChart3, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -13,6 +14,8 @@ export default function VendorDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiInsights, setAiInsights] = useState(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -64,6 +67,80 @@ export default function VendorDashboard() {
   const pendingBookings = bookings.filter(b => b.status === "pending").length;
   const unreadMessages = messages.filter(m => !m.read && m.recipient_email === currentUser?.email).length;
 
+  // Sales calculations
+  const completedBookings = bookings.filter(b => b.status === "completed" || b.status === "accepted");
+  const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.budget || 0), 0);
+  const vendorRevenue = totalRevenue * 0.92; // 92% after 8% platform fee
+  const avgBookingValue = completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0;
+
+  // Analytics
+  const bookingsByLocation = bookings.reduce((acc, b) => {
+    const loc = b.location || "Unknown";
+    acc[loc] = (acc[loc] || 0) + 1;
+    return acc;
+  }, {});
+
+  const bookingsByEventType = bookings.reduce((acc, b) => {
+    acc[b.event_type] = (acc[b.event_type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const conversionRate = bookings.length > 0 
+    ? ((bookings.filter(b => b.status === "accepted" || b.status === "completed").length / bookings.length) * 100).toFixed(1)
+    : 0;
+
+  const generateAIInsights = async () => {
+    if (!vendor || bookings.length === 0) return;
+    
+    setLoadingInsights(true);
+    try {
+      const insights = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a business analytics expert for event vendors. Analyze this data and provide actionable insights.
+
+Vendor: ${vendor.business_name}
+Category: ${vendor.category}
+Location: ${vendor.location}
+Price Range: ${vendor.price_range}
+
+Booking Data:
+- Total Bookings: ${bookings.length}
+- Accepted/Completed: ${completedBookings.length}
+- Pending: ${pendingBookings}
+- Declined: ${bookings.filter(b => b.status === "declined").length}
+- Conversion Rate: ${conversionRate}%
+- Total Revenue: $${totalRevenue.toLocaleString()}
+- Average Booking Value: $${avgBookingValue.toFixed(0)}
+
+Bookings by Location: ${JSON.stringify(bookingsByLocation)}
+Bookings by Event Type: ${JSON.stringify(bookingsByEventType)}
+
+Provide 4-5 specific, actionable insights in this JSON format:
+{
+  "top_locations": ["location names where they get most bookings"],
+  "growth_opportunities": ["specific suggestions for expansion"],
+  "pricing_insights": "specific pricing recommendation",
+  "marketing_tips": ["2-3 actionable marketing suggestions"],
+  "seasonal_trends": "any patterns or recommendations"
+}`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            top_locations: { type: "array", items: { type: "string" } },
+            growth_opportunities: { type: "array", items: { type: "string" } },
+            pricing_insights: { type: "string" },
+            marketing_tips: { type: "array", items: { type: "string" } },
+            seasonal_trends: { type: "string" }
+          }
+        }
+      });
+      setAiInsights(insights);
+    } catch (error) {
+      console.error("Failed to generate insights:", error);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -99,7 +176,22 @@ export default function VendorDashboard() {
         <p className="text-lg text-gray-600">Welcome back, {vendor.business_name}!</p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <Tabs defaultValue="overview" className="mb-8">
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100 border-2 border-black">
+          <TabsTrigger value="overview" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="sales" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            Sales & Revenue
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            AI Insights
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="mt-6">
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="border-2 border-black cursor-pointer hover:shadow-xl transition-shadow" onClick={() => navigate(createPageUrl("Bookings"))}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -151,9 +243,9 @@ export default function VendorDashboard() {
             <p className="text-sm text-gray-600 font-medium">Accepted Bookings</p>
           </CardContent>
         </Card>
-      </div>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
         <Card className="border-2 border-black">
           <CardHeader className="bg-black text-white">
             <CardTitle className="font-black">Recent Bookings</CardTitle>
@@ -208,7 +300,230 @@ export default function VendorDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+        </TabsContent>
+
+        {/* Sales Tab */}
+        <TabsContent value="sales" className="mt-6">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <Card className="border-2 border-green-600">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                </div>
+                <p className="text-3xl font-black text-black">${vendorRevenue.toLocaleString()}</p>
+                <p className="text-sm text-gray-600 font-medium">Your Revenue (92%)</p>
+                <p className="text-xs text-gray-500 mt-1">After 8% platform fee</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-blue-600">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                </div>
+                <p className="text-3xl font-black text-black">${avgBookingValue.toFixed(0)}</p>
+                <p className="text-sm text-gray-600 font-medium">Avg Booking Value</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-purple-600">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <BarChart3 className="w-8 h-8 text-purple-600" />
+                </div>
+                <p className="text-3xl font-black text-black">{conversionRate}%</p>
+                <p className="text-sm text-gray-600 font-medium">Conversion Rate</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="border-2 border-black">
+              <CardHeader className="bg-black text-white">
+                <CardTitle className="font-black">Bookings by Location</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {Object.keys(bookingsByLocation).length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No location data yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {Object.entries(bookingsByLocation)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([location, count]) => (
+                        <div key={location} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
+                          <span className="font-bold">{location}</span>
+                          <Badge className="bg-black text-white">{count} bookings</Badge>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-black">
+              <CardHeader className="bg-black text-white">
+                <CardTitle className="font-black">Bookings by Event Type</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {Object.keys(bookingsByEventType).length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No event data yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {Object.entries(bookingsByEventType)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([eventType, count]) => (
+                        <div key={eventType} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
+                          <span className="font-bold">{eventType}</span>
+                          <Badge className="bg-black text-white">{count} bookings</Badge>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* AI Insights Tab */}
+        <TabsContent value="insights" className="mt-6">
+          <Card className="border-2 border-black mb-6">
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6" />
+                  <CardTitle className="font-black">AI-Powered Business Insights</CardTitle>
+                </div>
+                <Button
+                  onClick={generateAIInsights}
+                  disabled={loadingInsights || bookings.length === 0}
+                  className="bg-white text-purple-600 hover:bg-gray-100 font-bold"
+                >
+                  {loadingInsights ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Generate Insights"
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {!aiInsights && !loadingInsights && (
+                <div className="text-center py-12">
+                  <Sparkles className="w-16 h-16 mx-auto mb-4 text-purple-600" />
+                  <h3 className="text-xl font-bold mb-2">Get AI-Powered Recommendations</h3>
+                  <p className="text-gray-600 mb-4">
+                    Click "Generate Insights" to get personalized recommendations for growing your business
+                  </p>
+                  {bookings.length === 0 && (
+                    <p className="text-sm text-gray-500">You need at least one booking to generate insights</p>
+                  )}
+                </div>
+              )}
+
+              {loadingInsights && (
+                <div className="text-center py-12">
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-purple-600" />
+                  <p className="text-gray-600">Analyzing your business data...</p>
+                </div>
+              )}
+
+              {aiInsights && (
+                <div className="space-y-6">
+                  {/* Top Locations */}
+                  {aiInsights.top_locations && aiInsights.top_locations.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <span className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                        Top Performing Locations
+                      </h3>
+                      <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                        <ul className="space-y-2">
+                          {aiInsights.top_locations.map((loc, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
+                              <span className="font-medium">{loc}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Growth Opportunities */}
+                  {aiInsights.growth_opportunities && aiInsights.growth_opportunities.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <span className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                        Growth Opportunities
+                      </h3>
+                      <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                        <ul className="space-y-2">
+                          {aiInsights.growth_opportunities.map((opp, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="w-2 h-2 bg-green-600 rounded-full mt-2"></span>
+                              <span>{opp}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pricing Insights */}
+                  {aiInsights.pricing_insights && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <span className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                        Pricing Strategy
+                      </h3>
+                      <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                        <p>{aiInsights.pricing_insights}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Marketing Tips */}
+                  {aiInsights.marketing_tips && aiInsights.marketing_tips.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <span className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</span>
+                        Marketing Recommendations
+                      </h3>
+                      <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                        <ul className="space-y-2">
+                          {aiInsights.marketing_tips.map((tip, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="w-2 h-2 bg-orange-600 rounded-full mt-2"></span>
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Seasonal Trends */}
+                  {aiInsights.seasonal_trends && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <span className="w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center text-sm font-bold">5</span>
+                        Seasonal Trends
+                      </h3>
+                      <div className="bg-pink-50 p-4 rounded-lg border-2 border-pink-200">
+                        <p>{aiInsights.seasonal_trends}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
