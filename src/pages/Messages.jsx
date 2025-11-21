@@ -5,10 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Loader2 } from "lucide-react";
+import { Send, ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function MessagesPage() {
   const navigate = useNavigate();
@@ -17,6 +23,9 @@ export default function MessagesPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messageText, setMessageText] = useState("");
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [isVendor, setIsVendor] = useState(false);
+  const [vendorData, setVendorData] = useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const vendorIdFromUrl = urlParams.get('vendor');
@@ -25,6 +34,14 @@ export default function MessagesPage() {
     const loadUser = async () => {
       const user = await base44.auth.me();
       setCurrentUser(user);
+      setIsVendor(user.user_type === "vendor");
+      
+      if (user.user_type === "vendor" && user.vendor_id) {
+        const vendorList = await base44.entities.Vendor.filter({ id: user.vendor_id });
+        if (vendorList && vendorList.length > 0) {
+          setVendorData(vendorList[0]);
+        }
+      }
     };
     loadUser();
   }, []);
@@ -38,6 +55,27 @@ export default function MessagesPage() {
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
+    initialData: [],
+  });
+
+  const { data: savedVendors = [] } = useQuery({
+    queryKey: ['saved-vendors'],
+    queryFn: () => base44.entities.SavedVendor.list(),
+    initialData: [],
+    enabled: !isVendor,
+  });
+
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['bookings-for-messages'],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      if (isVendor && vendorData) {
+        return await base44.entities.Booking.filter({ vendor_id: vendorData.id });
+      } else {
+        return await base44.entities.Booking.filter({ client_email: currentUser.email });
+      }
+    },
+    enabled: !!currentUser && (isVendor ? !!vendorData : true),
     initialData: [],
   });
 
@@ -107,6 +145,76 @@ export default function MessagesPage() {
     });
   };
 
+  const getComposeOptions = () => {
+    if (isVendor) {
+      // For vendors: show clients who have made booking requests
+      const uniqueClients = bookings.reduce((acc, booking) => {
+        const existingConvo = conversations.find(c => 
+          c.vendorEmail === booking.client_email || 
+          (c.id && c.id.includes(booking.client_email))
+        );
+        if (!existingConvo && !acc.find(c => c.email === booking.client_email)) {
+          acc.push({
+            name: booking.client_name,
+            email: booking.client_email,
+            vendorId: vendorData?.id,
+            vendorName: vendorData?.business_name,
+          });
+        }
+        return acc;
+      }, []);
+      return uniqueClients;
+    } else {
+      // For clients: show saved vendors and vendors from bookings
+      const options = [];
+      
+      // Add saved vendors
+      savedVendors.forEach(saved => {
+        const vendor = vendors.find(v => v.id === saved.vendor_id);
+        if (vendor) {
+          const existingConvo = conversations.find(c => c.vendorId === vendor.id);
+          if (!existingConvo && !options.find(o => o.vendorId === vendor.id)) {
+            options.push({
+              name: vendor.business_name,
+              email: vendor.contact_email,
+              vendorId: vendor.id,
+              vendorName: vendor.business_name,
+            });
+          }
+        }
+      });
+      
+      // Add vendors from bookings
+      bookings.forEach(booking => {
+        const existingConvo = conversations.find(c => c.vendorId === booking.vendor_id);
+        if (!existingConvo && !options.find(o => o.vendorId === booking.vendor_id)) {
+          options.push({
+            name: booking.vendor_name,
+            email: booking.vendor_id,
+            vendorId: booking.vendor_id,
+            vendorName: booking.vendor_name,
+          });
+        }
+      });
+      
+      return options;
+    }
+  };
+
+  const handleStartConversation = (option) => {
+    const convId = isVendor 
+      ? `${vendorData.id}-${option.email}`
+      : `${currentUser.email}-${option.vendorId}`;
+    
+    setSelectedConversation({
+      id: convId,
+      vendorId: isVendor ? vendorData.id : option.vendorId,
+      vendorName: isVendor ? vendorData.business_name : option.vendorName,
+      vendorEmail: isVendor ? option.email : option.email,
+    });
+    setComposeOpen(false);
+  };
+
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -121,7 +229,17 @@ export default function MessagesPage() {
         {/* Conversations List */}
         <Card className="border-2 border-black overflow-hidden">
           <CardHeader className="bg-black text-white">
-            <CardTitle className="font-black">Messages</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-black">Messages</CardTitle>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-white hover:bg-gray-800"
+                onClick={() => setComposeOpen(true)}
+              >
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y-2 divide-gray-200">
@@ -236,6 +354,45 @@ export default function MessagesPage() {
           )}
         </Card>
       </div>
+
+      {/* Compose Dialog */}
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent className="max-w-md border-4 border-black">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">New Message</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {getComposeOptions().length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="font-medium">No contacts available</p>
+                <p className="text-sm mt-2">
+                  {isVendor 
+                    ? "You'll see clients here when they book your services"
+                    : "Save vendors or make a booking to start messaging"}
+                </p>
+              </div>
+            ) : (
+              getComposeOptions().map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleStartConversation(option)}
+                  className="w-full p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-black transition-all text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold">
+                      {option.name[0]}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-black">{option.name}</h3>
+                      <p className="text-sm text-gray-500">{option.email}</p>
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
