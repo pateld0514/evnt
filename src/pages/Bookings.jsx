@@ -66,6 +66,12 @@ export default function BookingsPage() {
     initialData: [],
   });
 
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => base44.entities.Review.list(),
+    initialData: [],
+  });
+
   const updateBookingMutation = useMutation({
     mutationFn: ({ bookingId, data }) => base44.entities.Booking.update(bookingId, data),
     onSuccess: () => {

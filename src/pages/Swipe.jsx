@@ -35,7 +35,8 @@ export default function SwipePage() {
     priceRange: "all",
     minPrice: "",
     maxPrice: "",
-    location: ""
+    location: "",
+    minRating: "all"
   });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
@@ -49,6 +50,12 @@ export default function SwipePage() {
   const { data: swipedVendors = [] } = useQuery({
     queryKey: ['user-swipes'],
     queryFn: () => base44.entities.UserSwipe.list(),
+    initialData: [],
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => base44.entities.Review.list(),
     initialData: [],
   });
 
@@ -96,8 +103,20 @@ export default function SwipePage() {
     
     const matchesLocation = !filters.location || 
       vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
+
+    // Rating filter
+    let matchesRating = true;
+    if (filters.minRating !== "all") {
+      const vendorReviews = reviews.filter(r => r.vendor_id === vendor.id);
+      if (vendorReviews.length > 0) {
+        const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
+        matchesRating = avgRating >= parseFloat(filters.minRating);
+      } else {
+        matchesRating = false; // No reviews, exclude from rated filter
+      }
+    }
     
-    return notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation;
+    return notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
   });
 
   const currentVendor = filteredVendors[currentIndex];
@@ -121,7 +140,8 @@ export default function SwipePage() {
       priceRange: "all",
       minPrice: "",
       maxPrice: "",
-      location: ""
+      location: "",
+      minRating: "all"
     });
   };
 
@@ -159,7 +179,7 @@ export default function SwipePage() {
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filters
-              {(filters.category !== "all" || filters.priceRange !== "all" || filters.location) && (
+              {(filters.category !== "all" || filters.priceRange !== "all" || filters.location || filters.minRating !== "all") && (
                 <span className="ml-2 px-2 py-0.5 bg-black text-white rounded-full text-xs">
                   Active
                 </span>
@@ -237,6 +257,20 @@ export default function SwipePage() {
                   placeholder="e.g. Washington, DC"
                   className="border-2 border-gray-300"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Minimum Rating</Label>
+                <Select value={filters.minRating} onValueChange={(value) => setFilters(prev => ({ ...prev, minRating: value }))}>
+                  <SelectTrigger className="border-2 border-gray-300">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Ratings</SelectItem>
+                    <SelectItem value="4">4+ Stars</SelectItem>
+                    <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button
