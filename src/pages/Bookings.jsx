@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download } from "lucide-react";
+import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download, Star } from "lucide-react";
+import ReviewDialog from "../components/vendor/ReviewDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Invoice from "../components/documents/Invoice";
@@ -36,6 +37,8 @@ export default function BookingsPage() {
   const [showInvoice, setShowInvoice] = useState(false);
   const [showContract, setShowContract] = useState(false);
   const [currentVendor, setCurrentVendor] = useState(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [bookingToReview, setBookingToReview] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -207,12 +210,27 @@ export default function BookingsPage() {
                         </Badge>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => handleViewDetails(booking)}
-                      className="bg-black text-white hover:bg-gray-800 font-bold"
-                    >
-                      View Details
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleViewDetails(booking)}
+                        className="bg-black text-white hover:bg-gray-800 font-bold"
+                      >
+                        View Details
+                      </Button>
+                      {!isVendor && (booking.status === "completed" || booking.status === "accepted") && !reviews.find(r => r.booking_id === booking.id) && (
+                        <Button
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBookingToReview(booking);
+                            setReviewDialogOpen(true);
+                          }}
+                        >
+                          <Star className="w-4 h-4 mr-2" />
+                          Review
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -429,6 +447,12 @@ export default function BookingsPage() {
           <ServiceAgreement booking={selectedBooking} vendor={currentVendor} />
         </div>
       )}
+
+      <ReviewDialog
+        booking={bookingToReview}
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+      />
     </div>
   );
 }

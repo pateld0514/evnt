@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BookingForm from "../booking/BookingForm";
+import ReviewsList from "../vendor/ReviewsList";
 
 const categoryIcons = {
   dj: "🎧",
@@ -47,6 +50,19 @@ export default function SwipeCard({ vendor, onSwipe }) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['vendor-reviews', vendor.id],
+    queryFn: async () => {
+      return await base44.entities.Review.filter({ vendor_id: vendor.id }, '-created_date');
+    },
+    enabled: showDetails,
+    initialData: [],
+  });
+
+  const avgRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
 
   const handleDragEnd = (event, info) => {
     if (Math.abs(info.offset.x) > 100) {
@@ -116,6 +132,12 @@ export default function SwipeCard({ vendor, onSwipe }) {
                     {vendor.location}
                   </Badge>
                 )}
+                {avgRating && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50">
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    {avgRating}
+                  </Badge>
+                )}
                 {vendor.price_range && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
                     <DollarSign className="w-3 h-3" />
@@ -175,6 +197,20 @@ export default function SwipeCard({ vendor, onSwipe }) {
             <div>
               <h3 className="font-bold text-lg mb-2">About</h3>
               <p className="text-gray-700">{vendor.description}</p>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="border-t-2 border-gray-200 pt-6">
+              <h3 className="text-xl font-black mb-4 flex items-center gap-2">
+                Reviews
+                {avgRating && (
+                  <span className="flex items-center gap-1 text-lg">
+                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    {avgRating} ({reviews.length})
+                  </span>
+                )}
+              </h3>
+              <ReviewsList reviews={reviews} />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
