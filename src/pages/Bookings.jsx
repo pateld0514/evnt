@@ -138,9 +138,9 @@ export default function BookingsPage() {
   const isVendor = currentUser.user_type === "vendor";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 mb-4">
           <Calendar className="w-8 h-8 text-black" />
         </div>

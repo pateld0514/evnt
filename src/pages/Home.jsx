@@ -87,17 +87,17 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-black">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="text-center space-y-6 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-200">
-              <Sparkles className="w-4 h-4 text-black" />
-              <span className="text-sm font-bold text-black">Event Planning Simplified</span>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-32">
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full border border-gray-200">
+              <Sparkles className="w-5 h-5 text-black" />
+              <span className="font-bold text-black">Event Planning Simplified</span>
             </div>
-            
-            <h1 className="text-5xl md:text-7xl font-black text-white">
-              Swipe Your Way
+
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-tight">
+              Find Perfect Vendors
               <br />
-              To The Perfect Event
+              For Your Event
             </h1>
             
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -119,17 +119,17 @@ export default function Home() {
       </div>
 
       {/* Event Types Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black text-black mb-4">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-black text-black mb-4">
             What Are You Planning?
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-xl text-gray-600">
             Select your event type to start discovering vendors
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {eventTypes.map((event, index) => {
             const Icon = event.icon;
             return (
@@ -163,18 +163,18 @@ export default function Home() {
       </div>
 
       {/* How It Works */}
-      <div className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-black text-black mb-4">
+      <div className="bg-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black text-black mb-4">
               How It Works
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-xl text-gray-600">
               Three simple steps to plan your perfect event
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
               <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-black">
                 1

@@ -22,7 +22,7 @@ export default function Layout({ children, currentPageName }) {
 
   const clientNavItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
-    { name: "Swipe", path: createPageUrl("Swipe"), icon: Sparkles },
+    { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
     { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
@@ -38,10 +38,11 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Bar */}
+      {/* Desktop Header */}
       <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <Link to={createPageUrl("Home")} className="flex items-center gap-2">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                 <span className="text-2xl font-black text-black">E</span>
@@ -50,15 +51,44 @@ export default function Layout({ children, currentPageName }) {
                 EVNT
               </span>
             </Link>
+
+            {/* Desktop Navigation - Hidden on mobile */}
+            <nav className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
+                      isActive
+                        ? "bg-white text-black"
+                        : "text-white hover:bg-gray-800"
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5`} />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Right Side Actions */}
             <div className="flex items-center gap-3">
               <Link 
                 to={createPageUrl("About")}
-                className="text-white hover:text-gray-300 transition-colors"
+                className="text-white hover:text-gray-300 transition-colors hidden md:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800"
               >
-                <Info className="w-6 h-6" />
+                <Info className="w-5 h-5" />
+                <span className="font-medium">About</span>
               </Link>
-              <Link to={createPageUrl("Profile")}>
-                <User className="w-6 h-6 text-white hover:text-gray-300 transition-colors" />
+              <Link 
+                to={createPageUrl("Profile")}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span className="font-medium hidden md:inline">Profile</span>
               </Link>
             </div>
           </div>
@@ -66,12 +96,12 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="pb-24">
+      <main className="pb-4 md:pb-8">
         {children}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
+      {/* Mobile Bottom Navigation - Only visible on mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-around items-center py-3">
             {navItems.map((item) => {

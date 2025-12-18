@@ -1,29 +1,29 @@
-import Home from './pages/Home';
-import Swipe from './pages/Swipe';
-import Saved from './pages/Saved';
-import VendorSetup from './pages/VendorSetup';
-import Messages from './pages/Messages';
-import Profile from './pages/Profile';
-import Onboarding from './pages/Onboarding';
-import Bookings from './pages/Bookings';
 import About from './pages/About';
-import VendorDashboard from './pages/VendorDashboard';
+import Bookings from './pages/Bookings';
 import EventVendors from './pages/EventVendors';
+import Home from './pages/Home';
+import Messages from './pages/Messages';
+import Onboarding from './pages/Onboarding';
+import Profile from './pages/Profile';
+import Saved from './pages/Saved';
+import Swipe from './pages/Swipe';
+import VendorDashboard from './pages/VendorDashboard';
+import VendorSetup from './pages/VendorSetup';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Swipe": Swipe,
-    "Saved": Saved,
-    "VendorSetup": VendorSetup,
-    "Messages": Messages,
-    "Profile": Profile,
-    "Onboarding": Onboarding,
-    "Bookings": Bookings,
     "About": About,
-    "VendorDashboard": VendorDashboard,
+    "Bookings": Bookings,
     "EventVendors": EventVendors,
+    "Home": Home,
+    "Messages": Messages,
+    "Onboarding": Onboarding,
+    "Profile": Profile,
+    "Saved": Saved,
+    "Swipe": Swipe,
+    "VendorDashboard": VendorDashboard,
+    "VendorSetup": VendorSetup,
 }
 
 export const pagesConfig = {

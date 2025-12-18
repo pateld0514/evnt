@@ -224,8 +224,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] max-w-7xl mx-auto p-4">
-      <div className="grid md:grid-cols-3 gap-4 h-full">
+    <div className="h-[calc(100vh-8rem)] max-w-7xl mx-auto p-4 md:p-8">
+      <div className="grid md:grid-cols-3 gap-6 h-full">
         {/* Conversations List */}
         <Card className="border-2 border-black overflow-hidden">
           <CardHeader className="bg-black text-white">
