@@ -49,11 +49,15 @@ export default function Home() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
+
         if (!currentUser.onboarding_complete) {
           navigate(createPageUrl("Onboarding"));
         } else if (currentUser.user_type === "vendor") {
-          navigate(createPageUrl("VendorDashboard"));
+          if (currentUser.approval_status === "pending" || currentUser.approval_status === "rejected") {
+            navigate(createPageUrl("VendorPending"));
+          } else {
+            navigate(createPageUrl("VendorDashboard"));
+          }
         }
       } catch (error) {
         console.error(error);

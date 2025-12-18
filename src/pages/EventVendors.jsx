@@ -57,11 +57,13 @@ export default function EventVendorsPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  const { data: vendors = [], isLoading } = useQuery({
+  const { data: allVendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
   });
+
+  const vendors = allVendors.filter(v => v.approval_status === "approved");
 
   const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors'],

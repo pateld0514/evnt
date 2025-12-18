@@ -8,7 +8,6 @@ import Profile from './pages/Profile';
 import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import VendorDashboard from './pages/VendorDashboard';
-import VendorSetup from './pages/VendorSetup';
 import ClientRegistration from './pages/ClientRegistration';
 import VendorRegistration from './pages/VendorRegistration';
 import VendorPending from './pages/VendorPending';
@@ -27,7 +26,6 @@ export const PAGES = {
     "Saved": Saved,
     "Swipe": Swipe,
     "VendorDashboard": VendorDashboard,
-    "VendorSetup": VendorSetup,
     "ClientRegistration": ClientRegistration,
     "VendorRegistration": VendorRegistration,
     "VendorPending": VendorPending,

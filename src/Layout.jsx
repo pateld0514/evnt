@@ -16,7 +16,11 @@ export default function Layout({ children, currentPageName }) {
     const loadUser = async () => {
       try {
         const user = await base44.auth.me();
-        setUserType(user.user_type);
+        if (user.email === "pateld0514@gmail.com") {
+          setUserType("admin");
+        } else {
+          setUserType(user.user_type);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -46,7 +50,13 @@ export default function Layout({ children, currentPageName }) {
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
   ];
 
-  const navItems = userType === "vendor" ? vendorNavItems : clientNavItems;
+  const adminNavItems = [
+    { name: "Admin", path: createPageUrl("AdminDashboard"), icon: LayoutDashboard },
+    { name: "Home", path: createPageUrl("Home"), icon: Home },
+    { name: "Vendors", path: createPageUrl("VendorDashboard"), icon: Calendar },
+  ];
+
+  const navItems = userType === "admin" ? adminNavItems : userType === "vendor" ? vendorNavItems : clientNavItems;
 
   return (
     <div className="min-h-screen bg-white">
