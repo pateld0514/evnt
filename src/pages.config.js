@@ -9,6 +9,10 @@ import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorSetup from './pages/VendorSetup';
+import ClientRegistration from './pages/ClientRegistration';
+import VendorRegistration from './pages/VendorRegistration';
+import VendorPending from './pages/VendorPending';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +28,10 @@ export const PAGES = {
     "Swipe": Swipe,
     "VendorDashboard": VendorDashboard,
     "VendorSetup": VendorSetup,
+    "ClientRegistration": ClientRegistration,
+    "VendorRegistration": VendorRegistration,
+    "VendorPending": VendorPending,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
