@@ -35,14 +35,20 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  const handleSwitchMode = async () => {
-    const newType = user.user_type === "vendor" ? "client" : "vendor";
-    await base44.auth.updateMe({ user_type: newType });
-    window.location.reload();
+  const handleLogout = () => {
+    base44.auth.logout();
   };
 
-  const handleLogout = () => {
-    base44.auth.redirectToLogin();
+  const isAdmin = user?.email === "pateld0514@gmail.com";
+
+  const switchView = (type) => {
+    if (type === "vendor") {
+      navigate(createPageUrl("VendorDashboard"));
+    } else if (type === "client") {
+      navigate(createPageUrl("Home"));
+    } else if (type === "admin") {
+      navigate(createPageUrl("AdminDashboard"));
+    }
   };
 
   if (loading) {

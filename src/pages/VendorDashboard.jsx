@@ -23,7 +23,12 @@ export default function VendorDashboard() {
         const user = await base44.auth.me();
         setCurrentUser(user);
 
-        if (user.user_type !== "vendor") {
+        if (user.user_type === "vendor" && user.approval_status !== "approved" && user.email !== "pateld0514@gmail.com") {
+          navigate(createPageUrl("VendorPending"));
+          return;
+        }
+
+        if (user.user_type !== "vendor" && user.email !== "pateld0514@gmail.com") {
           navigate(createPageUrl("Home"));
           return;
         }
@@ -32,6 +37,12 @@ export default function VendorDashboard() {
           const vendors = await base44.entities.Vendor.filter({ id: user.vendor_id });
           if (vendors && vendors.length > 0) {
             setVendor(vendors[0]);
+          }
+        } else if (user.email === "pateld0514@gmail.com") {
+          // Admin viewing vendor side without a vendor profile
+          const allVendors = await base44.entities.Vendor.list();
+          if (allVendors.length > 0) {
+            setVendor(allVendors[0]);
           }
         }
       } catch (error) {
@@ -157,12 +168,12 @@ Provide 4-5 specific, actionable insights in this JSON format:
             <Store className="w-12 h-12 text-white" />
           </div>
           <h2 className="text-3xl font-black text-black mb-3">No Vendor Profile Found</h2>
-          <p className="text-gray-600 mb-8">Complete your vendor setup to start receiving bookings and connecting with clients.</p>
+          <p className="text-gray-600 mb-8">No vendors registered in the system yet.</p>
           <Button
-            onClick={() => navigate(createPageUrl("VendorSetup"))}
+            onClick={() => navigate(createPageUrl("Home"))}
             className="bg-black text-white hover:bg-gray-800 h-12 text-lg font-bold"
           >
-            Sign Up Now
+            Go to Home
           </Button>
         </div>
       </div>
