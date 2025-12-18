@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className={`${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-1`}
+            <nav className={`${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-1`}>
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -136,7 +136,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom Navigation - Shows based on view mode */}
-      <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50`}
+      <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-around items-center py-3">
             {navItems.map((item) => {
