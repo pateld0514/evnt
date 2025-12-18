@@ -121,23 +121,37 @@ export default function ProfilePage() {
       )}
 
       <div className="space-y-3">
-        <Card className="border-2 border-purple-600 bg-purple-50">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+        {isAdmin && (
+          <Card className="border-2 border-purple-600 bg-purple-50">
+            <CardContent className="p-4">
               <div>
-                <p className="font-bold text-purple-900">🧪 Testing Mode</p>
-                <p className="text-sm text-purple-700">Switch between vendor and client view</p>
+                <p className="font-bold text-purple-900 mb-3">👑 Admin Controls</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    onClick={() => switchView("admin")}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  >
+                    Admin Panel
+                  </Button>
+                  <Button
+                    onClick={() => switchView("client")}
+                    variant="outline"
+                    className="border-2 border-black font-bold"
+                  >
+                    View as Client
+                  </Button>
+                  <Button
+                    onClick={() => switchView("vendor")}
+                    variant="outline"
+                    className="border-2 border-black font-bold"
+                  >
+                    View as Vendor
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={handleSwitchMode}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Switch to {user?.user_type === "vendor" ? "Client" : "Vendor"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <Button
           onClick={handleLogout}
