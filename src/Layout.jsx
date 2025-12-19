@@ -54,9 +54,9 @@ export default function Layout({ children, currentPageName }) {
 
   const clientNavItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
+    { name: "Events", path: createPageUrl("EventDashboard"), icon: Calendar },
     { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
-    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
   ];
 

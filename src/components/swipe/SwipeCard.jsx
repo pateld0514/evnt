@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, Messa
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -51,8 +53,27 @@ export default function SwipeCard({ vendor, onSwipe }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [viewTracked, setViewTracked] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
+
+  useEffect(() => {
+    const trackView = async () => {
+      if (!viewTracked && showDetails) {
+        try {
+          const user = await base44.auth.me();
+          await base44.entities.VendorView.create({
+            vendor_id: vendor.id,
+            viewer_email: user.email
+          });
+          setViewTracked(true);
+        } catch (error) {
+          // Silent fail
+        }
+      }
+    };
+    trackView();
+  }, [showDetails, vendor.id, viewTracked]);
 
   const { data: reviews = [] } = useQuery({
     queryKey: ['vendor-reviews', vendor.id],
