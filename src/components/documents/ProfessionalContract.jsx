@@ -7,11 +7,17 @@ export default function ProfessionalContract({ booking, vendor }) {
 
   return (
     <div className="bg-white p-16 max-w-5xl mx-auto print:p-12 text-sm leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold mb-2">EVENT SERVICES AGREEMENT</h1>
-        <p className="text-gray-600">Contract No: {contractNumber}</p>
-        <p className="text-gray-600">Effective Date: {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
+      {/* Professional Header */}
+      <div className="text-center mb-12 pb-8 border-b-4 border-black">
+        <div className="inline-block bg-black text-white px-8 py-4 rounded-lg mb-4">
+          <h1 className="text-4xl font-black tracking-tight">EVNT</h1>
+          <p className="text-xs tracking-wider opacity-90 mt-1">EVENT SERVICES PLATFORM</p>
+        </div>
+        <h2 className="text-3xl font-bold mb-4 text-gray-800">SERVICE AGREEMENT</h2>
+        <div className="inline-block bg-gray-100 px-6 py-3 rounded-lg">
+          <p className="text-sm font-bold">Contract No: {contractNumber}</p>
+          <p className="text-xs text-gray-600 mt-1">Date: {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
+        </div>
       </div>
 
       {/* Parties */}
@@ -214,35 +220,39 @@ export default function ProfessionalContract({ booking, vendor }) {
       </div>
 
       {/* Signatures */}
-      <div className="border-t-2 border-black pt-8">
-        <p className="mb-8 text-center font-semibold">
-          IN WITNESS WHEREOF, the Parties have executed this Agreement as of the date first written above.
+      <div className="border-t-4 border-black pt-10 bg-gradient-to-b from-white to-gray-50 -mx-16 px-16 -mb-16 pb-16 print:-mx-12 print:px-12 print:-mb-12 print:pb-12">
+        <p className="mb-10 text-center font-bold text-lg text-gray-700">
+          IN WITNESS WHEREOF, the Parties have executed this Agreement electronically
         </p>
 
-        <div className="grid grid-cols-2 gap-12 mb-8">
-          <div>
-            <div className="mb-6">
-              <p className="text-2xl mb-3" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
-              <div className="border-t-2 border-black pt-2">
-                <p className="font-semibold">Client Signature</p>
-                <p className="text-xs text-gray-600">Digitally signed via EVNT Platform</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
-                </p>
+        <div className="grid grid-cols-2 gap-12 mb-10">
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-6 shadow-lg">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Client / Host</p>
+            <p className="text-3xl mb-4 text-gray-800" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
+            <div className="border-t-2 border-black pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-sm">Digital Signature</span>
+                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">✓ SIGNED</span>
               </div>
+              <p className="text-xs text-gray-600">Authenticated via EVNT Platform</p>
+              <p className="text-xs text-gray-600 mt-2 font-bold">
+                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMM dd, yyyy") : "Pending"}
+              </p>
             </div>
           </div>
 
-          <div>
-            <div className="mb-6">
-              <p className="text-2xl mb-3" style={{ fontFamily: 'cursive' }}>{booking.vendor_name}</p>
-              <div className="border-t-2 border-black pt-2">
-                <p className="font-semibold">Service Provider Signature</p>
-                <p className="text-xs text-gray-600">Digitally signed via EVNT Platform</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
-                </p>
+          <div className="bg-white border-2 border-gray-200 rounded-lg p-6 shadow-lg">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Service Provider</p>
+            <p className="text-3xl mb-4 text-gray-800" style={{ fontFamily: 'cursive' }}>{booking.vendor_name}</p>
+            <div className="border-t-2 border-black pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-sm">Digital Signature</span>
+                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">✓ SIGNED</span>
               </div>
+              <p className="text-xs text-gray-600">Authenticated via EVNT Platform</p>
+              <p className="text-xs text-gray-600 mt-2 font-bold">
+                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMM dd, yyyy") : "Pending"}
+              </p>
             </div>
           </div>
         </div>

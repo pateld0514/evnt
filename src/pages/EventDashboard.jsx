@@ -63,8 +63,12 @@ export default function EventDashboardPage() {
   }, []);
 
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => base44.entities.Event.list('-event_date'),
+    queryKey: ['events', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
+    },
+    enabled: !!currentUser,
     initialData: [],
   });
 

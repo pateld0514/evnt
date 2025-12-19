@@ -7,59 +7,67 @@ export default function ProfessionalInvoice({ booking }) {
   const dueDate = booking.event_date;
 
   return (
-    <div className="bg-white p-16 max-w-5xl mx-auto print:p-12" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      {/* Letterhead */}
-      <div className="border-b-4 border-black pb-8 mb-8">
+    <div className="bg-white p-16 max-w-5xl mx-auto print:p-12" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+      {/* Company Letterhead */}
+      <div className="border-b-4 border-black pb-8 mb-8 bg-gradient-to-r from-black to-gray-800 text-white p-6 -m-16 mb-8 print:-m-12 print:mb-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-5xl font-black tracking-tight mb-2">EVNT</h1>
-            <p className="text-sm text-gray-600">Event Services Marketplace</p>
-            <p className="text-sm text-gray-600">Washington, DC 20001</p>
-            <p className="text-sm text-gray-600">support@evnt.com</p>
+            <h1 className="text-6xl font-black tracking-tight mb-3">EVNT</h1>
+            <p className="text-sm opacity-90">Premium Event Services Platform</p>
+            <p className="text-sm opacity-90 mt-3">1200 K Street NW, Suite 400</p>
+            <p className="text-sm opacity-90">Washington, DC 20005</p>
+            <p className="text-sm opacity-90">support@evnt.com | (202) 555-EVNT</p>
           </div>
           <div className="text-right">
-            <h2 className="text-3xl font-bold mb-2">INVOICE</h2>
-            <p className="text-sm font-medium">Invoice #: {invoiceNumber}</p>
-            <p className="text-sm text-gray-600">Date Issued: {format(new Date(issueDate), "MMMM dd, yyyy")}</p>
-            <p className="text-sm text-gray-600">Payment Due: {format(new Date(dueDate), "MMMM dd, yyyy")}</p>
+            <div className="bg-white text-black p-4 rounded-lg">
+              <h2 className="text-3xl font-black mb-2">INVOICE</h2>
+              <p className="text-sm font-bold">#{invoiceNumber}</p>
+              <p className="text-xs text-gray-600 mt-2">Issued: {format(new Date(issueDate), "MMM dd, yyyy")}</p>
+              <p className="text-xs text-gray-600">Due: {format(new Date(dueDate), "MMM dd, yyyy")}</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Bill To / From */}
       <div className="grid grid-cols-2 gap-12 mb-12">
-        <div>
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Bill To</p>
-          <p className="text-lg font-bold mb-1">{booking.client_name}</p>
-          <p className="text-sm text-gray-600">{booking.location || "Event Location"}</p>
+        <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-600">
+          <p className="text-xs font-black text-blue-600 uppercase tracking-wide mb-3">BILL TO</p>
+          <p className="text-xl font-black mb-2">{booking.client_name}</p>
+          <p className="text-sm text-gray-700">{booking.client_email || "Client"}</p>
+          <p className="text-sm text-gray-600 mt-2">{booking.location || "Event Location"}</p>
         </div>
-        <div>
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Service Provider</p>
-          <p className="text-lg font-bold mb-1">{booking.vendor_name}</p>
-          <p className="text-sm text-gray-600">Via EVNT Platform</p>
+        <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-600">
+          <p className="text-xs font-black text-green-600 uppercase tracking-wide mb-3">SERVICE PROVIDER</p>
+          <p className="text-xl font-black mb-2">{booking.vendor_name}</p>
+          <p className="text-sm text-gray-700">Via EVNT Platform</p>
+          <p className="text-sm text-gray-600 mt-2">Verified Vendor</p>
         </div>
       </div>
 
       {/* Event Details */}
-      <div className="bg-gray-50 p-6 rounded-lg mb-8">
-        <h3 className="text-sm font-bold uppercase tracking-wide mb-3">Event Information</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Event Type:</span>
-            <span className="font-medium ml-2">{booking.event_type}</span>
+      <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-xl mb-8 border-2 border-purple-200 shadow-sm">
+        <h3 className="text-lg font-black uppercase tracking-wide mb-6 text-purple-800 flex items-center gap-2">
+          <span className="bg-purple-800 text-white px-3 py-1 rounded">📅</span>
+          Event Details
+        </h3>
+        <div className="grid grid-cols-2 gap-6 text-sm">
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <span className="text-gray-500 text-xs font-bold uppercase block mb-1">Event Type</span>
+            <span className="font-bold text-lg">{booking.event_type}</span>
           </div>
-          <div>
-            <span className="text-gray-600">Event Date:</span>
-            <span className="font-medium ml-2">{format(new Date(booking.event_date), "MMMM dd, yyyy")}</span>
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <span className="text-gray-500 text-xs font-bold uppercase block mb-1">Event Date</span>
+            <span className="font-bold text-lg">{format(new Date(booking.event_date), "MMM dd, yyyy")}</span>
           </div>
-          <div className="col-span-2">
-            <span className="text-gray-600">Location:</span>
-            <span className="font-medium ml-2">{booking.location}</span>
+          <div className="col-span-2 bg-white p-4 rounded-lg shadow-sm">
+            <span className="text-gray-500 text-xs font-bold uppercase block mb-1">Venue</span>
+            <span className="font-bold">{booking.location}</span>
           </div>
           {booking.guest_count && (
-            <div>
-              <span className="text-gray-600">Guest Count:</span>
-              <span className="font-medium ml-2">{booking.guest_count}</span>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <span className="text-gray-500 text-xs font-bold uppercase block mb-1">Attendees</span>
+              <span className="font-bold text-lg">{booking.guest_count} Guests</span>
             </div>
           )}
         </div>
@@ -106,12 +114,14 @@ export default function ProfessionalInvoice({ booking }) {
 
       {/* Total */}
       <div className="flex justify-end mb-12">
-        <div className="w-80">
-          <div className="bg-black text-white p-6 rounded-lg">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-bold">TOTAL DUE</span>
-              <span className="text-3xl font-black">${booking.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <div className="w-full max-w-md">
+          <div className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-8 rounded-xl shadow-2xl">
+            <p className="text-sm font-bold uppercase tracking-wide mb-2 opacity-90">Total Amount Due</p>
+            <div className="flex items-baseline justify-between">
+              <span className="text-5xl font-black">${booking.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-sm font-bold bg-white text-green-700 px-3 py-1 rounded-full">USD</span>
             </div>
+            <p className="text-xs mt-3 opacity-75">Payment processed securely via Stripe</p>
           </div>
         </div>
       </div>
