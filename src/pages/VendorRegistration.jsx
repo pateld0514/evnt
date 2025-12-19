@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Upload, CheckCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 
@@ -33,6 +33,8 @@ export default function VendorRegistrationPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploadingId, setUploadingId] = useState(false);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [formData, setFormData] = useState({
     business_name: "",
     category: "",
@@ -45,7 +47,16 @@ export default function VendorRegistrationPage() {
     travel_radius: "",
     years_in_business: "",
     average_price: "",
-    insurance_verified: false
+    insurance_verified: false,
+    image_url: "",
+    additional_images: [],
+    price_range: "",
+    starting_price: "",
+    website: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    tiktok: ""
   });
 
   const handleIdUpload = async (e) => {
@@ -69,13 +80,56 @@ export default function VendorRegistrationPage() {
     }
   };
 
+  const handleMainImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingMain(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, image_url: file_url }));
+      toast.success("Profile photo uploaded");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadingMain(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingGallery(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({
+        ...prev,
+        additional_images: [...prev.additional_images, file_url]
+      }));
+      toast.success("Gallery photo added");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      additional_images: prev.additional_images.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.business_name || !formData.category || !formData.description || 
         !formData.phone || !formData.location || !formData.contact_email || 
         !formData.id_verification_url || !formData.years_in_business || !formData.average_price ||
-        (formData.willing_to_travel && !formData.travel_radius)) {
+        (formData.willing_to_travel && !formData.travel_radius) ||
+        !formData.image_url || !formData.price_range || !formData.starting_price) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -97,8 +151,17 @@ export default function VendorRegistrationPage() {
         years_in_business: parseInt(formData.years_in_business),
         average_price: parseFloat(formData.average_price),
         insurance_verified: formData.insurance_verified,
+        image_url: formData.image_url,
+        additional_images: formData.additional_images,
+        price_range: formData.price_range,
+        starting_price: parseFloat(formData.starting_price),
+        website: formData.website || null,
+        instagram: formData.instagram || null,
+        facebook: formData.facebook || null,
+        twitter: formData.twitter || null,
+        tiktok: formData.tiktok || null,
         approval_status: "pending",
-        profile_complete: false
+        profile_complete: true
       });
 
       await base44.auth.updateMe({
@@ -345,17 +408,187 @@ export default function VendorRegistrationPage() {
               </div>
             </div>
 
+            {/* Profile Photo */}
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Profile Photo *</Label>
+              <p className="text-sm text-gray-500">Your main business photo that clients see first</p>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleMainImageUpload}
+                  className="hidden"
+                  id="main-image"
+                />
+                <label htmlFor="main-image" className="cursor-pointer">
+                  {uploadingMain ? (
+                    <Loader2 className="w-12 h-12 animate-spin mx-auto text-gray-400" />
+                  ) : formData.image_url ? (
+                    <div>
+                      <img src={formData.image_url} alt="Profile" className="w-full h-64 object-cover rounded-lg mb-2" />
+                      <p className="text-green-600 font-bold">✓ Photo uploaded - Click to change</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                      <p className="font-bold text-gray-700">Click to upload profile photo</p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* Gallery */}
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Portfolio Gallery (Optional)</Label>
+              <p className="text-sm text-gray-500">Add photos showcasing your work</p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {formData.additional_images.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleGalleryUpload}
+                  className="hidden"
+                  id="gallery-image"
+                />
+                <label htmlFor="gallery-image" className="cursor-pointer">
+                  {uploadingGallery ? (
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+                  ) : (
+                    <div>
+                      <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                      <p className="font-bold text-gray-700">Add Gallery Photo</p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-lg font-bold">Price Range *</Label>
+                <Select 
+                  value={formData.price_range} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value }))}
+                >
+                  <SelectTrigger className="border-2 border-gray-300 h-12">
+                    <SelectValue placeholder="Select range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="$">$ - Budget Friendly</SelectItem>
+                    <SelectItem value="$$">$$ - Moderate</SelectItem>
+                    <SelectItem value="$$$">$$$ - Premium</SelectItem>
+                    <SelectItem value="$$$$">$$$$ - Luxury</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-lg font-bold">Starting Price *</Label>
+                <Input
+                  type="number"
+                  value={formData.starting_price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, starting_price: e.target.value }))}
+                  placeholder="500"
+                  className="border-2 border-gray-300 h-12"
+                  required
+                  min="0"
+                />
+              </div>
+            </div>
+
+            {/* Website & Social Media */}
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Website & Social Media (Optional)</Label>
+              <p className="text-sm text-gray-500">Help clients find and connect with you online</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Website</Label>
+                  <Input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                    placeholder="https://yourbusiness.com"
+                    className="border-2 border-gray-300 h-12"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Instagram</Label>
+                    <Input
+                      type="text"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
+                      placeholder="@yourbusiness or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Facebook</Label>
+                    <Input
+                      type="text"
+                      value={formData.facebook}
+                      onChange={(e) => setFormData(prev => ({ ...prev, facebook: e.target.value }))}
+                      placeholder="Facebook page URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Twitter/X</Label>
+                    <Input
+                      type="text"
+                      value={formData.twitter}
+                      onChange={(e) => setFormData(prev => ({ ...prev, twitter: e.target.value }))}
+                      placeholder="@handle or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">TikTok</Label>
+                    <Input
+                      type="text"
+                      value={formData.tiktok}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tiktok: e.target.value }))}
+                      placeholder="@handle or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
-                <strong>Next Steps:</strong> Your registration will be reviewed by our admin team within 24-48 hours. 
-                Once approved, you'll complete your full profile with photos, packages, and portfolio to start receiving bookings!
+                <strong>Next Steps:</strong> Your profile will be reviewed by our admin team within 24-48 hours. 
+                Once approved, you'll go live immediately and start receiving booking requests from clients!
               </p>
             </div>
 
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
             </Button>
