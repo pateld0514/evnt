@@ -99,10 +99,10 @@ export default function VendorDashboard() {
   const pendingBookings = bookings.filter(b => b.status === "pending").length;
   const unreadMessages = messages.filter(m => !m.read && m.recipient_email === currentUser?.email).length;
 
-  // Sales calculations
-  const completedBookings = bookings.filter(b => b.status === "completed" || b.status === "accepted");
-  const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.budget || 0), 0);
-  const vendorRevenue = totalRevenue * 0.92; // 92% after 8% platform fee
+  // Sales calculations - use agreed_price, not budget
+  const completedBookings = bookings.filter(b => b.status === "completed" || b.status === "confirmed" || b.status === "in_progress");
+  const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.agreed_price || b.budget || 0), 0);
+  const vendorRevenue = completedBookings.reduce((sum, b) => sum + (b.vendor_payout || b.agreed_price || b.budget || 0), 0);
   const avgBookingValue = completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0;
 
   // Analytics
@@ -380,8 +380,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
                   <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
                 <p className="text-3xl font-black text-black">${vendorRevenue.toLocaleString()}</p>
-                <p className="text-sm text-gray-600 font-medium">Your Revenue (92%)</p>
-                <p className="text-xs text-gray-500 mt-1">After 8% platform fee</p>
+                <p className="text-sm text-gray-600 font-medium">Your Revenue</p>
+                <p className="text-xs text-gray-500 mt-1">100% of agreed price</p>
               </CardContent>
             </Card>
 

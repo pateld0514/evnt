@@ -66,9 +66,23 @@ export default function SwipePage() {
     initialData: [],
   });
 
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const user = await base44.auth.me();
+      setCurrentUser(user);
+    };
+    loadUser();
+  }, []);
+
   const { data: swipedVendors = [] } = useQuery({
-    queryKey: ['user-swipes'],
-    queryFn: () => base44.entities.UserSwipe.list(),
+    queryKey: ['user-swipes', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.UserSwipe.filter({ created_by: currentUser.email });
+    },
+    enabled: !!currentUser,
     initialData: [],
   });
 

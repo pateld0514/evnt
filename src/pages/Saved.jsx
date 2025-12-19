@@ -58,11 +58,13 @@ export default function SavedPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
         const user = await base44.auth.me();
+        setCurrentUser(user);
         if (!user.onboarding_complete) {
           navigate(createPageUrl("Onboarding"));
         }
@@ -74,8 +76,12 @@ export default function SavedPage() {
   }, [navigate]);
 
   const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
-    queryKey: ['saved-vendors'],
-    queryFn: () => base44.entities.SavedVendor.list('-created_date'),
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date');
+    },
+    enabled: !!currentUser,
     initialData: [],
   });
 

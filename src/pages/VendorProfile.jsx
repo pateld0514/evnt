@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Upload, X, Globe, Instagram, Facebook, Twitter, Music2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
+import VendorDocumentUpload from "../components/vendor/VendorDocumentUpload";
 
 export default function VendorProfilePage() {
   const navigate = useNavigate();
@@ -381,7 +382,7 @@ export default function VendorProfilePage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3"
               <Button
                 type="button"
                 variant="outline"
@@ -399,6 +400,9 @@ export default function VendorProfilePage() {
               </Button>
             </div>
           </form>
+
+          {/* Document Upload Section */}
+          {vendor && <VendorDocumentUpload vendor={vendor} />}
         </CardContent>
       </Card>
     </div>
