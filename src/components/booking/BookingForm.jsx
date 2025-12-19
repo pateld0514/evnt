@@ -6,21 +6,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Users, DollarSign, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import CityAutocomplete from "../forms/CityAutocomplete";
 
-export default function BookingForm({ vendor, onSuccess, onCancel }) {
+export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
+    event_id: eventId || "",
     event_type: "",
     event_date: "",
     guest_count: "",
     budget: "",
     location: "",
     notes: ""
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['user-events'],
+    queryFn: () => base44.entities.Event.list('-event_date'),
+    initialData: [],
   });
 
   useEffect(() => {
@@ -39,6 +49,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel }) {
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries(['events']);
       toast.success("Booking request sent! 🎉");
       if (onSuccess) onSuccess();
       navigate(createPageUrl("Bookings"));
@@ -57,6 +68,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel }) {
     }
 
     const bookingData = {
+      event_id: formData.event_id || null,
       vendor_id: vendor.id,
       vendor_name: vendor.business_name,
       client_email: currentUser.email,
@@ -75,6 +87,40 @@ export default function BookingForm({ vendor, onSuccess, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {events.length > 0 && (
+        <div className="space-y-2">
+          <Label>Link to Existing Event (Optional)</Label>
+          <Select value={formData.event_id} onValueChange={(value) => {
+            const event = events.find(e => e.id === value);
+            if (event) {
+              setFormData(prev => ({
+                ...prev,
+                event_id: value,
+                event_type: event.event_type,
+                event_date: event.event_date,
+                location: event.location || prev.location,
+                guest_count: event.guest_count || prev.guest_count,
+                budget: event.budget || prev.budget
+              }));
+            } else {
+              setFormData(prev => ({ ...prev, event_id: "" }));
+            }
+          }}>
+            <SelectTrigger className="border-2 border-gray-300">
+              <SelectValue placeholder="Select an event or create new" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={null}>New Booking (no event)</SelectItem>
+              {events.map(event => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.name} - {format(new Date(event.event_date), "MMM d, yyyy")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="event_type">Event Type *</Label>
         <Input
@@ -136,29 +182,12 @@ export default function BookingForm({ vendor, onSuccess, onCancel }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="location">Event Location</Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-          <Input
-            id="location"
-            list="locations"
-            value={formData.location}
-            onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-            className="border-2 border-gray-300 focus:border-black pl-10"
-            placeholder="City, State"
-          />
-          <datalist id="locations">
-            <option value="Washington, DC" />
-            <option value="Arlington, VA" />
-            <option value="Alexandria, VA" />
-            <option value="Fairfax, VA" />
-            <option value="Bethesda, MD" />
-            <option value="Silver Spring, MD" />
-            <option value="Rockville, MD" />
-            <option value="Baltimore, MD" />
-            <option value="DMV Area" />
-          </datalist>
-        </div>
+        <Label>Event Location</Label>
+        <CityAutocomplete
+          value={formData.location}
+          onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+          className="border-2 border-gray-300"
+        />
       </div>
 
       <div className="space-y-2">

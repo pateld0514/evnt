@@ -8,6 +8,7 @@ import { Calendar, MessageSquare, Heart, TrendingUp, Loader2, Store, DollarSign,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import VendorAnalytics from "../components/analytics/VendorAnalytics";
 
 export default function VendorDashboard() {
   const navigate = useNavigate();
@@ -70,6 +71,26 @@ export default function VendorDashboard() {
     queryFn: async () => {
       if (!vendor?.id) return [];
       return await base44.entities.Message.filter({ vendor_id: vendor.id }, '-created_date');
+    },
+    enabled: !!vendor?.id,
+    initialData: [],
+  });
+
+  const { data: vendorViews = [] } = useQuery({
+    queryKey: ['vendor-views', vendor?.id],
+    queryFn: async () => {
+      if (!vendor?.id) return [];
+      return await base44.entities.VendorView.filter({ vendor_id: vendor.id });
+    },
+    enabled: !!vendor?.id,
+    initialData: [],
+  });
+
+  const { data: vendorSwipes = [] } = useQuery({
+    queryKey: ['vendor-swipes', vendor?.id],
+    queryFn: async () => {
+      if (!vendor?.id) return [];
+      return await base44.entities.UserSwipe.filter({ vendor_id: vendor.id });
     },
     enabled: !!vendor?.id,
     initialData: [],
@@ -187,18 +208,31 @@ Provide 4-5 specific, actionable insights in this JSON format:
         <p className="text-xl text-gray-600">Welcome back, {vendor.business_name}!</p>
       </div>
 
-      <Tabs defaultValue="overview" className="mb-8">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100 border-2 border-black">
+      <Tabs defaultValue="analytics" className="mb-8">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-gray-100 border-2 border-black">
+          <TabsTrigger value="analytics" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </TabsTrigger>
           <TabsTrigger value="overview" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
             Overview
           </TabsTrigger>
           <TabsTrigger value="sales" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-            Sales & Revenue
+            Revenue
           </TabsTrigger>
           <TabsTrigger value="insights" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
             AI Insights
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics" className="mt-6">
+          <VendorAnalytics 
+            vendor={vendor}
+            views={vendorViews}
+            swipes={vendorSwipes}
+            bookings={bookings}
+          />
+        </TabsContent>
 
         <TabsContent value="overview" className="mt-6">
 
