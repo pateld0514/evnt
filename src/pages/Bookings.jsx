@@ -192,6 +192,9 @@ export default function BookingsPage() {
             <TabsTrigger value="all" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               All
             </TabsTrigger>
+            <TabsTrigger value="pending" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Pending
+            </TabsTrigger>
             <TabsTrigger value="negotiating" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Negotiating
             </TabsTrigger>
