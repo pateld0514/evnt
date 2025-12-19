@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import SwipeCard from "../components/swipe/SwipeCard";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const categories = [
   { value: "all", label: "All Vendors" },
@@ -28,6 +30,7 @@ const categories = [
 ];
 
 export default function SwipePage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [filters, setFilters] = useState({
@@ -40,6 +43,20 @@ export default function SwipePage() {
   });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user.onboarding_complete) {
+          navigate(createPageUrl("Onboarding"));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    checkOnboarding();
+  }, [navigate]);
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
