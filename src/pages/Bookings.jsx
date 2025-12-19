@@ -525,7 +525,10 @@ export default function BookingsPage() {
 
                       {isVendor && selectedBooking.status === "in_progress" && (
                         <Button
-                          onClick={() => handleStatusUpdate(selectedBooking.id, "completed")}
+                          onClick={() => {
+                            handleStatusUpdate(selectedBooking.id, "completed");
+                            setDetailsOpen(false);
+                          }}
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />

@@ -1,29 +1,58 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CreditCard, Lock, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CreditCard, Lock, AlertCircle, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function StripePayment({ booking, onSuccess }) {
   const queryClient = useQueryClient();
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
+  const [nameOnCard, setNameOnCard] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || "";
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    if (parts.length) {
+      return parts.join(" ");
+    } else {
+      return value;
+    }
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    if (v.length >= 2) {
+      return v.slice(0, 2) + "/" + v.slice(2, 4);
+    }
+    return v;
+  };
 
   const processPaymentMutation = useMutation({
     mutationFn: async () => {
-      // In a real implementation, this would:
-      // 1. Create Stripe payment intent
-      // 2. Process the payment
-      // 3. Hold funds in escrow
-      // 4. Update booking status
-      
-      // For now, we'll simulate the payment process
+      // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      return await base44.entities.Booking.update(booking.id, {
-        status: "confirmed",
+      // Generate payment intent ID (in real implementation, this would come from Stripe)
+      const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Update booking with payment information
+      await base44.entities.Booking.update(booking.id, {
         payment_status: "paid",
+        payment_intent_id: paymentIntentId,
+        status: "confirmed",
+        invoice_number: `INV-${Date.now()}`,
         contract_signed_client: true,
         contract_signed_date: new Date().toISOString()
       });
@@ -31,112 +60,163 @@ export default function StripePayment({ booking, onSuccess }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
       toast.success("Payment successful! Booking confirmed.");
-      if (onSuccess) onSuccess();
+      onSuccess();
     },
-    onError: () => {
+    onError: (error) => {
       toast.error("Payment failed. Please try again.");
-    }
+      console.error(error);
+    },
   });
 
-  const handlePayment = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!cardNumber || !expiry || !cvc || !nameOnCard) {
+      toast.error("Please fill in all payment details");
+      return;
+    }
+
+    if (cardNumber.replace(/\s/g, "").length !== 16) {
+      toast.error("Please enter a valid card number");
+      return;
+    }
+
+    if (cvc.length !== 3 && cvc.length !== 4) {
+      toast.error("Please enter a valid CVC");
+      return;
+    }
+
     setProcessing(true);
-    processPaymentMutation.mutate();
+    try {
+      await processPaymentMutation.mutateAsync();
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Lock className="w-5 h-5 text-green-700" />
-          <h3 className="font-bold text-green-900">Secure Payment Processing</h3>
-        </div>
-        <p className="text-sm text-green-700">
-          Your payment is secured through Stripe. Funds are held in escrow by EVNT until 24 hours after your event.
-        </p>
-      </div>
-
-      <Card className="border-2 border-black">
-        <CardHeader className="bg-black text-white">
-          <CardTitle className="text-lg">Payment Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-4">
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span>Service Description:</span>
-              <span className="font-medium text-right max-w-xs">{booking.service_description}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Base Service:</span>
-              <span className="font-bold">${booking.agreed_price?.toFixed(2)}</span>
-            </div>
-            
-            {booking.additional_fees && booking.additional_fees.length > 0 && (
-              <div className="border-t pt-2">
-                <p className="font-medium mb-2">Additional Fees:</p>
-                {booking.additional_fees.map((fee, idx) => (
-                  <div key={idx} className="flex justify-between text-sm ml-4">
-                    <span>{fee.name}</span>
-                    <span className="font-medium">${fee.amount?.toFixed(2)}</span>
-                  </div>
-                ))}
+    <Card className="border-2 border-green-600">
+      <CardHeader className="bg-green-600 text-white">
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="w-5 h-5" />
+          Complete Payment
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Payment Summary */}
+          <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 mb-4">
+            <h3 className="font-bold mb-3">Payment Summary</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Service:</span>
+                <span className="font-bold">${booking.agreed_price?.toFixed(2)}</span>
               </div>
-            )}
-
-            <div className="flex justify-between text-sm text-gray-600 border-t pt-2">
-              <span>EVNT Platform Fee ({booking.platform_fee_percent}%):</span>
-              <span className="font-medium">${booking.platform_fee_amount?.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex justify-between pt-3 border-t-2 border-black text-xl">
-              <span className="font-black">Total Amount:</span>
-              <span className="font-black">${booking.total_amount?.toFixed(2)}</span>
+              {booking.additional_fees && booking.additional_fees.length > 0 && (
+                <>
+                  {booking.additional_fees.map((fee, idx) => (
+                    <div key={idx} className="flex justify-between">
+                      <span>{fee.name}:</span>
+                      <span className="font-bold">${parseFloat(fee.amount).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </>
+              )}
+              <div className="flex justify-between text-blue-600">
+                <span>Platform Fee ({booking.platform_fee_percent}%):</span>
+                <span className="font-bold">${booking.platform_fee_amount?.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
+                <span>Total Amount:</span>
+                <span className="text-green-600">${booking.total_amount?.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
-          <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-900">
-            <p className="font-medium mb-1">Escrow Protection:</p>
-            <p className="text-xs">
-              Funds will be held securely until 24 hours after your event ({new Date(booking.event_date).toLocaleDateString()}).
-              If there are any issues, you're protected by EVNT's buyer guarantee.
+          {/* Card Details */}
+          <div className="space-y-4">
+            <div>
+              <Label>Name on Card</Label>
+              <Input
+                value={nameOnCard}
+                onChange={(e) => setNameOnCard(e.target.value)}
+                placeholder="John Doe"
+                className="border-2 border-gray-300"
+              />
+            </div>
+
+            <div>
+              <Label>Card Number</Label>
+              <Input
+                value={cardNumber}
+                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                placeholder="1234 5678 9012 3456"
+                maxLength="19"
+                className="border-2 border-gray-300"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Expiry Date</Label>
+                <Input
+                  value={expiry}
+                  onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                  placeholder="MM/YY"
+                  maxLength="5"
+                  className="border-2 border-gray-300"
+                />
+              </div>
+              <div>
+                <Label>CVC</Label>
+                <Input
+                  value={cvc}
+                  onChange={(e) => setCvc(e.target.value.replace(/\D/g, ""))}
+                  placeholder="123"
+                  maxLength="4"
+                  className="border-2 border-gray-300"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Security Notice */}
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 flex items-start gap-2">
+            <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-green-900">
+              <p className="font-bold mb-1">Secure Escrow Payment</p>
+              <p>Your payment is held securely until the event is completed. The vendor will be paid after successful service delivery.</p>
+            </div>
+          </div>
+
+          {/* Demo Notice */}
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-900">
+              <strong>Demo Mode:</strong> This is a demonstration. No actual charges will be made. Use any card number to test.
             </p>
           </div>
-        </CardContent>
-      </Card>
 
-      <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
-        <h4 className="font-bold mb-2 flex items-center gap-2">
-          <CreditCard className="w-4 h-4" />
-          Payment Method
-        </h4>
-        <p className="text-sm text-gray-600 mb-3">
-          For this demo, click the button below to simulate payment processing via Stripe.
-        </p>
-        <p className="text-xs text-gray-500">
-          In production, you'll enter your card details securely through Stripe's payment form.
-        </p>
-      </div>
-
-      <Button
-        onClick={handlePayment}
-        disabled={processing || processPaymentMutation.isPending}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg"
-      >
-        {processing || processPaymentMutation.isPending ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Processing Payment...
-          </>
-        ) : (
-          <>
-            <Lock className="w-5 h-5 mr-2" />
-            Pay ${booking.total_amount?.toFixed(2)} Securely
-          </>
-        )}
-      </Button>
-
-      <p className="text-xs text-center text-gray-500">
-        By proceeding, you agree to EVNT's Terms of Service and the service agreement with the vendor.
-      </p>
-    </div>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={processing}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-lg"
+          >
+            {processing ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Processing Payment...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Pay ${booking.total_amount?.toFixed(2)} Now
+              </>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
