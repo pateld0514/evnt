@@ -10,7 +10,7 @@ import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store } from
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import TestDataGenerator from "../components/admin/TestDataGenerator";
+import { Globe, Instagram, Facebook, Twitter, Music2, Phone, Mail } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -209,9 +209,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="mb-8 space-y-6">
-          <TestDataGenerator />
-        </div>
+
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-2 border-black">
@@ -288,20 +286,56 @@ export default function AdminDashboardPage() {
                         <p className="font-bold mb-2">Description:</p>
                         <p className="text-gray-700">{vendor.description}</p>
                       </div>
-                      
+
+                      {vendor.image_url && (
+                        <div>
+                          <p className="font-bold mb-2">Profile Photo:</p>
+                          <img src={vendor.image_url} alt="Profile" className="w-full h-64 object-cover rounded-lg border-2 border-gray-300" />
+                        </div>
+                      )}
+
+                      {vendor.additional_images && vendor.additional_images.length > 0 && (
+                        <div>
+                          <p className="font-bold mb-2">Portfolio Gallery:</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {vendor.additional_images.map((url, idx) => (
+                              <img key={idx} src={url} alt={`Gallery ${idx + 1}`} className="w-full h-32 object-cover rounded-lg border-2 border-gray-300" />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="font-bold">Contact Email:</p>
-                          <p className="text-gray-700">{vendor.contact_email}</p>
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-gray-500" />
+                          <div>
+                            <p className="font-bold">Contact Email:</p>
+                            <p className="text-gray-700">{vendor.contact_email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold">Phone:</p>
-                          <p className="text-gray-700">{vendor.contact_phone}</p>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-gray-500" />
+                          <div>
+                            <p className="font-bold">Phone:</p>
+                            <p className="text-gray-700">{vendor.contact_phone}</p>
+                          </div>
                         </div>
+                        {vendor.price_range && (
+                          <div>
+                            <p className="font-bold">Price Range:</p>
+                            <p className="text-gray-700">{vendor.price_range}</p>
+                          </div>
+                        )}
+                        {vendor.starting_price && (
+                          <div>
+                            <p className="font-bold">Starting Price:</p>
+                            <p className="text-gray-700">${vendor.starting_price}</p>
+                          </div>
+                        )}
                         {vendor.willing_to_travel && (
                           <div>
                             <p className="font-bold">Travel:</p>
-                            <p className="text-gray-700">Willing to travel {vendor.travel_radius ? `up to ${vendor.travel_radius} miles` : ''}</p>
+                            <p className="text-gray-700">Up to {vendor.travel_radius || 'any'} miles</p>
                           </div>
                         )}
                         {vendor.years_in_business && (
@@ -317,6 +351,46 @@ export default function AdminDashboardPage() {
                           </div>
                         )}
                       </div>
+
+                      {(vendor.website || vendor.instagram || vendor.facebook || vendor.twitter || vendor.tiktok) && (
+                        <div>
+                          <p className="font-bold mb-2">Online Presence:</p>
+                          <div className="space-y-2">
+                            {vendor.website && (
+                              <div className="flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-gray-500" />
+                                <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  {vendor.website}
+                                </a>
+                              </div>
+                            )}
+                            {vendor.instagram && (
+                              <div className="flex items-center gap-2">
+                                <Instagram className="w-4 h-4 text-pink-600" />
+                                <span className="text-gray-700">{vendor.instagram}</span>
+                              </div>
+                            )}
+                            {vendor.facebook && (
+                              <div className="flex items-center gap-2">
+                                <Facebook className="w-4 h-4 text-blue-600" />
+                                <span className="text-gray-700">{vendor.facebook}</span>
+                              </div>
+                            )}
+                            {vendor.twitter && (
+                              <div className="flex items-center gap-2">
+                                <Twitter className="w-4 h-4 text-blue-400" />
+                                <span className="text-gray-700">{vendor.twitter}</span>
+                              </div>
+                            )}
+                            {vendor.tiktok && (
+                              <div className="flex items-center gap-2">
+                                <Music2 className="w-4 h-4 text-black" />
+                                <span className="text-gray-700">{vendor.tiktok}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <p className="font-bold mb-2">ID Verification:</p>
