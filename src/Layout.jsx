@@ -57,6 +57,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Events", path: createPageUrl("EventDashboard"), icon: Calendar },
     { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
+    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
   ];
 
