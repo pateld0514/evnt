@@ -8,9 +8,11 @@ import { User, Store, LogOut, Loader2, RefreshCw } from "lucide-react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notificationPref, setNotificationPref] = useState("email");
 
   useEffect(() => {
     const loadProfile = async () => {

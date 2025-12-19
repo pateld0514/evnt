@@ -10,10 +10,13 @@ import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loade
 import ReviewDialog from "../components/vendor/ReviewDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import Invoice from "../components/documents/Invoice";
-import ServiceAgreement from "../components/documents/ServiceAgreement";
+import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
+import ProfessionalContract from "../components/documents/ProfessionalContract";
+import PaymentNegotiation from "../components/payment/PaymentNegotiation";
+import StripePayment from "../components/payment/StripePayment";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { notifyBookingStatusChange, notifyVendorResponse } from "../components/notifications/NotificationSystem";
 import {
   Dialog,
   DialogContent,
@@ -22,11 +25,14 @@ import {
 } from "@/components/ui/dialog";
 
 const statusConfig = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: Clock },
-  accepted: { label: "Accepted", color: "bg-green-100 text-green-800 border-green-300", icon: CheckCircle },
-  declined: { label: "Declined", color: "bg-red-100 text-red-800 border-red-300", icon: XCircle },
+  pending: { label: "Pending Review", color: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: Clock },
+  negotiating: { label: "Negotiating Price", color: "bg-blue-100 text-blue-800 border-blue-300", icon: DollarSign },
+  payment_pending: { label: "Payment Pending", color: "bg-orange-100 text-orange-800 border-orange-300", icon: DollarSign },
+  confirmed: { label: "Confirmed & Paid", color: "bg-green-100 text-green-800 border-green-300", icon: CheckCircle },
+  in_progress: { label: "In Progress", color: "bg-purple-100 text-purple-800 border-purple-300", icon: Clock },
   completed: { label: "Completed", color: "bg-blue-100 text-blue-800 border-blue-300", icon: CheckCircle },
-  cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-800 border-gray-300", icon: XCircle }
+  cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-800 border-gray-300", icon: XCircle },
+  declined: { label: "Declined", color: "bg-red-100 text-red-800 border-red-300", icon: XCircle }
 };
 
 export default function BookingsPage() {
@@ -42,6 +48,8 @@ export default function BookingsPage() {
   const [currentVendor, setCurrentVendor] = useState(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [bookingToReview, setBookingToReview] = useState(null);
+  const [negotiationOpen, setNegotiationOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -79,7 +87,17 @@ export default function BookingsPage() {
   });
 
   const updateBookingMutation = useMutation({
-    mutationFn: ({ bookingId, data }) => base44.entities.Booking.update(bookingId, data),
+    mutationFn: async ({ bookingId, data, oldStatus }) => {
+      const updated = await base44.entities.Booking.update(bookingId, data);
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking && data.status && oldStatus !== data.status) {
+        await notifyBookingStatusChange({...booking, ...data}, oldStatus, data.status);
+      }
+      if (data.vendor_response && booking) {
+        await notifyVendorResponse({...booking, ...data});
+      }
+      return updated;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
       setDetailsOpen(false);
@@ -88,16 +106,28 @@ export default function BookingsPage() {
   });
 
   const handleStatusUpdate = (bookingId, newStatus) => {
+    const booking = bookings.find(b => b.id === bookingId);
     updateBookingMutation.mutate({
       bookingId,
-      data: { status: newStatus, vendor_response: vendorResponse }
+      data: { status: newStatus, vendor_response: vendorResponse },
+      oldStatus: booking?.status
     });
   };
 
+  const handleOpenNegotiation = () => {
+    setNegotiationOpen(true);
+  };
+
+  const handleOpenPayment = () => {
+    setPaymentOpen(true);
+  };
+
   const handleCancelBooking = (bookingId) => {
+    const booking = bookings.find(b => b.id === bookingId);
     updateBookingMutation.mutate({
       bookingId,
-      data: { status: "cancelled" }
+      data: { status: "cancelled" },
+      oldStatus: booking?.status
     });
   };
 
@@ -162,14 +192,11 @@ export default function BookingsPage() {
             <TabsTrigger value="all" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               All
             </TabsTrigger>
-            <TabsTrigger value="pending" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Pending
+            <TabsTrigger value="negotiating" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Negotiating
             </TabsTrigger>
-            <TabsTrigger value="accepted" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Accepted
-            </TabsTrigger>
-            <TabsTrigger value="declined" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Declined
+            <TabsTrigger value="confirmed" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Confirmed
             </TabsTrigger>
             <TabsTrigger value="completed" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Completed
@@ -337,8 +364,20 @@ export default function BookingsPage() {
                   )}
                   {selectedBooking.budget && (
                     <div>
-                      <p className="text-sm text-gray-500 font-medium">Budget</p>
+                      <p className="text-sm text-gray-500 font-medium">Initial Budget</p>
                       <p className="text-lg font-bold">${selectedBooking.budget}</p>
+                    </div>
+                  )}
+                  {selectedBooking.agreed_price && (
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium">Agreed Price</p>
+                      <p className="text-lg font-bold text-green-700">${selectedBooking.agreed_price}</p>
+                    </div>
+                  )}
+                  {selectedBooking.total_amount && (
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium">Total (with fees)</p>
+                      <p className="text-lg font-bold">${selectedBooking.total_amount}</p>
                     </div>
                   )}
                 </div>
@@ -374,7 +413,7 @@ export default function BookingsPage() {
                 )}
 
                 {/* Documents Section */}
-                {(selectedBooking.status === "accepted" || selectedBooking.status === "completed") && (
+                {(selectedBooking.status === "confirmed" || selectedBooking.status === "completed" || selectedBooking.status === "in_progress") && selectedBooking.agreed_price && (
                   <div className="border-t-2 border-gray-200 pt-6">
                     <h3 className="font-bold text-lg mb-4">Documents</h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -399,46 +438,98 @@ export default function BookingsPage() {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
-                  {isVendor && selectedBooking.status === "pending" && (
-                    <>
-                      <Button
-                        onClick={() => handleStatusUpdate(selectedBooking.id, "accepted")}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Accept Booking
-                      </Button>
-                      <Button
-                        onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
-                        variant="outline"
-                        className="flex-1 border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Decline
-                      </Button>
-                    </>
+                <div className="flex flex-col gap-3">
+                  {negotiationOpen && (
+                    <PaymentNegotiation 
+                      booking={selectedBooking} 
+                      isVendor={isVendor}
+                      onClose={() => setNegotiationOpen(false)}
+                    />
                   )}
 
-                  {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "accepted") && (
-                    <Button
-                      onClick={() => handleCancelBooking(selectedBooking.id)}
-                      variant="outline"
-                      className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Cancel Booking
-                    </Button>
+                  {paymentOpen && (
+                    <StripePayment
+                      booking={selectedBooking}
+                      onSuccess={() => {
+                        setPaymentOpen(false);
+                        setDetailsOpen(false);
+                      }}
+                    />
                   )}
 
-                  {isVendor && selectedBooking.status === "accepted" && (
-                    <Button
-                      onClick={() => handleStatusUpdate(selectedBooking.id, "completed")}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Mark as Completed
-                    </Button>
+                  {!negotiationOpen && !paymentOpen && (
+                    <div className="flex gap-3">
+                      {isVendor && selectedBooking.status === "pending" && (
+                        <>
+                          <Button
+                            onClick={handleOpenNegotiation}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Send Pricing Proposal
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
+                            variant="outline"
+                            className="flex-1 border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Decline
+                          </Button>
+                        </>
+                      )}
+
+                      {!isVendor && selectedBooking.status === "negotiating" && (
+                        <Button
+                          onClick={handleOpenNegotiation}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          Review Proposal
+                        </Button>
+                      )}
+
+                      {!isVendor && selectedBooking.status === "payment_pending" && (
+                        <Button
+                          onClick={handleOpenPayment}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          Complete Payment
+                        </Button>
+                      )}
+
+                      {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "negotiating") && (
+                        <Button
+                          onClick={() => handleCancelBooking(selectedBooking.id)}
+                          variant="outline"
+                          className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Cancel Booking
+                        </Button>
+                      )}
+
+                      {isVendor && selectedBooking.status === "confirmed" && (
+                        <Button
+                          onClick={() => handleStatusUpdate(selectedBooking.id, "in_progress")}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Mark as In Progress
+                        </Button>
+                      )}
+
+                      {isVendor && selectedBooking.status === "in_progress" && (
+                        <Button
+                          onClick={() => handleStatusUpdate(selectedBooking.id, "completed")}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Mark as Completed
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -450,12 +541,12 @@ export default function BookingsPage() {
       {/* Print Views */}
       {showInvoice && selectedBooking && (
         <div className="hidden print:block">
-          <Invoice booking={selectedBooking} />
+          <ProfessionalInvoice booking={selectedBooking} />
         </div>
       )}
       {showContract && selectedBooking && currentVendor && (
         <div className="hidden print:block">
-          <ServiceAgreement booking={selectedBooking} vendor={currentVendor} />
+          <ProfessionalContract booking={selectedBooking} vendor={currentVendor} />
         </div>
       )}
 

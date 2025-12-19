@@ -9,6 +9,7 @@ import { Send, ArrowLeft, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { notifyNewMessage } from "../components/notifications/NotificationSystem";
 import {
   Dialog,
   DialogContent,
@@ -81,7 +82,11 @@ export default function MessagesPage() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (messageData) => base44.entities.Message.create(messageData),
+    mutationFn: async (messageData) => {
+      const message = await base44.entities.Message.create(messageData);
+      await notifyNewMessage(message, messageData.conversation_id);
+      return message;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['messages']);
       setMessageText("");

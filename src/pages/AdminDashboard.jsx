@@ -10,7 +10,8 @@ import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store } from
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Globe, Instagram, Facebook, Twitter, Music2, Phone, Mail } from "lucide-react";
+import { Globe, Instagram, Facebook, Twitter, Music2, Phone, Mail, Settings } from "lucide-react";
+import PlatformSettings from "../components/admin/PlatformSettings";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -251,10 +252,14 @@ export default function AdminDashboardPage() {
         </div>
 
         <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-black text-white">
+          <TabsList className="grid w-full grid-cols-4 bg-black text-white">
             <TabsTrigger value="pending">Pending ({pendingVendors.length})</TabsTrigger>
             <TabsTrigger value="approved">Approved ({approvedVendors.length})</TabsTrigger>
             <TabsTrigger value="rejected">Rejected ({rejectedVendors.length})</TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
@@ -522,8 +527,12 @@ export default function AdminDashboardPage() {
               </Card>
             ))}
           </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
+
+          <TabsContent value="settings" className="space-y-4">
+            <PlatformSettings />
+          </TabsContent>
+          </Tabs>
+          </div>
+          </div>
+          );
+          }

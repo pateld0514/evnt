@@ -2,6 +2,7 @@ import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
+import EventDashboard from './pages/EventDashboard';
 import EventVendors from './pages/EventVendors';
 import Home from './pages/Home';
 import Messages from './pages/Messages';
@@ -11,9 +12,8 @@ import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
-import VendorRegistration from './pages/VendorRegistration';
 import VendorProfile from './pages/VendorProfile';
-import EventDashboard from './pages/EventDashboard';
+import VendorRegistration from './pages/VendorRegistration';
 import __Layout from './Layout.jsx';
 
 
@@ -22,6 +22,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
+    "EventDashboard": EventDashboard,
     "EventVendors": EventVendors,
     "Home": Home,
     "Messages": Messages,
@@ -31,9 +32,8 @@ export const PAGES = {
     "Swipe": Swipe,
     "VendorDashboard": VendorDashboard,
     "VendorPending": VendorPending,
-    "VendorRegistration": VendorRegistration,
     "VendorProfile": VendorProfile,
-    "EventDashboard": EventDashboard,
+    "VendorRegistration": VendorRegistration,
 }
 
 export const pagesConfig = {
