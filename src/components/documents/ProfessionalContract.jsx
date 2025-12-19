@@ -1,0 +1,258 @@
+import React from "react";
+import { format } from "date-fns";
+
+export default function ProfessionalContract({ booking, vendor }) {
+  const contractNumber = `EVNT-SA-${new Date().getFullYear()}-${booking.id?.slice(0, 8).toUpperCase()}`;
+  const effectiveDate = booking.contract_signed_date || new Date().toISOString();
+
+  return (
+    <div className="bg-white p-16 max-w-5xl mx-auto print:p-12 text-sm leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>
+      {/* Header */}
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-bold mb-2">EVENT SERVICES AGREEMENT</h1>
+        <p className="text-gray-600">Contract No: {contractNumber}</p>
+        <p className="text-gray-600">Effective Date: {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
+      </div>
+
+      {/* Parties */}
+      <div className="mb-8">
+        <p className="mb-4">
+          This Event Services Agreement (the "Agreement") is entered into as of {format(new Date(effectiveDate), "MMMM dd, yyyy")}, 
+          by and between:
+        </p>
+        
+        <div className="ml-8 mb-4">
+          <p className="font-bold">{booking.vendor_name}</p>
+          <p className="text-gray-700 italic">("Service Provider" or "Vendor")</p>
+          <p className="text-sm text-gray-600 mt-1">Verified through EVNT Platform (ID: {vendor?.id?.slice(0, 8) || "VERIFIED"})</p>
+        </div>
+
+        <p className="mb-2">and</p>
+
+        <div className="ml-8 mb-4">
+          <p className="font-bold">{booking.client_name}</p>
+          <p className="text-gray-700 italic">("Client" or "Host")</p>
+          <p className="text-sm text-gray-600 mt-1">{booking.location}</p>
+        </div>
+
+        <p>
+          (collectively referred to as the "Parties")
+        </p>
+      </div>
+
+      {/* Recitals */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4 uppercase">Recitals</h2>
+        <p className="mb-3">
+          WHEREAS, Service Provider is engaged in the business of providing {vendor?.category?.replace(/_/g, ' ') || "event"} services;
+        </p>
+        <p className="mb-3">
+          WHEREAS, Client desires to engage Service Provider to provide such services for an event (the "Event");
+        </p>
+        <p>
+          NOW, THEREFORE, in consideration of the mutual covenants and agreements herein contained, and for other good and 
+          valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+        </p>
+      </div>
+
+      {/* Article 1: Event Details */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 1: EVENT DETAILS</h2>
+        <div className="ml-6 space-y-3">
+          <p><span className="font-semibold">1.1 Event Type:</span> {booking.event_type}</p>
+          <p><span className="font-semibold">1.2 Event Date:</span> {format(new Date(booking.event_date), "EEEE, MMMM dd, yyyy")}</p>
+          <p><span className="font-semibold">1.3 Event Location:</span> {booking.location}</p>
+          {booking.guest_count && (
+            <p><span className="font-semibold">1.4 Expected Attendance:</span> Approximately {booking.guest_count} guests</p>
+          )}
+        </div>
+      </div>
+
+      {/* Article 2: Services */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 2: SERVICES TO BE PROVIDED</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">2.1 Scope of Services:</span> Service Provider agrees to provide the following services:
+          </p>
+          <div className="ml-6 bg-gray-50 p-4 rounded border border-gray-200">
+            <p>{booking.service_description}</p>
+          </div>
+          <p>
+            <span className="font-semibold">2.2 Professional Standards:</span> Service Provider warrants that all services shall be performed 
+            in a professional, workmanlike manner consistent with industry standards and practices.
+          </p>
+          <p>
+            <span className="font-semibold">2.3 Equipment:</span> Service Provider shall provide all necessary equipment, materials, 
+            and supplies required to perform the services, unless otherwise specified in writing.
+          </p>
+        </div>
+      </div>
+
+      {/* Article 3: Compensation */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 3: COMPENSATION AND PAYMENT</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">3.1 Total Fee:</span> Client agrees to pay Service Provider a total fee of 
+            ${booking.agreed_price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
+            for the services described herein.
+          </p>
+          
+          {booking.additional_fees && booking.additional_fees.length > 0 && (
+            <div>
+              <p className="font-semibold">3.2 Additional Fees:</p>
+              <div className="ml-6">
+                {booking.additional_fees.map((fee, idx) => (
+                  <p key={idx}>• {fee.name}: ${fee.amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p>
+            <span className="font-semibold">3.3 Platform Fee:</span> In addition to the service fee, Client shall pay a platform 
+            and processing fee of ${booking.platform_fee_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
+            ({booking.platform_fee_percent}% of total services) to EVNT Platform Services LLC.
+          </p>
+
+          <p>
+            <span className="font-semibold">3.4 Total Amount Due:</span> The total amount payable by Client is 
+            ${booking.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.
+          </p>
+
+          <p>
+            <span className="font-semibold">3.5 Payment Terms:</span> Payment shall be processed through the EVNT Platform 
+            prior to the Event date. Funds shall be held in escrow by EVNT and released to Service Provider 24 hours after 
+            the Event, subject to the dispute resolution provisions of this Agreement.
+          </p>
+        </div>
+      </div>
+
+      {/* Article 4: Cancellation */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 4: CANCELLATION AND TERMINATION</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">4.1 Client Cancellation:</span> Client may cancel this Agreement subject to the following terms:
+          </p>
+          <div className="ml-6">
+            <p>a) Cancellation more than 60 days before Event: Full refund minus 5% processing fee</p>
+            <p>b) Cancellation 30-60 days before Event: 50% refund</p>
+            <p>c) Cancellation less than 30 days before Event: No refund</p>
+          </div>
+          <p>
+            <span className="font-semibold">4.2 Service Provider Cancellation:</span> If Service Provider cancels within 30 days of the Event 
+            without cause, Service Provider shall forfeit any deposits and Client shall receive a full refund plus 10% of the 
+            service fee as compensation.
+          </p>
+          <p>
+            <span className="font-semibold">4.3 Force Majeure:</span> Neither party shall be liable for failure to perform due to causes 
+            beyond reasonable control, including but not limited to acts of God, war, strikes, or government restrictions.
+          </p>
+        </div>
+      </div>
+
+      {/* Article 5: Liability and Insurance */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 5: LIABILITY AND INSURANCE</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">5.1 Insurance:</span> Service Provider represents that they maintain appropriate liability 
+            insurance coverage for the services to be provided.
+          </p>
+          <p>
+            <span className="font-semibold">5.2 Limitation of Liability:</span> Service Provider's total liability under this Agreement 
+            shall not exceed the total compensation paid by Client.
+          </p>
+          <p>
+            <span className="font-semibold">5.3 Indemnification:</span> Each party agrees to indemnify and hold harmless the other party 
+            from any claims arising from their own negligence or willful misconduct.
+          </p>
+        </div>
+      </div>
+
+      {/* Article 6: Dispute Resolution */}
+      <div className="mb-8">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 6: DISPUTE RESOLUTION</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">6.1 Good Faith Negotiation:</span> In the event of any dispute, the Parties agree to first 
+            attempt resolution through good faith negotiation.
+          </p>
+          <p>
+            <span className="font-semibold">6.2 EVNT Mediation:</span> If direct negotiation fails, the Parties agree to submit the 
+            dispute to mediation through EVNT Platform Services LLC before pursuing legal action.
+          </p>
+          <p>
+            <span className="font-semibold">6.3 Governing Law:</span> This Agreement shall be governed by the laws of the District of Columbia, 
+            without regard to conflict of law principles.
+          </p>
+        </div>
+      </div>
+
+      {/* Article 7: General Provisions */}
+      <div className="mb-12">
+        <h2 className="text-lg font-bold mb-4">ARTICLE 7: GENERAL PROVISIONS</h2>
+        <div className="ml-6 space-y-3">
+          <p>
+            <span className="font-semibold">7.1 Entire Agreement:</span> This Agreement constitutes the entire agreement between the Parties 
+            and supersedes all prior negotiations, representations, or agreements.
+          </p>
+          <p>
+            <span className="font-semibold">7.2 Amendments:</span> This Agreement may only be amended in writing signed by both Parties.
+          </p>
+          <p>
+            <span className="font-semibold">7.3 Severability:</span> If any provision of this Agreement is found to be unenforceable, 
+            the remaining provisions shall remain in full force and effect.
+          </p>
+          <p>
+            <span className="font-semibold">7.4 Digital Signatures:</span> The Parties agree that digital signatures executed through 
+            the EVNT Platform shall have the same legal effect as handwritten signatures.
+          </p>
+        </div>
+      </div>
+
+      {/* Signatures */}
+      <div className="border-t-2 border-black pt-8">
+        <p className="mb-8 text-center font-semibold">
+          IN WITNESS WHEREOF, the Parties have executed this Agreement as of the date first written above.
+        </p>
+
+        <div className="grid grid-cols-2 gap-12 mb-8">
+          <div>
+            <div className="mb-6">
+              <p className="text-2xl mb-3" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
+              <div className="border-t-2 border-black pt-2">
+                <p className="font-semibold">Client Signature</p>
+                <p className="text-xs text-gray-600">Digitally signed via EVNT Platform</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-6">
+              <p className="text-2xl mb-3" style={{ fontFamily: 'cursive' }}>{booking.vendor_name}</p>
+              <div className="border-t-2 border-black pt-2">
+                <p className="font-semibold">Service Provider Signature</p>
+                <p className="text-xs text-gray-600">Digitally signed via EVNT Platform</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-100 p-4 rounded mt-8 text-xs text-center text-gray-600">
+          <p>This agreement is facilitated through EVNT Platform Services LLC</p>
+          <p className="mt-1">Washington, DC | support@evnt.com</p>
+          <p className="mt-1">Contract ID: {contractNumber}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
