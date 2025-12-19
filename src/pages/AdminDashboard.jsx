@@ -10,6 +10,7 @@ import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store } from
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import AutoDemo from "../components/admin/AutoDemo";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -206,6 +207,10 @@ export default function AdminDashboardPage() {
               View as Vendor
             </Button>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <AutoDemo />
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
