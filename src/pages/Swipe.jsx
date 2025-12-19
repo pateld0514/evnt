@@ -88,6 +88,13 @@ export default function SwipePage() {
     },
   });
 
+  // Get available categories from approved vendors
+  const availableCategories = vendors
+    .filter(v => v.approval_status === "approved" && v.profile_complete === true)
+    .map(v => v.category);
+  
+  const uniqueAvailableCategories = [...new Set(availableCategories)];
+
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
     const profileComplete = vendor.profile_complete === true;
@@ -200,11 +207,19 @@ export default function SwipePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
+                    {categories.map(cat => {
+                      const isAvailable = cat.value === "all" || uniqueAvailableCategories.includes(cat.value);
+                      return (
+                        <SelectItem 
+                          key={cat.value} 
+                          value={cat.value}
+                          disabled={!isAvailable}
+                          className={!isAvailable ? "text-gray-400 cursor-not-allowed" : ""}
+                        >
+                          {cat.label} {!isAvailable && "(No vendors)"}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
