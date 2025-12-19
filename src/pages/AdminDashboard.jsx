@@ -10,7 +10,6 @@ import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store } from
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import AutoDemo from "../components/admin/AutoDemo";
 import TestDataGenerator from "../components/admin/TestDataGenerator";
 
 export default function AdminDashboardPage() {
@@ -212,7 +211,6 @@ export default function AdminDashboardPage() {
 
         <div className="mb-8 space-y-6">
           <TestDataGenerator />
-          <AutoDemo />
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
