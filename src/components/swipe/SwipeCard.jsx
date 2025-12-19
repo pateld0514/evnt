@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
