@@ -4,13 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Heart, Loader2, SlidersHorizontal } from "lucide-react";
+import { X, Heart, Loader2, SlidersHorizontal, Undo } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import SwipeCard from "../components/swipe/SwipeCard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import CityAutocomplete from "../components/forms/CityAutocomplete";
 
 const categories = [
   { value: "all", label: "All Vendors" },
@@ -33,6 +34,7 @@ export default function SwipePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [swipeHistory, setSwipeHistory] = useState([]);
   const [filters, setFilters] = useState({
     category: "all",
     priceRange: "all",
@@ -77,7 +79,7 @@ export default function SwipePage() {
   });
 
   const swipeMutation = useMutation({
-    mutationFn: ({ vendorId, direction, vendor }) => {
+    mutationFn: ({ vendorId, direction, vendor, swipeId }) => {
       const swipePromise = base44.entities.UserSwipe.create({
         vendor_id: vendorId,
         direction,
@@ -96,12 +98,23 @@ export default function SwipePage() {
       
       return swipePromise;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries(['user-swipes']);
       if (variables.direction === "right") {
         queryClient.invalidateQueries(['saved-vendors']);
         toast.success("Added to your favorites! ❤️");
       }
+      
+      // Store in history for undo
+      const swipeId = Array.isArray(result) ? result[0].id : result.id;
+      const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
+      setSwipeHistory(prev => [...prev, { 
+        swipeId, 
+        savedId,
+        vendorId: variables.vendorId,
+        direction: variables.direction,
+        vendor: variables.vendor 
+      }]);
     },
   });
 
@@ -157,6 +170,33 @@ export default function SwipePage() {
     });
 
     setCurrentIndex(prev => prev + 1);
+  };
+
+  const handleUndo = async () => {
+    if (swipeHistory.length === 0) return;
+    
+    const lastSwipe = swipeHistory[swipeHistory.length - 1];
+    
+    try {
+      // Delete the swipe record
+      await base44.entities.UserSwipe.delete(lastSwipe.swipeId);
+      
+      // If it was a right swipe, delete the saved vendor too
+      if (lastSwipe.savedId) {
+        await base44.entities.SavedVendor.delete(lastSwipe.savedId);
+      }
+      
+      // Go back one card
+      setCurrentIndex(prev => Math.max(0, prev - 1));
+      setSwipeHistory(prev => prev.slice(0, -1));
+      
+      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries(['saved-vendors']);
+      
+      toast.success("Undone!");
+    } catch (error) {
+      toast.error("Failed to undo");
+    }
   };
 
   const handleReset = () => {
@@ -285,10 +325,9 @@ export default function SwipePage() {
 
               <div className="space-y-2">
                 <Label>Location</Label>
-                <Input
+                <CityAutocomplete
                   value={filters.location}
-                  onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="e.g. Washington, DC"
+                  onChange={(value) => setFilters(prev => ({ ...prev, location: value }))}
                   className="border-2 border-gray-300"
                 />
               </div>
@@ -351,7 +390,18 @@ export default function SwipePage() {
 
       {/* Action Buttons */}
       {currentVendor && (
-        <div className="flex justify-center gap-6">
+        <div className="flex justify-center items-center gap-6">
+          {swipeHistory.length > 0 && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-16 h-16 rounded-full border-4 border-gray-300 hover:bg-gray-50"
+              onClick={handleUndo}
+            >
+              <Undo className="w-6 h-6 text-gray-600" />
+            </Button>
+          )}
+
           <Button
             size="lg"
             variant="outline"
@@ -360,7 +410,7 @@ export default function SwipePage() {
           >
             <X className="w-8 h-8 text-black" />
           </Button>
-          
+
           <Button
             size="lg"
             className="w-20 h-20 rounded-full bg-black hover:bg-gray-800"

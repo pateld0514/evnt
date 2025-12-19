@@ -189,7 +189,25 @@ export default function SwipeCard({ vendor, onSwipe }) {
           </DialogHeader>
           
           <div className="space-y-6">
-            {vendor.image_url && (
+            {/* Media Gallery */}
+            {vendor.additional_images && vendor.additional_images.length > 0 ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {vendor.additional_images.slice(0, 4).map((url, idx) => (
+                    <div key={idx} className="aspect-square">
+                      {url.includes('video') || url.endsWith('.mp4') || url.endsWith('.mov') ? (
+                        <video src={url} className="w-full h-full object-cover rounded-lg border-2 border-black" controls />
+                      ) : (
+                        <img src={url} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover rounded-lg border-2 border-black" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {vendor.additional_images.length > 4 && (
+                  <p className="text-sm text-gray-500 text-center">+{vendor.additional_images.length - 4} more</p>
+                )}
+              </div>
+            ) : vendor.image_url && (
               <img
                 src={vendor.image_url}
                 alt={vendor.business_name}

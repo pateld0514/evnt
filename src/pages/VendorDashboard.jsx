@@ -296,19 +296,22 @@ Provide 4-5 specific, actionable insights in this JSON format:
                 size="sm"
                 className="text-white hover:bg-gray-800"
               >
-                Edit Profile
+                Edit
               </Button>
             </div>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
+              {vendor.image_url && (
+                <img src={vendor.image_url} alt="Profile" className="w-full h-32 object-cover rounded-lg border-2 border-gray-300" />
+              )}
               <div>
                 <p className="text-sm text-gray-500 font-medium">Business Name</p>
                 <p className="font-bold">{vendor.business_name}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Category</p>
-                <p className="font-bold capitalize">{vendor.category}</p>
+                <p className="font-bold capitalize">{vendor.category?.replace(/_/g, ' ')}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Location</p>
@@ -316,8 +319,18 @@ Provide 4-5 specific, actionable insights in this JSON format:
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Price Range</p>
-                <p className="font-bold">{vendor.price_range}</p>
+                <p className="font-bold">{vendor.price_range} • Starting at ${vendor.starting_price}</p>
               </div>
+              {(vendor.website || vendor.instagram) && (
+                <Button
+                  onClick={() => navigate(createPageUrl("VendorProfile"))}
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-2 border-black hover:bg-black hover:text-white font-bold"
+                >
+                  View Full Profile
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
