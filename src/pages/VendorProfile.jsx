@@ -382,7 +382,7 @@ export default function VendorProfilePage() {
               </div>
             </div>
 
-            <div className="flex gap-3"
+            <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
