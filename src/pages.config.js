@@ -13,6 +13,7 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
 import VendorProfileSetup from './pages/VendorProfileSetup';
 import VendorRegistration from './pages/VendorRegistration';
+import VendorProfile from './pages/VendorProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "VendorPending": VendorPending,
     "VendorProfileSetup": VendorProfileSetup,
     "VendorRegistration": VendorRegistration,
+    "VendorProfile": VendorProfile,
 }
 
 export const pagesConfig = {

@@ -68,8 +68,8 @@ export default function ProfilePage() {
       <Card className="border-2 border-black mb-6">
         <CardHeader className="bg-black text-white">
           <CardTitle className="flex items-center gap-2 font-black">
-            {user?.user_type === "vendor" ? <Store className="w-6 h-6" /> : <User className="w-6 h-6" />}
-            {user?.user_type === "vendor" ? "Vendor Account" : "Client Account"}
+            <User className="w-6 h-6" />
+            {user?.user_type ? (user.user_type === "vendor" ? "Vendor Account" : "Client Account") : "Account"}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -82,10 +82,12 @@ export default function ProfilePage() {
               <p className="text-sm text-gray-500 font-medium">Email</p>
               <p className="text-lg font-bold">{user?.email}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Account Type</p>
-              <p className="text-lg font-bold capitalize">{user?.user_type || 'Client'}</p>
-            </div>
+            {user?.user_type && (
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Account Type</p>
+                <p className="text-lg font-bold capitalize">{user.user_type}</p>
+              </div>
+            )}
             {user?.location && (
               <div>
                 <p className="text-sm text-gray-500 font-medium">Location</p>

@@ -50,9 +50,9 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
-        if (!currentUser.onboarding_complete) {
+        if (!currentUser.onboarding_complete && currentUser.email !== "pateld0514@gmail.com") {
           navigate(createPageUrl("Onboarding"));
-        } else if (currentUser.user_type === "vendor") {
+        } else if (currentUser.user_type === "vendor" && currentUser.email !== "pateld0514@gmail.com") {
           if (currentUser.approval_status === "pending" || currentUser.approval_status === "rejected") {
             navigate(createPageUrl("VendorPending"));
           } else {
@@ -60,7 +60,8 @@ export default function Home() {
           }
         }
       } catch (error) {
-        console.error(error);
+        // User not authenticated, redirect to onboarding
+        navigate(createPageUrl("Onboarding"));
       } finally {
         setLoading(false);
       }

@@ -288,7 +288,17 @@ Provide 4-5 specific, actionable insights in this JSON format:
 
         <Card className="border-2 border-black">
           <CardHeader className="bg-black text-white">
-            <CardTitle className="font-black">Your Profile</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-black">Your Profile</CardTitle>
+              <Button
+                onClick={() => navigate(createPageUrl("VendorProfile"))}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-gray-800"
+              >
+                Edit Profile
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">

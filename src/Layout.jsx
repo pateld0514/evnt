@@ -4,19 +4,30 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashboard, Monitor, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [userType, setUserType] = useState(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState(null);
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('viewMode') || 'desktop';
+  });
+
+  const { data: messages = [] } = useQuery({
+    queryKey: ['unread-messages'],
+    queryFn: () => base44.entities.Message.list('-created_date'),
+    enabled: !!currentUserEmail,
+    refetchInterval: 3000,
   });
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const user = await base44.auth.me();
+        setCurrentUserEmail(user.email);
         if (user.email === "pateld0514@gmail.com") {
           setUserType("admin");
           setOnboardingComplete(true);
@@ -30,6 +41,8 @@ export default function Layout({ children, currentPageName }) {
     };
     loadUser();
   }, [location]);
+
+  const unreadCount = messages.filter(m => !m.read && m.recipient_email === currentUserEmail).length;
 
   const toggleViewMode = () => {
     const newMode = viewMode === 'desktop' ? 'mobile' : 'desktop';
@@ -87,11 +100,12 @@ export default function Layout({ children, currentPageName }) {
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
+                  const showBadge = item.name === "Messages" && unreadCount > 0;
                   return (
                     <Link
                       key={item.name}
                       to={item.path}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium relative ${
                         isActive
                           ? "bg-white text-black"
                           : "text-white hover:bg-gray-800"
@@ -99,6 +113,11 @@ export default function Layout({ children, currentPageName }) {
                     >
                       <Icon className={`w-5 h-5`} />
                       <span>{item.name}</span>
+                      {showBadge && (
+                        <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-5 min-w-5 flex items-center justify-center px-1">
+                          {unreadCount}
+                        </Badge>
+                      )}
                     </Link>
                   );
                 })}
@@ -164,11 +183,12 @@ export default function Layout({ children, currentPageName }) {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
+                const showBadge = item.name === "Messages" && unreadCount > 0;
                 return (
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative ${
                       isActive
                         ? "text-white"
                         : "text-gray-500 hover:text-gray-300"
@@ -176,6 +196,11 @@ export default function Layout({ children, currentPageName }) {
                   >
                     <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
                     <span className="text-xs font-medium">{item.name}</span>
+                    {showBadge && (
+                      <Badge className="absolute top-0 right-0 bg-red-500 text-white h-4 min-w-4 flex items-center justify-center px-1 text-xs">
+                        {unreadCount}
+                      </Badge>
+                    )}
                   </Link>
                 );
               })}
