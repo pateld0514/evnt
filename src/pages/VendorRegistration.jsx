@@ -168,7 +168,11 @@ export default function VendorRegistrationPage() {
           <p className="text-gray-300 mt-2">Join EVNT and grow your event business</p>
         </CardHeader>
         <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+              e.preventDefault();
+            }
+          }}>
             <div className="space-y-2">
               <Label className="text-lg font-bold">Business Name *</Label>
               <Input
