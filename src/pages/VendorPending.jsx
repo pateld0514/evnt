@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function VendorPendingPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,16 +20,22 @@ export default function VendorPendingPage() {
       if (currentUser.vendor_id) {
         const vendors = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
         if (vendors.length > 0) {
-          setVendor(vendors[0]);
+          const v = vendors[0];
+          setVendor(v);
+          
+          // If approved and profile not complete, redirect to profile setup
+          if (v.approval_status === "approved" && !v.profile_complete) {
+            navigate(createPageUrl("VendorProfileSetup"));
+          }
         }
       }
       setLoading(false);
     };
     loadData();
 
-    const interval = setInterval(loadData, 10000);
+    const interval = setInterval(loadData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     base44.auth.logout();

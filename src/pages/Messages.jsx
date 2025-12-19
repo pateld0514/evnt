@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Loader2, Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, ArrowLeft, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -50,6 +50,7 @@ export default function MessagesPage() {
     queryKey: ['messages'],
     queryFn: () => base44.entities.Message.list('-created_date'),
     initialData: [],
+    refetchInterval: 3000,
   });
 
   const { data: vendors = [] } = useQuery({
@@ -100,7 +101,10 @@ export default function MessagesPage() {
             id: `${currentUser.email}-${vendorIdFromUrl}`,
             vendorId: vendorIdFromUrl,
             vendorName: vendor.business_name,
-            vendorEmail: vendor.contact_email,
+            clientEmail: currentUser.email,
+            clientName: currentUser.full_name,
+            otherPartyEmail: vendor.contact_email,
+            otherPartyName: vendor.business_name,
           });
         }
       }
@@ -111,17 +115,35 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, selectedConversation]);
 
+  // Group messages by conversation and get latest message info
   const conversations = messages.reduce((acc, msg) => {
     const convId = msg.conversation_id;
     if (!acc.find(c => c.id === convId)) {
-      const vendor = vendors.find(v => v.id === msg.vendor_id);
+      const isFromMe = msg.sender_email === currentUser?.email;
+      const otherEmail = isFromMe ? msg.recipient_email : msg.sender_email;
+      const otherName = isFromMe ? 
+        (isVendor ? msg.sender_name : msg.vendor_name) : 
+        msg.sender_name;
+
+      // Count unread messages
+      const unreadCount = messages.filter(m => 
+        m.conversation_id === convId && 
+        !m.read && 
+        m.recipient_email === currentUser?.email
+      ).length;
+
       acc.push({
         id: convId,
         vendorId: msg.vendor_id,
         vendorName: msg.vendor_name,
-        vendorEmail: msg.recipient_email === currentUser?.email ? msg.sender_email : msg.recipient_email,
+        clientEmail: isVendor ? otherEmail : msg.sender_email,
+        clientName: isVendor ? otherName : msg.sender_name,
+        otherPartyEmail: otherEmail,
+        otherPartyName: otherName,
         lastMessage: msg.message,
         lastMessageTime: msg.created_date,
+        lastSender: msg.sender_name,
+        unreadCount: unreadCount,
       });
     }
     return acc;
@@ -131,6 +153,23 @@ export default function MessagesPage() {
     msg => msg.conversation_id === selectedConversation?.id
   ).reverse();
 
+  // Mark messages as read when viewing conversation
+  useEffect(() => {
+    if (selectedConversation && currentUser) {
+      const unreadMessages = currentMessages.filter(m => 
+        !m.read && m.recipient_email === currentUser.email
+      );
+      
+      unreadMessages.forEach(msg => {
+        base44.entities.Message.update(msg.id, { read: true });
+      });
+      
+      if (unreadMessages.length > 0) {
+        queryClient.invalidateQueries(['messages']);
+      }
+    }
+  }, [selectedConversation, currentUser]);
+
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedConversation || !currentUser) return;
 
@@ -138,20 +177,19 @@ export default function MessagesPage() {
       conversation_id: selectedConversation.id,
       sender_email: currentUser.email,
       sender_name: currentUser.full_name,
-      recipient_email: selectedConversation.vendorEmail,
+      recipient_email: selectedConversation.otherPartyEmail,
       vendor_id: selectedConversation.vendorId,
       vendor_name: selectedConversation.vendorName,
       message: messageText,
+      read: false,
     });
   };
 
   const getComposeOptions = () => {
     if (isVendor) {
-      // For vendors: show clients who have made booking requests
       const uniqueClients = bookings.reduce((acc, booking) => {
         const existingConvo = conversations.find(c => 
-          c.vendorEmail === booking.client_email || 
-          (c.id && c.id.includes(booking.client_email))
+          c.clientEmail === booking.client_email
         );
         if (!existingConvo && !acc.find(c => c.email === booking.client_email)) {
           acc.push({
@@ -165,10 +203,8 @@ export default function MessagesPage() {
       }, []);
       return uniqueClients;
     } else {
-      // For clients: show saved vendors and vendors from bookings
       const options = [];
       
-      // Add saved vendors
       savedVendors.forEach(saved => {
         const vendor = vendors.find(v => v.id === saved.vendor_id);
         if (vendor) {
@@ -184,7 +220,6 @@ export default function MessagesPage() {
         }
       });
       
-      // Add vendors from bookings
       bookings.forEach(booking => {
         const existingConvo = conversations.find(c => c.vendorId === booking.vendor_id);
         if (!existingConvo && !options.find(o => o.vendorId === booking.vendor_id)) {
@@ -210,7 +245,10 @@ export default function MessagesPage() {
       id: convId,
       vendorId: isVendor ? vendorData.id : option.vendorId,
       vendorName: isVendor ? vendorData.business_name : option.vendorName,
-      vendorEmail: isVendor ? option.email : option.email,
+      clientEmail: isVendor ? option.email : currentUser.email,
+      clientName: isVendor ? option.name : currentUser.full_name,
+      otherPartyEmail: isVendor ? option.email : option.email,
+      otherPartyName: option.name,
     });
     setComposeOpen(false);
   };
@@ -223,6 +261,8 @@ export default function MessagesPage() {
     );
   }
 
+  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+
   return (
     <div className="h-[calc(100vh-8rem)] max-w-7xl mx-auto p-4 md:p-8">
       <div className="grid md:grid-cols-3 gap-6 h-full">
@@ -230,7 +270,12 @@ export default function MessagesPage() {
         <Card className="border-2 border-black overflow-hidden">
           <CardHeader className="bg-black text-white">
             <div className="flex items-center justify-between">
-              <CardTitle className="font-black">Messages</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="font-black">Messages</CardTitle>
+                {totalUnread > 0 && (
+                  <Badge className="bg-red-500 text-white">{totalUnread}</Badge>
+                )}
+              </div>
               <Button
                 size="icon"
                 variant="ghost"
@@ -246,7 +291,7 @@ export default function MessagesPage() {
               {conversations.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
                   <p className="font-medium">No messages yet</p>
-                  <p className="text-sm mt-2">Start swiping to connect with vendors!</p>
+                  <p className="text-sm mt-2">Start connecting with {isVendor ? 'clients' : 'vendors'}!</p>
                 </div>
               ) : (
                 conversations.map((convo) => (
@@ -255,18 +300,23 @@ export default function MessagesPage() {
                     onClick={() => setSelectedConversation(convo)}
                     className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
                       selectedConversation?.id === convo.id ? "bg-gray-100" : ""
-                    }`}
+                    } ${convo.unreadCount > 0 ? "bg-blue-50" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold">
-                        {convo.vendorName[0]}
+                      <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {convo.otherPartyName[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-black truncate">
-                          {convo.vendorName}
-                        </h3>
-                        <p className="text-sm text-gray-600 truncate">
-                          {convo.lastMessage}
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
+                            {convo.otherPartyName}
+                          </h3>
+                          {convo.unreadCount > 0 && (
+                            <Badge className="bg-red-500 text-white ml-2 flex-shrink-0">{convo.unreadCount}</Badge>
+                          )}
+                        </div>
+                        <p className={`text-sm text-gray-600 truncate ${convo.unreadCount > 0 ? 'font-bold' : ''}`}>
+                          {convo.lastSender}: {convo.lastMessage}
                         </p>
                       </div>
                     </div>
@@ -291,7 +341,8 @@ export default function MessagesPage() {
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div className="flex-1">
-                  <CardTitle className="font-black">{selectedConversation.vendorName}</CardTitle>
+                  <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                  <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
                 </div>
               </CardHeader>
 
@@ -310,6 +361,9 @@ export default function MessagesPage() {
                             : "bg-gray-100 text-black border-2 border-gray-300"
                         }`}
                       >
+                        {!isMe && (
+                          <p className="text-xs font-bold mb-1 opacity-70">{msg.sender_name}</p>
+                        )}
                         <p className="font-medium">{msg.message}</p>
                       </div>
                     </div>
@@ -347,7 +401,7 @@ export default function MessagesPage() {
                   Select a Conversation
                 </h3>
                 <p className="text-gray-600">
-                  Choose a vendor to start messaging
+                  Choose a {isVendor ? 'client' : 'vendor'} to start messaging
                 </p>
               </div>
             </div>

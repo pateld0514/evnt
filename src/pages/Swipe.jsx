@@ -90,6 +90,7 @@ export default function SwipePage() {
 
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
+    const profileComplete = vendor.profile_complete === true;
     const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id);
     const matchesCategory = filters.category === "all" || vendor.category === filters.category;
     const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
@@ -117,7 +118,7 @@ export default function SwipePage() {
       }
     }
     
-    return isApproved && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+    return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
   });
 
   const currentVendor = filteredVendors[currentIndex];

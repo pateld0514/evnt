@@ -63,7 +63,7 @@ export default function EventVendorsPage() {
     initialData: [],
   });
 
-  const vendors = allVendors.filter(v => v.approval_status === "approved");
+  const vendors = allVendors.filter(v => v.approval_status === "approved" && v.profile_complete === true);
 
   const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors'],

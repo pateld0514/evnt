@@ -84,8 +84,32 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Account Type</p>
-              <p className="text-lg font-bold capitalize">{user?.user_type}</p>
+              <p className="text-lg font-bold capitalize">{user?.user_type || 'Client'}</p>
             </div>
+            {user?.location && (
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Location</p>
+                <p className="text-lg font-bold">{user.location}</p>
+              </div>
+            )}
+            {user?.phone && (
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Phone</p>
+                <p className="text-lg font-bold">{user.phone}</p>
+              </div>
+            )}
+            {user?.budget_range && (
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Budget Range</p>
+                <p className="text-lg font-bold capitalize">{user.budget_range.replace(/_/g, ' ')}</p>
+              </div>
+            )}
+            {user?.event_interests && user.event_interests.length > 0 && (
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Event Interests</p>
+                <p className="text-lg font-bold">{user.event_interests.join(', ')}</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -113,6 +137,18 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Price Range</p>
                   <p className="text-lg font-bold">{vendor.price_range}</p>
+                </div>
+              )}
+              {vendor.years_in_business && (
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Experience</p>
+                  <p className="text-lg font-bold">{vendor.years_in_business} years</p>
+                </div>
+              )}
+              {vendor.willing_to_travel && (
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Travel</p>
+                  <p className="text-lg font-bold">Available (up to {vendor.travel_radius || 'any'} miles)</p>
                 </div>
               )}
             </div>
