@@ -126,32 +126,90 @@ export default function ProfessionalInvoice({ booking }) {
         </div>
       </div>
 
-      {/* Payment Terms */}
-      <div className="border-t-2 border-gray-200 pt-8">
-        <h3 className="text-sm font-bold uppercase tracking-wide mb-4">Payment Terms & Escrow Protection</h3>
-        <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
-          <p>
-            <strong>Payment Processing:</strong> All payments are processed securely through Stripe Connect and are held in EVNT's escrow account.
-          </p>
-          <p>
-            <strong>Escrow Release:</strong> Funds will be released to the service provider 24 hours after the event date ({format(new Date(booking.event_date), "MMMM dd, yyyy")}), 
-            allowing time for any disputes or issues to be reported.
-          </p>
-          <p>
-            <strong>Buyer Protection:</strong> If services are not rendered as agreed, clients may file a dispute within 24 hours of the event for review and potential refund.
-          </p>
-          <p>
-            <strong>Cancellation Policy:</strong> Cancellations made more than 30 days before the event receive a full refund minus processing fees. 
-            Cancellations within 30 days may result in forfeiture of deposit per the service agreement.
-          </p>
+      {/* Legal Terms & Payment Information */}
+      <div className="border-t-2 border-gray-200 pt-8 space-y-8">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-wide mb-4 text-gray-800">PAYMENT TERMS & PROCESSING</h3>
+          <div className="space-y-3 text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
+            <p>
+              <strong>Payment Processing:</strong> All payments are processed securely through Stripe Connect. Payment is due upon receipt unless otherwise stated. 
+              Funds are held in EVNT's secure escrow account pending successful service completion.
+            </p>
+            <p>
+              <strong>Escrow Release:</strong> Vendor payment will be released within 24-48 hours after the event date ({format(new Date(booking.event_date), "MMMM dd, yyyy")}), 
+              subject to dispute resolution period and compliance with platform policies.
+            </p>
+            <p>
+              <strong>Platform Fee:</strong> The EVNT platform fee covers secure payment processing, dispute resolution services, customer support, 
+              marketplace access, and platform maintenance.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-wide mb-4 text-gray-800">CANCELLATION & REFUND POLICY</h3>
+          <div className="space-y-3 text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
+            <p><strong>Client Cancellation:</strong></p>
+            <ul className="list-disc ml-5 space-y-1">
+              <li>More than 60 days before event: Full refund minus 5% processing fee</li>
+              <li>30-60 days before event: 50% refund</li>
+              <li>Less than 30 days before event: No refund, except as required by law or agreed in service contract</li>
+            </ul>
+            <p className="mt-3">
+              <strong>Vendor Cancellation:</strong> If Vendor cancels within 30 days of the event without cause, Client shall receive a full refund 
+              plus 10% of the service fee as compensation. Vendor may forfeit platform privileges.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-wide mb-4 text-gray-800">EVNT CLIENT MARKETPLACE TERMS</h3>
+          <div className="text-xs text-gray-700 leading-relaxed bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+            <p className="font-bold mb-2">IMPORTANT NOTICE:</p>
+            <p className="mb-2">
+              <strong>Evnt, Inc.</strong> operates a technology marketplace platform that connects event clients with independent service providers. 
+              EVNT does not provide event services directly and is not a party to any agreement between Client and Vendor.
+            </p>
+            <p className="mb-2">
+              <strong>Independent Contractors:</strong> All vendors are independent contractors and not employees or agents of EVNT. 
+              Vendors are solely responsible for service performance, quality, equipment, insurance, permits, and all aspects of service delivery.
+            </p>
+            <p className="mb-2">
+              <strong>Service Agreements:</strong> Any agreements for services are solely between Client and Vendor. The service provider 
+              ({booking.vendor_name}) is responsible for fulfilling all commitments made in the booking.
+            </p>
+            <p>
+              <strong>Liability Limitation:</strong> EVNT is not responsible for Vendor performance, service quality, delays, cancellations, 
+              damages, or disputes arising from services. EVNT's role is limited to facilitating discovery, booking, and payment processing.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-wide mb-4 text-gray-800">DISPUTE RESOLUTION</h3>
+          <div className="space-y-2 text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
+            <p>
+              <strong>Reporting Period:</strong> Clients must report service issues within 24 hours of the event date for dispute review.
+            </p>
+            <p>
+              <strong>Resolution Process:</strong> EVNT may, but is not obligated to, assist with dispute mediation. EVNT's determination 
+              regarding platform-related payment disputes is final and binding.
+            </p>
+            <p>
+              <strong>Chargebacks:</strong> Unauthorized chargebacks may result in account suspension and legal action. 
+              All disputes must first be addressed through EVNT's resolution process.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="mt-12 pt-8 border-t border-gray-200 text-center text-xs text-gray-500">
-        <p>EVNT Platform Services LLC | Washington, DC</p>
-        <p className="mt-1">For questions regarding this invoice, contact support@evnt.com</p>
-        <p className="mt-1">Invoice generated on {format(new Date(), "MMMM dd, yyyy 'at' h:mm a")}</p>
+      <div className="mt-12 pt-8 border-t-2 border-gray-800 text-center text-xs text-gray-600">
+        <p className="font-bold text-sm mb-2">Evnt, Inc.</p>
+        <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
+        <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
+        <p className="mt-3 text-gray-500">Invoice generated on {format(new Date(), "MMMM dd, yyyy 'at' h:mm a")}</p>
+        <p className="mt-2 text-gray-500">This invoice is subject to EVNT's Marketplace Terms and Conditions</p>
       </div>
     </div>
   );

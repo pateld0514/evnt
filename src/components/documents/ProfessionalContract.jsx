@@ -46,17 +46,39 @@ export default function ProfessionalContract({ booking, vendor }) {
         </p>
       </div>
 
+      {/* Important Notice */}
+      <div className="mb-8 bg-yellow-50 border-2 border-yellow-400 p-6 rounded-lg">
+        <h2 className="text-lg font-bold mb-3 text-yellow-900">⚠️ IMPORTANT MARKETPLACE NOTICE</h2>
+        <p className="text-sm mb-2 font-bold">
+          Evnt, Inc. is a technology marketplace platform and does NOT provide event services.
+        </p>
+        <p className="text-sm mb-2">
+          Service Provider ({booking.vendor_name}) is an independent contractor, not an employee or agent of EVNT. 
+          This agreement is between Client and Service Provider only. EVNT facilitates the connection and payment but is not 
+          responsible for service performance, quality, delays, or disputes.
+        </p>
+        <p className="text-sm">
+          By proceeding with this booking, both parties acknowledge they have read and agree to the EVNT Vendor Marketplace Agreement 
+          and Client Terms outlined in this document.
+        </p>
+      </div>
+
       {/* Recitals */}
       <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4 uppercase">Recitals</h2>
+        <h2 className="text-lg font-bold mb-4 uppercase border-b-2 border-black pb-2">Recitals & Background</h2>
         <p className="mb-3">
-          WHEREAS, Service Provider is engaged in the business of providing {vendor?.category?.replace(/_/g, ' ') || "event"} services;
+          <strong>WHEREAS,</strong> Service Provider is an independent contractor engaged in the business of providing 
+          {vendor?.category?.replace(/_/g, ' ') || "event"} services through the EVNT marketplace platform;
         </p>
         <p className="mb-3">
-          WHEREAS, Client desires to engage Service Provider to provide such services for an event (the "Event");
+          <strong>WHEREAS,</strong> Client desires to engage Service Provider to provide such services for an event (the "Event");
+        </p>
+        <p className="mb-3">
+          <strong>WHEREAS,</strong> EVNT, Inc. operates a technology platform that facilitates connections between clients and 
+          independent service providers but does not provide services directly;
         </p>
         <p>
-          NOW, THEREFORE, in consideration of the mutual covenants and agreements herein contained, and for other good and 
+          <strong>NOW, THEREFORE,</strong> in consideration of the mutual covenants and agreements herein contained, and for other good and 
           valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
         </p>
       </div>
@@ -198,12 +220,12 @@ export default function ProfessionalContract({ booking, vendor }) {
       </div>
 
       {/* Article 7: General Provisions */}
-      <div className="mb-12">
+      <div className="mb-8">
         <h2 className="text-lg font-bold mb-4">ARTICLE 7: GENERAL PROVISIONS</h2>
         <div className="ml-6 space-y-3">
           <p>
-            <span className="font-semibold">7.1 Entire Agreement:</span> This Agreement constitutes the entire agreement between the Parties 
-            and supersedes all prior negotiations, representations, or agreements.
+            <span className="font-semibold">7.1 Entire Agreement:</span> This Agreement, together with the EVNT Vendor Marketplace Agreement 
+            and Client Terms, constitutes the entire agreement between the Parties and supersedes all prior negotiations, representations, or agreements.
           </p>
           <p>
             <span className="font-semibold">7.2 Amendments:</span> This Agreement may only be amended in writing signed by both Parties.
@@ -214,8 +236,115 @@ export default function ProfessionalContract({ booking, vendor }) {
           </p>
           <p>
             <span className="font-semibold">7.4 Digital Signatures:</span> The Parties agree that digital signatures executed through 
-            the EVNT Platform shall have the same legal effect as handwritten signatures.
+            the EVNT Platform shall have the same legal effect as handwritten signatures under the ESIGN Act and applicable state law.
           </p>
+          <p>
+            <span className="font-semibold">7.5 Independent Contractors:</span> Service Provider is an independent contractor and not an 
+            employee, agent, or representative of EVNT or Client. Service Provider is solely responsible for all taxes, insurance, licenses, 
+            permits, and equipment.
+          </p>
+        </div>
+      </div>
+
+      {/* EVNT Marketplace Terms */}
+      <div className="mb-12 page-break-before">
+        <div className="bg-gray-100 p-8 rounded-lg border-2 border-gray-300">
+          <h2 className="text-xl font-black mb-6 text-center uppercase">EVNT VENDOR MARKETPLACE AGREEMENT</h2>
+          
+          <div className="space-y-4 text-xs leading-relaxed">
+            <p className="font-bold">
+              By registering for, accessing, or providing services through the EVNT platform, Vendor ({booking.vendor_name}) 
+              agrees to be bound by these terms.
+            </p>
+
+            <div>
+              <p className="font-bold text-sm mb-2">PLATFORM ROLE AND PURPOSE</p>
+              <p>
+                EVNT operates a technology-based marketplace that connects event clients with independent event service providers. 
+                EVNT does not provide event services, does not control Vendor operations, and is not a party to any agreement between 
+                Vendor and Client beyond payment facilitation.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">INDEPENDENT CONTRACTOR STATUS</p>
+              <p>
+                Vendor is an independent contractor and not an employee, agent, partner, or representative of EVNT. Vendor has no 
+                authority to bind EVNT. Vendor is solely responsible for all taxes, withholdings, insurance, permits, licenses, 
+                certifications, equipment, personnel, and expenses related to services.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">PAYMENTS, FEES, AND PAYOUTS</p>
+              <p>
+                Clients remit payment through the EVNT platform. EVNT charges Vendor a platform service fee (currently {booking.platform_fee_percent}%) 
+                for marketplace access, payment processing, dispute resolution, and support services. EVNT will remit Vendor payouts within 24-48 hours 
+                following successful completion of services, subject to dispute resolution, refunds, chargebacks, or violations of this Agreement.
+              </p>
+              <p className="mt-2">
+                EVNT reserves the right to withhold, delay, or reverse payouts in cases of suspected fraud, non-performance, misconduct, or Client disputes.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">QUALITY STANDARDS AND CONDUCT</p>
+              <p>
+                Vendor agrees to maintain high standards of professionalism, responsiveness, accuracy, and reliability. Vendor shall not engage in 
+                misleading representations, discriminatory behavior, harassment, illegal activity, or conduct that harms Clients, EVNT, or the 
+                platform's reputation. Violation may result in immediate account suspension or termination.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">INSURANCE AND LIABILITY</p>
+              <p>
+                Vendor is solely responsible for maintaining appropriate insurance coverage, including general liability and any industry-specific insurance. 
+                EVNT does not provide insurance coverage for Vendor or Vendor's services. Vendor assumes all risk arising from performance of services.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">INDEMNIFICATION</p>
+              <p>
+                Vendor agrees to indemnify, defend, and hold harmless EVNT and its officers, directors, employees, and affiliates from any claims, damages, 
+                losses, liabilities, costs, or expenses arising out of or related to Vendor's services, actions, omissions, breaches of this Agreement, 
+                or interactions with Clients.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">LIMITATION OF LIABILITY</p>
+              <p>
+                To the maximum extent permitted by law, EVNT shall not be liable for indirect, incidental, consequential, special, or punitive damages. 
+                EVNT's total liability shall not exceed the platform fees paid by Vendor to EVNT during the six (6) months preceding the claim.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">NON-CIRCUMVENTION</p>
+              <p>
+                Vendor agrees not to bypass the EVNT platform to transact directly with Clients introduced through EVNT for a period of twelve (12) months 
+                following initial contact. Violation may result in liability for unpaid platform fees and account termination.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">TERMINATION</p>
+              <p>
+                Either party may terminate this Agreement at any time. EVNT may immediately suspend or terminate Vendor access for violations, misconduct, 
+                or harm to platform integrity. Termination does not relieve Vendor of obligations incurred prior to termination.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-bold text-sm mb-2">GOVERNING LAW</p>
+              <p>
+                This Agreement shall be governed by the laws of the District of Columbia, without regard to conflict of law principles. 
+                Any disputes shall be resolved through binding arbitration in Washington, DC, except where prohibited by law.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -257,10 +386,12 @@ export default function ProfessionalContract({ booking, vendor }) {
           </div>
         </div>
 
-        <div className="bg-gray-100 p-4 rounded mt-8 text-xs text-center text-gray-600">
-          <p>This agreement is facilitated through EVNT Platform Services LLC</p>
-          <p className="mt-1">Washington, DC | support@evnt.com</p>
-          <p className="mt-1">Contract ID: {contractNumber}</p>
+        <div className="bg-black text-white p-6 rounded-lg mt-8 text-xs text-center">
+          <p className="font-bold text-sm mb-2">This agreement is facilitated through Evnt, Inc.</p>
+          <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
+          <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
+          <p className="mt-3 opacity-75">Contract ID: {contractNumber}</p>
+          <p className="mt-1 opacity-75">This is a legally binding agreement. Both parties should retain a copy for their records.</p>
         </div>
       </div>
     </div>
