@@ -43,7 +43,7 @@ export default function ClientRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.phone || !formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience) {
+    if (!formData.phone || !formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience || !formData.preferred_contact) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -52,6 +52,7 @@ export default function ClientRegistrationPage() {
     try {
       await base44.auth.updateMe({
         ...formData,
+        user_type: "client",
         onboarding_complete: true
       });
       
@@ -86,11 +87,12 @@ export default function ClientRegistrationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-lg font-bold">Company Name (Optional)</Label>
+                <Label className="text-lg font-bold">Company Name</Label>
+                <p className="text-sm text-gray-500">Optional - for corporate events only</p>
                 <Input
                   value={formData.company_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="For corporate events"
+                  placeholder="Leave blank for personal events"
                   className="border-2 border-gray-300 h-12 text-lg"
                 />
               </div>

@@ -74,8 +74,9 @@ export default function VendorRegistrationPage() {
     
     if (!formData.business_name || !formData.category || !formData.description || 
         !formData.phone || !formData.location || !formData.contact_email || 
-        !formData.id_verification_url || !formData.years_in_business || !formData.average_price) {
-      toast.error("Please fill in all required fields including ID verification");
+        !formData.id_verification_url || !formData.years_in_business || !formData.average_price ||
+        (formData.willing_to_travel && !formData.travel_radius)) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -102,6 +103,7 @@ export default function VendorRegistrationPage() {
 
       await base44.auth.updateMe({
         vendor_id: vendor.id,
+        user_type: "vendor",
         phone: formData.phone,
         location: formData.location,
         approval_status: "pending",
@@ -276,7 +278,7 @@ export default function VendorRegistrationPage() {
                 <Checkbox
                   id="travel"
                   checked={formData.willing_to_travel}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, willing_to_travel: checked }))}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, willing_to_travel: checked, travel_radius: checked ? formData.travel_radius : "" }))}
                 />
                 <div className="flex-1">
                   <label htmlFor="travel" className="font-bold cursor-pointer">
@@ -288,7 +290,7 @@ export default function VendorRegistrationPage() {
 
               {formData.willing_to_travel && (
                 <div className="space-y-2 ml-7">
-                  <Label className="font-bold">Maximum Travel Distance (miles)</Label>
+                  <Label className="font-bold">Maximum Travel Distance (miles) *</Label>
                   <Input
                     type="number"
                     value={formData.travel_radius}
@@ -296,6 +298,7 @@ export default function VendorRegistrationPage() {
                     placeholder="50"
                     className="border-2 border-gray-300 h-12"
                     min="0"
+                    required
                   />
                 </div>
               )}
