@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download, Star } from "lucide-react";
+import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download, Star, MessageSquare } from "lucide-react";
 import ReviewDialog from "../components/vendor/ReviewDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Invoice from "../components/documents/Invoice";
 import ServiceAgreement from "../components/documents/ServiceAgreement";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +30,7 @@ const statusConfig = {
 };
 
 export default function BookingsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -211,6 +214,14 @@ export default function BookingsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        onClick={() => navigate(createPageUrl("Messages") + `?vendor=${booking.vendor_id}`)}
+                        variant="outline"
+                        className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Message
+                      </Button>
                       <Button
                         onClick={() => handleViewDetails(booking)}
                         className="bg-black text-white hover:bg-gray-800 font-bold"
