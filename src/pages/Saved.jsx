@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,20 @@ export default function SavedPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user.onboarding_complete) {
+          navigate(createPageUrl("Onboarding"));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    checkOnboarding();
+  }, [navigate]);
 
   const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
     queryKey: ['saved-vendors'],
