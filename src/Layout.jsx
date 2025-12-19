@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [userType, setUserType] = useState(null);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('viewMode') || 'desktop';
   });
@@ -18,8 +19,10 @@ export default function Layout({ children, currentPageName }) {
         const user = await base44.auth.me();
         if (user.email === "pateld0514@gmail.com") {
           setUserType("admin");
+          setOnboardingComplete(true);
         } else {
           setUserType(user.user_type);
+          setOnboardingComplete(user.onboarding_complete || false);
         }
       } catch (error) {
         console.error(error);
@@ -58,6 +61,10 @@ export default function Layout({ children, currentPageName }) {
 
   const navItems = userType === "admin" ? adminNavItems : userType === "vendor" ? vendorNavItems : clientNavItems;
 
+  // Only allow About and Profile pages if onboarding not complete
+  const allowedPages = ["About", "Profile", "Onboarding", "ClientRegistration", "VendorRegistration", "VendorPending"];
+  const shouldHideNav = !onboardingComplete && !allowedPages.includes(currentPageName);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -65,7 +72,7 @@ export default function Layout({ children, currentPageName }) {
         <div className={`${isMobileView ? 'px-4' : 'max-w-7xl mx-auto px-6 lg:px-8'}`}>
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to={createPageUrl("Home")} className="flex items-center gap-2">
+            <Link to={createPageUrl("About")} className="flex items-center gap-2">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                 <span className="text-2xl font-black text-black">E</span>
               </div>
@@ -75,31 +82,34 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className={`${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-1`}>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
-                      isActive
-                        ? "bg-white text-black"
-                        : "text-white hover:bg-gray-800"
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5`} />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+            {!shouldHideNav && (
+              <nav className={`${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-1`}>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
+                        isActive
+                          ? "bg-white text-black"
+                          : "text-white hover:bg-gray-800"
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5`} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
-              {/* View Mode Toggle */}
-              <Button
+              {/* View Mode Toggle - Only for admin */}
+              {userType === "admin" && (
+                <Button
                 onClick={toggleViewMode}
                 variant="ghost"
                 size="sm"
@@ -117,7 +127,8 @@ export default function Layout({ children, currentPageName }) {
                     <span className="hidden sm:inline">Mobile</span>
                   </>
                 )}
-              </Button>
+                </Button>
+              )}
 
               <Link 
                 to={createPageUrl("About")}
@@ -126,13 +137,15 @@ export default function Layout({ children, currentPageName }) {
                 <Info className="w-5 h-5" />
                 <span className="font-medium">About</span>
               </Link>
-              <Link 
-                to={createPageUrl("Profile")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
-              >
-                <User className="w-5 h-5" />
-                <span className={`font-medium ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
-              </Link>
+              {onboardingComplete && (
+                <Link 
+                  to={createPageUrl("Profile")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
+                >
+                  <User className="w-5 h-5" />
+                  <span className={`font-medium ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -146,30 +159,32 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom Navigation - Shows based on view mode */}
-      <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50`}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-around items-center py-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
-                    isActive
-                      ? "text-white"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
-                  <span className="text-xs font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
+      {!shouldHideNav && (
+        <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-around items-center py-3">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                      isActive
+                        ? "text-white"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
+                    <span className="text-xs font-medium">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
     </div>
   );
 }

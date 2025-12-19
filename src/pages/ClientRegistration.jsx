@@ -5,11 +5,13 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import CityAutocomplete from "../components/forms/CityAutocomplete";
 
 const eventTypes = [
   "Wedding", "Birthday", "Sweet 16", "Baby Shower", 
@@ -23,7 +25,10 @@ export default function ClientRegistrationPage() {
     phone: "",
     location: "",
     event_interests: [],
-    budget_range: ""
+    budget_range: "",
+    company_name: "",
+    event_planning_experience: "",
+    preferred_contact: "email"
   });
 
   const handleEventToggle = (event) => {
@@ -38,7 +43,7 @@ export default function ClientRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.phone || !formData.location || formData.event_interests.length === 0 || !formData.budget_range) {
+    if (!formData.phone || !formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -50,7 +55,7 @@ export default function ClientRegistrationPage() {
         onboarding_complete: true
       });
       
-      toast.success("Profile created successfully!");
+      toast.success("Profile created successfully! Welcome to EVNT!");
       navigate(createPageUrl("Home"));
     } catch (error) {
       toast.error("Failed to create profile");
@@ -62,31 +67,42 @@ export default function ClientRegistrationPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full border-4 border-black">
         <CardHeader className="bg-black text-white">
-          <CardTitle className="text-3xl font-black">Create Your Profile</CardTitle>
-          <p className="text-gray-300 mt-2">Tell us about yourself so we can personalize your experience</p>
+          <CardTitle className="text-3xl font-black">Create Your Client Profile</CardTitle>
+          <p className="text-gray-300 mt-2">Tell us about your events so we can find the perfect vendors</p>
         </CardHeader>
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">Phone Number *</Label>
-              <Input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="(555) 123-4567"
-                className="border-2 border-gray-300 h-12 text-lg"
-                required
-              />
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-lg font-bold">Phone Number *</Label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="(555) 123-4567"
+                  className="border-2 border-gray-300 h-12 text-lg"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-lg font-bold">Company Name (Optional)</Label>
+                <Input
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="For corporate events"
+                  className="border-2 border-gray-300 h-12 text-lg"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-lg font-bold">Location *</Label>
-              <Input
+              <CityAutocomplete
                 value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="City, State"
+                onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+                placeholder="Search your city..."
                 className="border-2 border-gray-300 h-12 text-lg"
-                required
               />
             </div>
 
@@ -123,7 +139,43 @@ export default function ClientRegistrationPage() {
                   <SelectItem value="1k_5k">$1,000 - $5,000</SelectItem>
                   <SelectItem value="5k_10k">$5,000 - $10,000</SelectItem>
                   <SelectItem value="10k_25k">$10,000 - $25,000</SelectItem>
-                  <SelectItem value="25k_plus">$25,000+</SelectItem>
+                  <SelectItem value="25k_50k">$25,000 - $50,000</SelectItem>
+                  <SelectItem value="50k_plus">$50,000+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Event Planning Experience *</Label>
+              <Select 
+                value={formData.event_planning_experience} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, event_planning_experience: value }))}
+              >
+                <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
+                  <SelectValue placeholder="Select your experience level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="first_time">First time planning an event</SelectItem>
+                  <SelectItem value="some_experience">Planned a few events before</SelectItem>
+                  <SelectItem value="experienced">Very experienced</SelectItem>
+                  <SelectItem value="professional">Professional event planner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Preferred Contact Method</Label>
+              <Select 
+                value={formData.preferred_contact} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_contact: value }))}
+              >
+                <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="phone">Phone</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
                 </SelectContent>
               </Select>
             </div>
