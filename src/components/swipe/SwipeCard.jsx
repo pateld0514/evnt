@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import BookingForm from "../booking/BookingForm";
 import ReviewsList from "../vendor/ReviewsList";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const categoryIcons = {
   dj: "🎧",
@@ -46,6 +48,7 @@ const categoryLabels = {
 };
 
 export default function SwipeCard({ vendor, onSwipe }) {
+  const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const x = useMotionValue(0);
@@ -256,7 +259,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
                     href={`mailto:${vendor.contact_email}`}
                     className="flex items-center gap-2 text-black hover:underline font-medium"
                   >
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 text-gray-500" />
                     {vendor.contact_email}
                   </a>
                 )}
@@ -265,7 +268,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
                     href={`tel:${vendor.contact_phone}`}
                     className="flex items-center gap-2 text-black hover:underline font-medium"
                   >
-                    <Phone className="w-4 h-4" />
+                    <Phone className="w-4 h-4 text-gray-500" />
                     {vendor.contact_phone}
                   </a>
                 )}
@@ -276,23 +279,65 @@ export default function SwipeCard({ vendor, onSwipe }) {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-black hover:underline font-medium"
                   >
-                    <Globe className="w-4 h-4" />
+                    <Globe className="w-4 h-4 text-gray-500" />
                     Visit Website
                   </a>
                 )}
               </div>
             </div>
 
-            <Button
-              onClick={() => {
-                setShowDetails(false);
-                setBookingOpen(true);
-              }}
-              className="w-full bg-black text-white hover:bg-gray-800 font-bold"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Book This Vendor
-            </Button>
+            {(vendor.instagram || vendor.facebook || vendor.twitter || vendor.tiktok) && (
+              <div>
+                <h3 className="font-bold text-lg mb-3">Social Media</h3>
+                <div className="space-y-2">
+                  {vendor.instagram && (
+                    <div className="flex items-center gap-2">
+                      <Instagram className="w-4 h-4 text-pink-600" />
+                      <span className="text-gray-700">{vendor.instagram}</span>
+                    </div>
+                  )}
+                  {vendor.facebook && (
+                    <div className="flex items-center gap-2">
+                      <Facebook className="w-4 h-4 text-blue-600" />
+                      <span className="text-gray-700">{vendor.facebook}</span>
+                    </div>
+                  )}
+                  {vendor.twitter && (
+                    <div className="flex items-center gap-2">
+                      <Twitter className="w-4 h-4 text-blue-400" />
+                      <span className="text-gray-700">{vendor.twitter}</span>
+                    </div>
+                  )}
+                  {vendor.tiktok && (
+                    <div className="flex items-center gap-2">
+                      <Music2 className="w-4 h-4 text-black" />
+                      <span className="text-gray-700">{vendor.tiktok}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`)}
+                className="border-2 border-black hover:bg-black hover:text-white font-bold"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Message
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDetails(false);
+                  setBookingOpen(true);
+                }}
+                className="bg-black text-white hover:bg-gray-800 font-bold"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Book
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
