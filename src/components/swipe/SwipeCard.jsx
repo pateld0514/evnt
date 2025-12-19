@@ -336,14 +336,32 @@ export default function SwipeCard({ vendor, onSwipe }) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 onClick={() => navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`)}
                 className="border-2 border-black hover:bg-black hover:text-white font-bold"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Message
+                <MessageSquare className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: vendor.business_name,
+                        text: `Check out ${vendor.business_name} on EVNT!`
+                      });
+                    } catch (error) {}
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link copied!");
+                  }
+                }}
+                className="border-2 border-black hover:bg-black hover:text-white font-bold"
+              >
+                <Globe className="w-4 h-4" />
               </Button>
               <Button
                 onClick={() => {
@@ -352,8 +370,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
                 }}
                 className="bg-black text-white hover:bg-gray-800 font-bold"
               >
-                <Calendar className="w-4 h-4 mr-2" />
-                Book
+                <Calendar className="w-4 h-4" />
               </Button>
             </div>
           </div>

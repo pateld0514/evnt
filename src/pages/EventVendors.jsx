@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageSquare, Calendar, MapPin, Loader2, ArrowLeft } from "lucide-react";
+import { Heart, MessageSquare, Calendar, MapPin, Loader2, ArrowLeft, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BookingForm from "../components/booking/BookingForm";
+import VendorSearch from "../components/search/VendorSearch";
 
 const categoryIcons = {
   dj: "🎧",
@@ -56,6 +57,7 @@ export default function EventVendorsPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -77,7 +79,22 @@ export default function EventVendorsPage() {
     initialData: [],
   });
 
-  const vendors = allVendors.filter(v => v.approval_status === "approved" && v.profile_complete === true);
+  const vendors = allVendors.filter(v => {
+    const isApproved = v.approval_status === "approved" && v.profile_complete === true;
+    if (!isApproved) return false;
+    
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      return (
+        v.business_name?.toLowerCase().includes(search) ||
+        v.description?.toLowerCase().includes(search) ||
+        v.location?.toLowerCase().includes(search) ||
+        v.category?.toLowerCase().includes(search)
+      );
+    }
+    
+    return true;
+  });
 
   const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors'],
@@ -137,6 +154,23 @@ export default function EventVendorsPage() {
     return eventType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
+  const handleShare = async (vendor) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: vendor.business_name,
+          text: `Check out ${vendor.business_name} on EVNT!`,
+          url: window.location.href
+        });
+      } catch (error) {
+        // User cancelled or error
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -157,7 +191,7 @@ export default function EventVendorsPage() {
           Back to Home
         </Button>
         
-        <div className="text-center">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-black text-black mb-2">
             {getEventTitle()} Vendors
           </h1>
@@ -165,7 +199,27 @@ export default function EventVendorsPage() {
             Browse vendors perfect for your {getEventTitle().toLowerCase()}
           </p>
         </div>
+        
+        <div className="max-w-2xl mx-auto">
+          <VendorSearch 
+            onSearch={setSearchTerm}
+            placeholder="Search by name, location, or description..."
+          />
+        </div>
       </div>
+
+      {vendors.length === 0 && searchTerm && (
+        <div className="text-center py-16">
+          <p className="text-gray-500 text-lg">No vendors found matching "{searchTerm}"</p>
+          <Button
+            variant="outline"
+            className="mt-4 border-2 border-black"
+            onClick={() => setSearchTerm("")}
+          >
+            Clear Search
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {vendors.map((vendor) => (
@@ -220,7 +274,7 @@ export default function EventVendorsPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -236,6 +290,14 @@ export default function EventVendorsPage() {
                   onClick={() => handleMessage(vendor)}
                 >
                   <MessageSquare className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                  onClick={() => handleShare(vendor)}
+                >
+                  <Share2 className="w-4 h-4" />
                 </Button>
                 <Button
                   size="sm"

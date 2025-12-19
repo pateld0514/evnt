@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Trash2, MessageSquare, MapPin, Loader2, Calendar } from "lucide-react";
+import { Heart, Trash2, MessageSquare, MapPin, Loader2, Calendar, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BookingForm from "../components/booking/BookingForm";
+import VendorSearch from "../components/search/VendorSearch";
 
 const categoryIcons = {
   dj: "🎧",
@@ -56,6 +57,7 @@ export default function SavedPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -98,9 +100,24 @@ export default function SavedPage() {
     return uniqueCategories;
   }, [savedVendors]);
 
-  const filteredSaved = savedVendors.filter(saved => 
-    selectedCategory === "all" || saved.vendor_category === selectedCategory
-  );
+  const filteredSaved = savedVendors.filter(saved => {
+    const categoryMatch = selectedCategory === "all" || saved.vendor_category === selectedCategory;
+    if (!categoryMatch) return false;
+    
+    if (searchTerm) {
+      const vendor = getVendorDetails(saved.vendor_id);
+      if (!vendor) return false;
+      
+      const search = searchTerm.toLowerCase();
+      return (
+        vendor.business_name?.toLowerCase().includes(search) ||
+        vendor.description?.toLowerCase().includes(search) ||
+        vendor.location?.toLowerCase().includes(search)
+      );
+    }
+    
+    return true;
+  });
 
   const getVendorDetails = (vendorId) => {
     return allVendors.find(v => v.id === vendorId);
@@ -120,6 +137,23 @@ export default function SavedPage() {
     if (vendor) {
       setSelectedVendor(vendor);
       setDetailsOpen(true);
+    }
+  };
+
+  const handleShare = async (vendor) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: vendor.business_name,
+          text: `Check out ${vendor.business_name} on EVNT!`,
+          url: window.location.href
+        });
+      } catch (error) {
+        // User cancelled
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
     }
   };
 
@@ -145,28 +179,39 @@ export default function SavedPage() {
         </p>
       </div>
 
-      {savedVendors.length > 0 && availableCategories.length > 0 && (
-        <div className="mb-8 flex justify-center">
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-4xl">
-            <TabsList className="grid w-full h-auto p-1 bg-gray-100 border-2 border-black" style={{ gridTemplateColumns: `repeat(${availableCategories.length + 1}, minmax(0, 1fr))` }}>
-              <TabsTrigger 
-                value="all" 
-                className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
-              >
-                All
-              </TabsTrigger>
-              {availableCategories.map(cat => (
-                <TabsTrigger 
-                  key={cat} 
-                  value={cat} 
-                  className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
-                >
-                  {categoryLabels[cat] || cat}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
+      {savedVendors.length > 0 && (
+        <>
+          <div className="mb-6 max-w-2xl mx-auto">
+            <VendorSearch 
+              onSearch={setSearchTerm}
+              placeholder="Search your saved vendors..."
+            />
+          </div>
+          
+          {availableCategories.length > 0 && (
+            <div className="mb-8 flex justify-center">
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-4xl">
+                <TabsList className="grid w-full h-auto p-1 bg-gray-100 border-2 border-black" style={{ gridTemplateColumns: `repeat(${availableCategories.length + 1}, minmax(0, 1fr))` }}>
+                  <TabsTrigger 
+                    value="all" 
+                    className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
+                  >
+                    All
+                  </TabsTrigger>
+                  {availableCategories.map(cat => (
+                    <TabsTrigger 
+                      key={cat} 
+                      value={cat} 
+                      className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold"
+                    >
+                      {categoryLabels[cat] || cat}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
+        </>
       )}
 
       {filteredSaved.length === 0 ? (
@@ -234,7 +279,7 @@ export default function SavedPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -250,6 +295,14 @@ export default function SavedPage() {
                       onClick={() => handleMessage(vendor)}
                     >
                       <MessageSquare className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                      onClick={() => handleShare(vendor)}
+                    >
+                      <Share2 className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"

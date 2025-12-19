@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Sparkles, ArrowRight, PartyPopper, Cake, Baby, Loader2 } from "lucide-react";
+import { Heart, Sparkles, ArrowRight, PartyPopper, Cake, Baby, Loader2, MessageSquare } from "lucide-react";
 
 const eventTypes = [
   {
@@ -167,8 +167,48 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-black text-black mb-4">
+              Quick Actions
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <Button
+              size="lg"
+              className="h-24 bg-black text-white hover:bg-gray-800 font-bold text-lg flex flex-col items-center justify-center gap-2"
+              onClick={() => navigate(createPageUrl("Swipe"))}
+            >
+              <Sparkles className="w-6 h-6" />
+              Browse All Vendors
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-24 border-2 border-black hover:bg-black hover:text-white font-bold text-lg flex flex-col items-center justify-center gap-2"
+              onClick={() => navigate(createPageUrl("Saved"))}
+            >
+              <Heart className="w-6 h-6" />
+              View Favorites
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-24 border-2 border-black hover:bg-black hover:text-white font-bold text-lg flex flex-col items-center justify-center gap-2"
+              onClick={() => navigate(createPageUrl("Messages"))}
+            >
+              <MessageSquare className="w-6 h-6" />
+              Messages
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* How It Works */}
-      <div className="bg-gray-50 py-20">
+      <div className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black text-black mb-4">
@@ -212,6 +252,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      </div>
+      );
+      }
