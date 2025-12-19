@@ -11,8 +11,8 @@ import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
-import VendorProfileSetup from './pages/VendorProfileSetup';
 import VendorRegistration from './pages/VendorRegistration';
+import VendorProfileSetup from './pages/VendorProfileSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -30,8 +30,8 @@ export const PAGES = {
     "Swipe": Swipe,
     "VendorDashboard": VendorDashboard,
     "VendorPending": VendorPending,
-    "VendorProfileSetup": VendorProfileSetup,
     "VendorRegistration": VendorRegistration,
+    "VendorProfileSetup": VendorProfileSetup,
 }
 
 export const pagesConfig = {

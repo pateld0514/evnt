@@ -73,11 +73,12 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to={createPageUrl("About")} className="flex items-center gap-2">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6916c209c63e57c1fb8540f0/5cd687969_3b1df0bd6_logo1.jpg"
-                alt="EVNT"
-                className="h-10 w-auto"
-              />
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-2xl font-black text-black">E</span>
+              </div>
+              <span className="text-2xl font-black text-white tracking-tighter">
+                EVNT
+              </span>
             </Link>
 
             {/* Desktop Navigation */}

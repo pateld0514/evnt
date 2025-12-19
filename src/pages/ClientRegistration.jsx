@@ -72,11 +72,7 @@ export default function ClientRegistrationPage() {
           <p className="text-gray-300 mt-2">Tell us about your events so we can find the perfect vendors</p>
         </CardHeader>
         <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6" onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-              e.preventDefault();
-            }
-          }}>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-lg font-bold">Phone Number *</Label>
