@@ -26,7 +26,6 @@ export default function OnboardingPage() {
 
   const handleUserTypeSelect = async (userType) => {
     setLoading(true);
-    await base44.auth.updateMe({ user_type: userType });
     
     if (userType === "client") {
       navigate(createPageUrl("ClientRegistration"));
@@ -45,8 +44,7 @@ export default function OnboardingPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
           <Card 
-            className="border-4 border-black hover:shadow-2xl transition-all cursor-pointer group"
-            onClick={() => !loading && handleUserTypeSelect("client")}
+            className="border-4 border-black hover:shadow-2xl transition-all group"
           >
             <CardHeader className="text-center pb-4">
               <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -59,6 +57,8 @@ export default function OnboardingPage() {
                 Find and book amazing vendors for your special occasion
               </p>
               <Button 
+                type="button"
+                onClick={() => !loading && handleUserTypeSelect("client")}
                 className="w-full bg-black text-white hover:bg-gray-800 text-lg h-14 font-bold"
                 disabled={loading}
               >
@@ -68,8 +68,7 @@ export default function OnboardingPage() {
           </Card>
 
           <Card 
-            className="border-4 border-black hover:shadow-2xl transition-all cursor-pointer group"
-            onClick={() => !loading && handleUserTypeSelect("vendor")}
+            className="border-4 border-black hover:shadow-2xl transition-all group"
           >
             <CardHeader className="text-center pb-4">
               <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -82,6 +81,8 @@ export default function OnboardingPage() {
                 Grow your event business by connecting with clients
               </p>
               <Button 
+                type="button"
+                onClick={() => !loading && handleUserTypeSelect("vendor")}
                 className="w-full bg-black text-white hover:bg-gray-800 text-lg h-14 font-bold"
                 disabled={loading}
               >
