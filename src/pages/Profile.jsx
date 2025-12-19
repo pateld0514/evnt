@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Store, LogOut, Loader2, RefreshCw } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Store, LogOut, Loader2, RefreshCw, Bell } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -19,6 +23,7 @@ export default function ProfilePage() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        setNotificationPref(currentUser.notification_preference || "email");
 
         if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
           const vendors = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
@@ -51,6 +56,19 @@ export default function ProfilePage() {
     } else if (type === "admin") {
       navigate(createPageUrl("AdminDashboard"));
     }
+  };
+
+  const updateNotificationMutation = useMutation({
+    mutationFn: (pref) => base44.auth.updateMe({ notification_preference: pref }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['user']);
+      toast.success("Notification preference updated");
+    },
+  });
+
+  const handleNotificationChange = (pref) => {
+    setNotificationPref(pref);
+    updateNotificationMutation.mutate(pref);
   };
 
   if (loading) {
@@ -159,6 +177,33 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-2 border-black mb-6">
+        <CardHeader className="bg-black text-white">
+          <CardTitle className="flex items-center gap-2 font-black">
+            <Bell className="w-6 h-6" />
+            Notification Preferences
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-2">
+            <Label>How would you like to receive notifications?</Label>
+            <Select value={notificationPref} onValueChange={handleNotificationChange}>
+              <SelectTrigger className="border-2 border-gray-300">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="email">Email Only</SelectItem>
+                <SelectItem value="sms">SMS Only</SelectItem>
+                <SelectItem value="both">Both Email & SMS</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-gray-600">
+              You'll receive updates about booking statuses, new messages, and vendor responses.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-3">
         {isAdmin && (
