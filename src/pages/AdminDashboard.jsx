@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import AutoDemo from "../components/admin/AutoDemo";
+import TestDataGenerator from "../components/admin/TestDataGenerator";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -209,7 +210,8 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 space-y-6">
+          <TestDataGenerator />
           <AutoDemo />
         </div>
 
