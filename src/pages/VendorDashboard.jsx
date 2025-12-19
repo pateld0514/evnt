@@ -28,6 +28,17 @@ export default function VendorDashboard() {
           return;
         }
 
+        if (user.user_type === "vendor" && user.approval_status === "approved") {
+          // Check if profile is complete
+          if (user.vendor_id) {
+            const vendors = await base44.entities.Vendor.filter({ id: user.vendor_id });
+            if (vendors && vendors.length > 0 && !vendors[0].profile_complete) {
+              navigate(createPageUrl("VendorProfileSetup"));
+              return;
+            }
+          }
+        }
+
         if (user.user_type !== "vendor" && user.email !== "pateld0514@gmail.com") {
           navigate(createPageUrl("Home"));
           return;

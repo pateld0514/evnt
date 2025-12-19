@@ -22,6 +22,10 @@ export default function VendorProfileSetupPage() {
     price_range: "",
     starting_price: "",
     website: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    tiktok: "",
     specialties: [],
     pricing_type: "contact",
     packages: []
@@ -53,6 +57,10 @@ export default function VendorProfileSetupPage() {
           price_range: v.price_range || "",
           starting_price: v.starting_price || "",
           website: v.website || "",
+          instagram: v.instagram || "",
+          facebook: v.facebook || "",
+          twitter: v.twitter || "",
+          tiktok: v.tiktok || "",
           specialties: v.specialties || [],
           pricing_type: v.pricing_type || "contact",
           packages: v.packages || []
@@ -251,16 +259,69 @@ export default function VendorProfileSetupPage() {
               </div>
             </div>
 
-            {/* Website */}
+            {/* Website & Social Media */}
             <div className="space-y-2">
-              <Label className="text-lg font-bold">Website (Optional)</Label>
-              <Input
-                type="url"
-                value={formData.website}
-                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                placeholder="https://yourbusiness.com"
-                className="border-2 border-gray-300 h-12"
-              />
+              <Label className="text-lg font-bold">Website & Social Media (Optional)</Label>
+              <p className="text-sm text-gray-500">Help clients find and connect with you online</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Website</Label>
+                  <Input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                    placeholder="https://yourbusiness.com"
+                    className="border-2 border-gray-300 h-12"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Instagram</Label>
+                    <Input
+                      type="text"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData(prev => ({ ...prev, instagram: e.target.value }))}
+                      placeholder="@yourbusiness or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Facebook</Label>
+                    <Input
+                      type="text"
+                      value={formData.facebook}
+                      onChange={(e) => setFormData(prev => ({ ...prev, facebook: e.target.value }))}
+                      placeholder="Facebook page URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Twitter/X</Label>
+                    <Input
+                      type="text"
+                      value={formData.twitter}
+                      onChange={(e) => setFormData(prev => ({ ...prev, twitter: e.target.value }))}
+                      placeholder="@handle or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">TikTok</Label>
+                    <Input
+                      type="text"
+                      value={formData.tiktok}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tiktok: e.target.value }))}
+                      placeholder="@handle or URL"
+                      className="border-2 border-gray-300 h-12"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
