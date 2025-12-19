@@ -34,12 +34,14 @@ export default function AdminDashboardPage() {
     queryKey: ['admin-vendors'],
     queryFn: () => base44.entities.Vendor.list('-created_date'),
     initialData: [],
+    refetchInterval: 3000,
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => base44.entities.User.list('-created_date'),
     initialData: [],
+    refetchInterval: 3000,
   });
 
   const approveVendorMutation = useMutation({
@@ -50,13 +52,48 @@ export default function AdminDashboardPage() {
       const vendor = vendors.find(v => v.id === vendorId);
       await base44.integrations.Core.SendEmail({
         to: vendor.contact_email,
-        subject: "Your EVNT Vendor Account Has Been Approved!",
+        from_name: "EVNT Team",
+        subject: "🎉 Your EVNT Vendor Account Has Been Approved!",
         body: `
-          Congratulations! Your vendor account for ${vendor.business_name} has been approved.
-          
-          You can now log in to your dashboard and start receiving bookings from clients.
-          
-          Welcome to EVNT!
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #000; color: #fff; padding: 30px; text-center; }
+    .logo { font-size: 36px; font-weight: 900; }
+    .content { padding: 30px; background: #f9f9f9; }
+    .button { display: inline-block; padding: 15px 30px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">EVNT</div>
+      <p>Event Planning Made Simple</p>
+    </div>
+    <div class="content">
+      <h1>🎉 Congratulations, ${vendor.business_name}!</h1>
+      <p>We're thrilled to inform you that your vendor account has been <strong>approved</strong>!</p>
+      <p>You can now:</p>
+      <ul>
+        <li>Complete your vendor profile with photos and portfolio</li>
+        <li>Start receiving booking requests from clients</li>
+        <li>Message potential clients directly</li>
+        <li>Grow your event business</li>
+      </ul>
+      <p><strong>Next Step:</strong> Please log in to complete your full profile setup. Add photos, pricing packages, and showcase your best work!</p>
+      <p>Welcome to the EVNT family! We're excited to help you grow your business.</p>
+    </div>
+    <div class="footer">
+      <p>EVNT - Modern Event Planning Platform</p>
+      <p>Questions? Email us at support@evnt.com</p>
+    </div>
+  </div>
+</body>
+</html>
         `
       });
     },
@@ -78,15 +115,46 @@ export default function AdminDashboardPage() {
       const vendor = vendors.find(v => v.id === vendorId);
       await base44.integrations.Core.SendEmail({
         to: vendor.contact_email,
+        from_name: "EVNT Team",
         subject: "Update on Your EVNT Vendor Application",
         body: `
-          Thank you for your interest in joining EVNT.
-          
-          After reviewing your application, we're unable to approve your vendor account at this time.
-          
-          Reason: ${reason}
-          
-          If you have questions, please reply to this email.
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #000; color: #fff; padding: 30px; text-center; }
+    .logo { font-size: 36px; font-weight: 900; }
+    .content { padding: 30px; background: #f9f9f9; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    .reason-box { background: #fff; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">EVNT</div>
+      <p>Event Planning Made Simple</p>
+    </div>
+    <div class="content">
+      <h1>Update on Your Vendor Application</h1>
+      <p>Dear ${vendor.business_name},</p>
+      <p>Thank you for your interest in joining EVNT. After carefully reviewing your application, we're unable to approve your vendor account at this time.</p>
+      <div class="reason-box">
+        <strong>Reason:</strong><br/>
+        ${reason}
+      </div>
+      <p>If you have any questions or would like to discuss this decision, please don't hesitate to reach out to us.</p>
+      <p>We appreciate your interest in EVNT and wish you the best in your business endeavors.</p>
+    </div>
+    <div class="footer">
+      <p>EVNT - Modern Event Planning Platform</p>
+      <p>Questions? Email us at support@evnt.com</p>
+    </div>
+  </div>
+</body>
+</html>
         `
       });
     },
@@ -102,6 +170,8 @@ export default function AdminDashboardPage() {
   const pendingVendors = vendors.filter(v => v.approval_status === "pending");
   const approvedVendors = vendors.filter(v => v.approval_status === "approved");
   const rejectedVendors = vendors.filter(v => v.approval_status === "rejected");
+  const clientUsers = allUsers.filter(u => u.user_type === "client");
+  const vendorUsers = allUsers.filter(u => u.user_type === "vendor");
 
   const switchToClient = () => {
     navigate(createPageUrl("Home"));
@@ -167,11 +237,12 @@ export default function AdminDashboardPage() {
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-600" />
-                Total Users
+                Total Clients
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <p className="text-4xl font-black">{allUsers.length}</p>
+              <p className="text-4xl font-black">{clientUsers.length}</p>
+              <p className="text-sm text-gray-600 mt-1">{vendorUsers.length} vendors</p>
             </CardContent>
           </Card>
         </div>
@@ -222,6 +293,24 @@ export default function AdminDashboardPage() {
                           <p className="font-bold">Phone:</p>
                           <p className="text-gray-700">{vendor.contact_phone}</p>
                         </div>
+                        {vendor.willing_to_travel && (
+                          <div>
+                            <p className="font-bold">Travel:</p>
+                            <p className="text-gray-700">Willing to travel {vendor.travel_radius ? `up to ${vendor.travel_radius} miles` : ''}</p>
+                          </div>
+                        )}
+                        {vendor.years_in_business && (
+                          <div>
+                            <p className="font-bold">Experience:</p>
+                            <p className="text-gray-700">{vendor.years_in_business} years</p>
+                          </div>
+                        )}
+                        {vendorUser && (
+                          <div>
+                            <p className="font-bold">User Name:</p>
+                            <p className="text-gray-700">{vendorUser.full_name}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div>

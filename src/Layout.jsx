@@ -26,7 +26,7 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     loadUser();
-  }, []);
+  }, [location]);
 
   const toggleViewMode = () => {
     const newMode = viewMode === 'desktop' ? 'mobile' : 'desktop';
