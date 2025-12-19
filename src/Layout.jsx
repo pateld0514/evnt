@@ -137,15 +137,13 @@ export default function Layout({ children, currentPageName }) {
                 <Info className="w-5 h-5" />
                 <span className="font-medium">About</span>
               </Link>
-              {onboardingComplete && (
-                <Link 
-                  to={createPageUrl("Profile")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
-                >
-                  <User className="w-5 h-5" />
-                  <span className={`font-medium ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
-                </Link>
-              )}
+              <Link 
+                to={createPageUrl("Profile")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
+              >
+                <User className="w-5 h-5" />
+                <span className={`font-medium ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
+              </Link>
             </div>
           </div>
         </div>
