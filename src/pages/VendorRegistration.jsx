@@ -441,12 +441,16 @@ export default function VendorRegistrationPage() {
             {/* Gallery */}
             <div className="space-y-2">
               <Label className="text-lg font-bold">Portfolio Gallery (Optional)</Label>
-              <p className="text-sm text-gray-500">Add photos showcasing your work</p>
+              <p className="text-sm text-gray-500">Add photos or videos showcasing your work</p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {formData.additional_images.map((url, index) => (
                   <div key={index} className="relative group">
-                    <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    {url.includes('video') || url.endsWith('.mp4') || url.endsWith('.mov') ? (
+                      <video src={url} className="w-full h-32 object-cover rounded-lg" controls />
+                    ) : (
+                      <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    )}
                     <button
                       type="button"
                       onClick={() => removeGalleryImage(index)}
@@ -461,7 +465,7 @@ export default function VendorRegistrationPage() {
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   onChange={handleGalleryUpload}
                   className="hidden"
                   id="gallery-image"
@@ -472,7 +476,7 @@ export default function VendorRegistrationPage() {
                   ) : (
                     <div>
                       <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                      <p className="font-bold text-gray-700">Add Gallery Photo</p>
+                      <p className="font-bold text-gray-700">Add Photo or Video</p>
                     </div>
                   )}
                 </label>
@@ -524,8 +528,14 @@ export default function VendorRegistrationPage() {
                   <Input
                     type="url"
                     value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="https://yourbusiness.com"
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                        value = 'https://' + value;
+                      }
+                      setFormData(prev => ({ ...prev, website: value }));
+                    }}
+                    placeholder="yourbusiness.com"
                     className="border-2 border-gray-300 h-12"
                   />
                 </div>
