@@ -140,22 +140,23 @@ export default function AboutPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-green-100 text-green-800 border-2 border-green-300 font-bold">
-                      100% FREE
+                      SECURE PAYMENTS
                     </Badge>
                   </div>
                   <p className="text-gray-700">
-                    EVNT is completely free for clients. Browse, swipe, message, and book vendors at no cost.
+                    Pay the agreed price plus a {platformFee}% platform service fee. All payments processed securely through Stripe with buyer protection.
                   </p>
                 </div>
                 
                 <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
-                  <p className="font-bold mb-2">✓ Free Features Include:</p>
+                  <p className="font-bold mb-2">✓ What You Get:</p>
                   <ul className="space-y-1 text-sm text-gray-600">
                     <li>• Unlimited vendor browsing and swiping</li>
-                    <li>• Direct messaging with vendors</li>
-                    <li>• Booking requests and management</li>
-                    <li>• Save unlimited favorites</li>
-                    <li>• Budget tracking and planning tools</li>
+                    <li>• Direct messaging and price negotiation</li>
+                    <li>• Secure payment processing via Stripe</li>
+                    <li>• Escrow protection until event completion</li>
+                    <li>• Professional contracts and invoices</li>
+                    <li>• 24-hour dispute window after events</li>
                   </ul>
                 </div>
               </CardContent>
@@ -203,9 +204,9 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* How Vendors Get Paid */}
+        {/* How Payments Work */}
         <section className="mb-16">
-          <h2 className="text-3xl font-black text-black mb-8 text-center">How Vendors Get Paid</h2>
+          <h2 className="text-3xl font-black text-black mb-8 text-center">How Payments Work</h2>
           
           <Card className="border-2 border-black">
             <CardContent className="p-6">
@@ -215,10 +216,10 @@ export default function AboutPage() {
                     <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black">
                       1
                     </div>
-                    <h3 className="text-xl font-bold">Client Books Your Service</h3>
+                    <h3 className="text-xl font-bold">Client Sends Booking Request</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    Clients send booking requests through EVNT with their event details and budget.
+                    Clients browse your profile and send booking requests with their event details and initial budget.
                   </p>
                 </div>
 
@@ -227,10 +228,10 @@ export default function AboutPage() {
                     <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black">
                       2
                     </div>
-                    <h3 className="text-xl font-bold">You Accept & Negotiate</h3>
+                    <h3 className="text-xl font-bold">Negotiate Final Price</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    Review the request, communicate directly with the client, and finalize the details.
+                    Review the request and submit your pricing proposal. Include your service fee, any additional charges (travel, equipment, etc.), and service details. Client accepts to proceed to payment.
                   </p>
                 </div>
 
@@ -239,10 +240,10 @@ export default function AboutPage() {
                     <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black">
                       3
                     </div>
-                    <h3 className="text-xl font-bold">Direct Payment from Client</h3>
+                    <h3 className="text-xl font-bold">Secure Payment via Stripe</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    You handle payment directly with the client using your preferred method (cash, check, Venmo, Zelle, etc.).
+                    Client pays the agreed price plus {platformFee}% platform fee through Stripe. Funds are held securely in escrow to protect both parties.
                   </p>
                 </div>
 
@@ -251,10 +252,10 @@ export default function AboutPage() {
                     <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black">
                       4
                     </div>
-                    <h3 className="text-xl font-bold">Complete the Event</h3>
+                    <h3 className="text-xl font-bold">Sign Contract & Deliver Service</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    Provide your amazing service and mark the booking as completed in the app.
+                    Both parties digitally sign the service agreement. Provide your amazing service on the event date. You can upload your own custom contracts if preferred.
                   </p>
                 </div>
 
@@ -263,20 +264,20 @@ export default function AboutPage() {
                     <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-black">
                       5
                     </div>
-                    <h3 className="text-xl font-bold">EVNT Fee is Invoiced</h3>
+                    <h3 className="text-xl font-bold">Get Paid</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    After the event is completed, EVNT sends you an invoice for the {platformFee}% platform fee based on the booking value.
+                    After the event, funds are released from escrow to your account within 24-48 hours (minus the {platformFee}% platform fee). Track all your earnings in your vendor dashboard.
                   </p>
                 </div>
 
                 <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200 mt-6">
-                  <p className="font-bold text-green-900 mb-2">💡 Key Benefits for Vendors:</p>
+                  <p className="font-bold text-green-900 mb-2">💡 Key Benefits:</p>
                   <ul className="space-y-1 text-sm text-green-800">
-                    <li>• You keep {(100 - platformFee).toFixed(0)}% of every booking</li>
-                    <li>• No payment processing fees (you handle payments)</li>
-                    <li>• No monthly subscription or listing fees</li>
-                    <li>• Only pay when you successfully book through the platform</li>
+                    <li>• <strong>Vendors:</strong> You receive {(100 - platformFee).toFixed(0)}% of agreed price, no payment processing hassles</li>
+                    <li>• <strong>Clients:</strong> Escrow protection until service is delivered</li>
+                    <li>• <strong>Both:</strong> Professional contracts, invoices, and dispute resolution</li>
+                    <li>• <strong>Security:</strong> Stripe-powered payments with fraud protection</li>
                   </ul>
                 </div>
               </div>
