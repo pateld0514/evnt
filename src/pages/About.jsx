@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, CreditCard, DollarSign, Shield, Heart, Zap, MessageSquare } from "lucide-react";
 
 export default function AboutPage() {
-  const [platformFee, setPlatformFee] = useState(8);
+  const [platformFee, setPlatformFee] = useState(null);
 
   useEffect(() => {
     const loadPlatformFee = async () => {
@@ -13,13 +13,20 @@ export default function AboutPage() {
         const settings = await base44.entities.PlatformSettings.filter({ setting_key: "platform_fee_percent" }, '-created_date', 1);
         if (settings && settings.length > 0) {
           setPlatformFee(parseFloat(settings[0].setting_value));
+        } else {
+          setPlatformFee(0);
         }
       } catch (error) {
         console.error("Failed to load platform fee:", error);
+        setPlatformFee(0);
       }
     };
     loadPlatformFee();
   }, []);
+
+  if (platformFee === null) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
