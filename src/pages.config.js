@@ -1,4 +1,3 @@
-import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
@@ -14,11 +13,11 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
+import About from './pages/About';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "About": About,
     "AdminDashboard": AdminDashboard,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
@@ -34,6 +33,7 @@ export const PAGES = {
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
+    "About": About,
 }
 
 export const pagesConfig = {

@@ -70,10 +70,13 @@ export default function MessagesPage() {
   });
 
   const { data: savedVendors = [] } = useQuery({
-    queryKey: ['saved-vendors'],
-    queryFn: () => base44.entities.SavedVendor.list(),
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
+    },
     initialData: [],
-    enabled: !isVendor,
+    enabled: !!currentUser && !isVendor,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -355,8 +358,27 @@ export default function MessagesPage() {
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
                 <div className="flex-1">
-                  <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
-                  <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
+                  <button
+                    onClick={() => {
+                      if (isVendor) {
+                        // Show client profile/booking
+                        const clientBooking = bookings.find(b => b.client_email === selectedConversation.clientEmail);
+                        if (clientBooking) {
+                          navigate(createPageUrl("Bookings") + `?id=${clientBooking.id}`);
+                        }
+                      } else {
+                        // Navigate to vendor profile
+                        navigate(createPageUrl("VendorProfile") + `?id=${selectedConversation.vendorId}`);
+                      }
+                    }}
+                    className="text-left hover:opacity-80 transition-opacity"
+                  >
+                    <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                    <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
+                    {isVendor && (
+                      <p className="text-xs text-gray-400 mt-1">Click to view booking</p>
+                    )}
+                  </button>
                 </div>
               </CardHeader>
 
