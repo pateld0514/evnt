@@ -1,9 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, CreditCard, DollarSign, Shield, Heart, Zap, MessageSquare } from "lucide-react";
 
 export default function AboutPage() {
+  const { data: platformFee = [] } = useQuery({
+    queryKey: ['platform-fee-setting'],
+    queryFn: () => base44.entities.PlatformSettings.filter({ setting_key: "platform_fee_percent" }),
+    initialData: [],
+  });
+
+  const feePercent = platformFee.length > 0 ? parseFloat(platformFee[0].setting_value) : 8;
+  const vendorKeepPercent = (100 - feePercent).toFixed(0);
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -164,7 +174,7 @@ export default function AboutPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold">Platform Fee:</span>
-                      <Badge className="bg-black text-white">8% per booking</Badge>
+                      <Badge className="bg-black text-white">{feePercent}% per booking</Badge>
                     </div>
                     <p className="text-sm text-gray-600">
                       Only charged when you accept and complete a booking
@@ -250,14 +260,14 @@ export default function AboutPage() {
                     <h3 className="text-xl font-bold">EVNT Fee is Invoiced</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    After the event is completed, EVNT sends you an invoice for the 8% platform fee based on the booking value.
+                    After the event is completed, EVNT sends you an invoice for the {feePercent}% platform fee based on the booking value.
                   </p>
                 </div>
 
                 <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200 mt-6">
                   <p className="font-bold text-green-900 mb-2">💡 Key Benefits for Vendors:</p>
                   <ul className="space-y-1 text-sm text-green-800">
-                    <li>• You keep 92% of every booking</li>
+                    <li>• You keep {vendorKeepPercent}% of every booking</li>
                     <li>• No payment processing fees (you handle payments)</li>
                     <li>• No monthly subscription or listing fees</li>
                     <li>• Only pay when you successfully book through the platform</li>
