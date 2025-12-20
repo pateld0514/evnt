@@ -9,9 +9,16 @@ export default function ProfessionalContract({ booking, vendor }) {
     <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Times New Roman, serif', fontSize: '11pt', lineHeight: '1.8' }}>
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-4">EVENT SERVICES AGREEMENT</h1>
-        <p><strong>Contract No:</strong> {contractNumber}</p>
-        <p><strong>Effective Date:</strong> {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
+        <div className="mb-4">
+          <h1 className="text-4xl font-bold mb-2">Evnt, Inc.</h1>
+          <p className="text-sm">1200 K Street NW, Suite 400, Washington, DC 20005</p>
+          <p className="text-sm">support@evnt.com | (202) 555-EVNT</p>
+        </div>
+        <div className="border-t-2 border-black pt-4 mt-4">
+          <h2 className="text-3xl font-bold mb-4">EVENT SERVICES AGREEMENT</h2>
+          <p><strong>Contract No:</strong> {contractNumber}</p>
+          <p><strong>Effective Date:</strong> {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
+        </div>
       </div>
 
       {/* Parties */}
@@ -163,158 +170,172 @@ export default function ProfessionalContract({ booking, vendor }) {
         </div>
       </div>
 
+      <div className="page-break-after"></div>
+
       {/* Vendor Marketplace Agreement */}
       <div className="mt-8 pt-8 border-t-2 border-black">
-        <h2 className="font-bold text-center text-xl mb-6 uppercase">EVNT VENDOR MARKETPLACE AGREEMENT</h2>
+        <h2 className="font-bold text-center text-2xl mb-6 uppercase border-b-2 border-black pb-4">
+          EVNT VENDOR MARKETPLACE AGREEMENT
+        </h2>
         
-        <div className="text-xs space-y-4">
-          <p>
-            This Vendor Marketplace Agreement is entered into by and between Evnt, Inc. ("Evnt," "Company," or "Platform") 
-            and {booking.vendor_name} ("Vendor").
+        <div className="text-sm space-y-4 leading-relaxed">
+          <p className="italic">
+            This Vendor Marketplace Agreement ("Agreement") is entered into as of the date of acceptance by the Vendor ("Effective Date"), 
+            by and between Evnt, Inc. ("Evnt," "Company," or "Platform") and {booking.vendor_name} ("Vendor").
           </p>
 
-          <div>
-            <p className="font-bold mb-1">PLATFORM ROLE AND PURPOSE</p>
+          <p className="italic">
+            By registering for, accessing, or providing services through the Evnt platform, Vendor agrees to be bound by this Agreement.
+          </p>
+
+          <div className="mt-6">
+            <p className="font-bold mb-2 text-base uppercase">PLATFORM ROLE AND PURPOSE</p>
             <p>
-              Evnt operates a technology-based marketplace connecting event clients with independent service providers. 
-              Evnt does not provide event services, does not control Vendor operations, and is not a party to any agreement 
-              between Vendor and Client.
+              Evnt operates a technology-based marketplace that connects event clients ("Clients") with independent event service providers ("Vendors"). 
+              Evnt does not provide event services, does not control Vendor operations, and is not a party to any agreement between Vendor and Client.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">INDEPENDENT CONTRACTOR STATUS</p>
+            <p className="font-bold mb-2 text-base uppercase">INDEPENDENT CONTRACTOR STATUS</p>
             <p>
-              Vendor is an independent contractor and not an employee, agent, partner, or representative of Evnt. 
-              Vendor is solely responsible for all taxes, withholdings, insurance, permits, licenses, certifications, 
-              equipment, personnel, and expenses related to services.
+              Vendor is an independent contractor and not an employee, agent, partner, joint venturer, or representative of Evnt. 
+              Vendor has no authority to bind Evnt. Vendor is solely responsible for all taxes, withholdings, insurance, permits, 
+              licenses, certifications, equipment, personnel, and expenses related to services.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">SERVICES AND BOOKINGS</p>
+            <p className="font-bold mb-2 text-base uppercase">SERVICES AND BOOKINGS</p>
             <p>
-              Vendor agrees to provide event-related services as described in Vendor's profile and individual bookings. 
-              All service details, pricing, timelines, deliverables, and cancellation terms must be clearly disclosed 
-              to Clients prior to booking. Vendor is solely responsible for performing services in a professional, 
-              lawful, and timely manner.
-            </p>
-          </div>
-
-          <div>
-            <p className="font-bold mb-1">PAYMENTS, FEES, AND PAYOUTS</p>
-            <p>
-              Clients remit payment through Evnt platform. Evnt charges Vendor a platform service fee ({booking.platform_fee_percent}%) 
-              for marketplace access, payment processing, dispute resolution, and support. Evnt remits Vendor payouts within 24-48 hours 
-              following successful service completion, subject to dispute resolution, refunds, or violations.
+              Vendor agrees to provide event-related services as described in Vendor's profile and as agreed upon in individual bookings ("Bookings"). 
+              All service details, pricing, timelines, deliverables, and cancellation terms must be clearly disclosed to Clients prior to booking.
             </p>
             <p className="mt-2">
-              Evnt reserves the right to withhold, delay, or reverse payouts in cases of suspected fraud, non-performance, 
-              misconduct, or Client disputes.
+              Vendor is solely responsible for performing services in a professional, lawful, and timely manner consistent with industry standards.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">CANCELLATIONS, REFUNDS, AND DISPUTES</p>
+            <p className="font-bold mb-2 text-base uppercase">PAYMENTS, FEES, AND PAYOUTS</p>
             <p>
-              Vendor must clearly define and honor cancellation and refund policies. Failure to appear, last-minute 
-              cancellations without cause, or material deviation from agreed services may result in mandatory refunds, 
-              penalties, account suspension, or termination. Evnt may assist with dispute resolution. Evnt's determination 
-              regarding platform-related disputes is final.
+              Clients generally remit payment through the Evnt platform. Evnt may charge Vendor a platform service fee ({booking.platform_fee_percent}%), 
+              commission, subscription fee, or other agreed-upon charges as disclosed on the platform.
+            </p>
+            <p className="mt-2">
+              Evnt will remit Vendor payouts within a commercially reasonable timeframe following successful completion of services, 
+              subject to dispute resolution, refunds, chargebacks, or violations of this Agreement.
+            </p>
+            <p className="mt-2">
+              Evnt reserves the right to withhold, delay, or reverse payouts in cases of suspected fraud, non-performance, misconduct, or Client disputes.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">QUALITY STANDARDS AND CONDUCT</p>
+            <p className="font-bold mb-2 text-base uppercase">CANCELLATIONS, REFUNDS, AND DISPUTES</p>
             <p>
-              Vendor maintains high standards of professionalism, responsiveness, accuracy, and reliability. Vendor shall not 
-              engage in misleading representations, discriminatory behavior, harassment, illegal activity, or conduct that 
-              harms Clients, Evnt, or platform reputation.
+              Vendor must clearly define cancellation and refund policies. Vendor is responsible for honoring those policies. 
+              Failure to appear, last-minute cancellations without cause, or material deviation from agreed services may result 
+              in mandatory refunds, penalties, account suspension, or termination.
+            </p>
+            <p className="mt-2">
+              Evnt may, but is not obligated to, assist with dispute resolution. Evnt's determination regarding platform-related disputes is final.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">INSURANCE AND LIABILITY</p>
+            <p className="font-bold mb-2 text-base uppercase">QUALITY STANDARDS AND CONDUCT</p>
             <p>
-              Vendor is solely responsible for maintaining appropriate insurance coverage, including general liability and 
-              industry-specific insurance. Evnt does not provide insurance coverage for Vendor. Vendor assumes all risk 
-              arising from performance of services.
+              Vendor agrees to maintain high standards of professionalism, responsiveness, accuracy, and reliability. 
+              Vendor shall not engage in misleading representations, discriminatory behavior, harassment, illegal activity, 
+              or conduct that harms Clients, Evnt, or the platform's reputation.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">INDEMNIFICATION</p>
+            <p className="font-bold mb-2 text-base uppercase">INSURANCE AND LIABILITY</p>
             <p>
-              Vendor indemnifies, defends, and holds harmless Evnt and its officers, directors, employees, and affiliates 
-              from any claims, damages, losses, liabilities, costs, or expenses arising from Vendor's services, actions, 
-              omissions, breaches, or Client interactions.
+              Vendor is solely responsible for maintaining appropriate insurance coverage, including general liability and any industry-specific insurance. 
+              Evnt does not provide insurance coverage for Vendor or Vendor's services.
+            </p>
+            <p className="mt-2">
+              Vendor assumes all risk arising from performance of services.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">LIMITATION OF LIABILITY</p>
+            <p className="font-bold mb-2 text-base uppercase">INDEMNIFICATION</p>
             <p>
-              To maximum extent permitted by law, Evnt not liable for indirect, incidental, consequential, special, or 
-              punitive damages. Evnt's total liability shall not exceed platform fees paid by Vendor during six (6) months 
-              preceding the claim.
+              Vendor agrees to indemnify, defend, and hold harmless Evnt and its officers, directors, employees, and affiliates 
+              from any claims, damages, losses, liabilities, costs, or expenses arising out of or related to Vendor's services, 
+              actions, omissions, breaches of this Agreement, or interactions with Clients.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">INTELLECTUAL PROPERTY</p>
+            <p className="font-bold mb-2 text-base uppercase">LIMITATION OF LIABILITY</p>
             <p>
-              Vendor retains ownership of Vendor intellectual property. Vendor grants Evnt a non-exclusive, worldwide, 
-              royalty-free license to use Vendor's name, trademarks, images, service descriptions, and content for platform 
-              operations, marketing, and promotion.
+              To the maximum extent permitted by law, Evnt shall not be liable for indirect, incidental, consequential, special, or punitive damages. 
+              Evnt's total liability shall not exceed the platform fees paid by Vendor to Evnt during the six (6) months preceding the claim.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">DATA AND COMMUNICATIONS</p>
+            <p className="font-bold mb-2 text-base uppercase">INTELLECTUAL PROPERTY</p>
             <p>
-              Evnt may collect, store, and use platform data to operate and improve services. Vendor shall not misuse 
-              Client data or communicate outside platform to circumvent fees.
+              Vendor retains ownership of Vendor intellectual property. Vendor grants Evnt a non-exclusive, worldwide, royalty-free license 
+              to use Vendor's name, trademarks, images, service descriptions, and content for platform operations, marketing, and promotion.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">NON-CIRCUMVENTION</p>
+            <p className="font-bold mb-2 text-base uppercase">DATA AND COMMUNICATIONS</p>
             <p>
-              Vendor agrees not to bypass Evnt platform to transact directly with Clients introduced through Evnt for 
-              twelve (12) months following initial contact.
+              Vendor agrees that Evnt may collect, store, and use platform data to operate and improve services. 
+              Vendor shall not misuse Client data or communicate outside the platform to circumvent fees.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">TERMINATION</p>
+            <p className="font-bold mb-2 text-base uppercase">NON-CIRCUMVENTION</p>
             <p>
-              Either party may terminate this Agreement at any time. Evnt may immediately suspend or terminate Vendor 
-              access for violations, misconduct, or harm to platform integrity. Termination does not relieve Vendor of 
-              obligations incurred prior to termination.
+              Vendor agrees not to bypass the Evnt platform to transact directly with Clients introduced through Evnt 
+              for a period of twelve (12) months following initial contact.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">FORCE MAJEURE</p>
+            <p className="font-bold mb-2 text-base uppercase">TERMINATION</p>
             <p>
-              Neither party liable for delays or failure to perform due to events beyond reasonable control, including 
-              natural disasters, government actions, labor disputes, or acts of God.
+              Either party may terminate this Agreement at any time. Evnt may immediately suspend or terminate Vendor access 
+              for violations, misconduct, or harm to platform integrity.
+            </p>
+            <p className="mt-2">
+              Termination does not relieve Vendor of obligations incurred prior to termination.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">GOVERNING LAW AND DISPUTE RESOLUTION</p>
+            <p className="font-bold mb-2 text-base uppercase">FORCE MAJEURE</p>
             <p>
-              This Agreement governed by laws of District of Columbia. Disputes resolved through binding arbitration, 
+              Neither party shall be liable for delays or failure to perform due to events beyond reasonable control, 
+              including natural disasters, government actions, labor disputes, or acts of God.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-2 text-base uppercase">GOVERNING LAW AND DISPUTE RESOLUTION</p>
+            <p>
+              This Agreement shall be governed by the laws of the District of Columbia. Any disputes shall be resolved through binding arbitration, 
               except where prohibited by law.
             </p>
           </div>
 
           <div>
-            <p className="font-bold mb-1">ENTIRE AGREEMENT</p>
+            <p className="font-bold mb-2 text-base uppercase">ENTIRE AGREEMENT</p>
             <p>
-              This Agreement constitutes entire agreement between parties and supersedes prior agreements. Evnt may 
-              modify this Agreement with notice through platform.
+              This Agreement constitutes the entire agreement between the parties and supersedes prior agreements. 
+              Evnt may modify this Agreement with notice through the platform.
             </p>
           </div>
         </div>

@@ -11,80 +11,88 @@ export default function ProfessionalInvoice({ booking }) {
   return (
     <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, sans-serif', fontSize: '11pt', lineHeight: '1.6' }}>
       {/* Header */}
-      <div className="text-center mb-8 pb-6 border-b-2 border-black">
-        <h1 className="text-4xl font-bold mb-2">Evnt, Inc.</h1>
-        <p className="text-sm">1200 K Street NW, Suite 400</p>
-        <p className="text-sm">Washington, DC 20005</p>
-        <p className="text-sm">support@evnt.com | (202) 555-EVNT</p>
+      <div className="text-center mb-8 pb-6 border-b-4 border-black">
+        <h1 className="text-5xl font-bold mb-3">Evnt, Inc.</h1>
+        <p className="text-sm font-medium">1200 K Street NW, Suite 400</p>
+        <p className="text-sm font-medium">Washington, DC 20005</p>
+        <p className="text-sm font-medium">support@evnt.com | (202) 555-EVNT</p>
       </div>
 
       {/* Invoice Title */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">INVOICE</h2>
-        <p className="text-sm"><strong>Invoice Number:</strong> {invoiceNumber}</p>
-        <p className="text-sm"><strong>Invoice Date:</strong> {format(new Date(issueDate), "MMMM dd, yyyy")}</p>
-        <p className="text-sm"><strong>Due Date:</strong> {format(new Date(dueDate), "MMMM dd, yyyy")}</p>
+      <div className="mb-8 bg-gray-100 p-6 border-2 border-black">
+        <h2 className="text-4xl font-bold mb-4 text-center uppercase">EVNT INVOICE – CLIENT</h2>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p><strong>Invoice Number:</strong> {invoiceNumber}</p>
+            <p><strong>Invoice Date:</strong> {format(new Date(issueDate), "MMMM dd, yyyy")}</p>
+          </div>
+          <div>
+            <p><strong>Due Date:</strong> {format(new Date(dueDate), "MMMM dd, yyyy")}</p>
+            <p><strong>Event Date:</strong> {format(new Date(booking.event_date), "MMMM dd, yyyy")}</p>
+          </div>
+        </div>
       </div>
 
       {/* Bill To */}
-      <div className="mb-8">
-        <h3 className="font-bold text-sm mb-2 uppercase">Billed To:</h3>
-        <p><strong>{booking.client_name}</strong></p>
-        <p>{booking.client_email}</p>
-        <p>Event Date: {format(new Date(booking.event_date), "MMMM dd, yyyy")}</p>
-        <p>Event Location: {booking.location}</p>
+      <div className="mb-8 p-4 border-2 border-gray-300 bg-gray-50">
+        <h3 className="font-bold text-base mb-3 uppercase border-b border-gray-400 pb-2">Billed To:</h3>
+        <p className="font-bold text-lg">{booking.client_name}</p>
+        <p className="text-sm">{booking.client_email}</p>
+        <p className="text-sm mt-2"><strong>Event Date:</strong> {format(new Date(booking.event_date), "MMMM dd, yyyy")}</p>
+        <p className="text-sm"><strong>Event Location:</strong> {booking.location}</p>
+        <p className="text-sm"><strong>Event Type:</strong> {booking.event_type}</p>
       </div>
 
       {/* Description of Charges */}
       <div className="mb-8">
-        <h3 className="font-bold text-sm mb-3 uppercase">Description of Charges:</h3>
-        <table className="w-full border-collapse mb-4">
+        <h3 className="font-bold text-base mb-4 uppercase border-b-2 border-black pb-2">Description of Charges:</h3>
+        <table className="w-full border-collapse mb-4 border-2 border-black">
           <thead>
-            <tr className="border-b-2 border-black">
-              <th className="text-left py-2 text-sm">Description</th>
-              <th className="text-right py-2 text-sm">Amount</th>
+            <tr className="bg-gray-200 border-b-2 border-black">
+              <th className="text-left py-3 px-4 text-sm font-bold">Description</th>
+              <th className="text-right py-3 px-4 text-sm font-bold">Amount</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-300">
-              <td className="py-3">
-                <p className="font-bold">Event Service Provided by Vendor: {booking.vendor_name}</p>
-                <p className="text-xs text-gray-600">{booking.service_description || `${booking.event_type} services`}</p>
+            <tr className="border-b border-gray-400">
+              <td className="py-4 px-4">
+                <p className="font-bold text-base">Event Service Provided by Vendor: {booking.vendor_name}</p>
+                <p className="text-sm text-gray-600 mt-1">{booking.service_description || `${booking.event_type} services`}</p>
               </td>
-              <td className="text-right">${booking.agreed_price?.toFixed(2)}</td>
+              <td className="text-right px-4 font-semibold text-base">${booking.agreed_price?.toFixed(2)}</td>
             </tr>
             
             {booking.additional_fees && booking.additional_fees.map((fee, idx) => (
-              <tr key={idx} className="border-b border-gray-300">
-                <td className="py-3">
+              <tr key={idx} className="border-b border-gray-400">
+                <td className="py-4 px-4">
                   <p className="font-bold">{fee.name}</p>
-                  {fee.description && <p className="text-xs text-gray-600">{fee.description}</p>}
+                  {fee.description && <p className="text-sm text-gray-600 mt-1">{fee.description}</p>}
                 </td>
-                <td className="text-right">${parseFloat(fee.amount)?.toFixed(2)}</td>
+                <td className="text-right px-4 font-semibold">${parseFloat(fee.amount)?.toFixed(2)}</td>
               </tr>
             ))}
 
-            <tr className="border-b border-gray-300">
-              <td className="py-3">
+            <tr className="border-b border-gray-400">
+              <td className="py-4 px-4">
                 <p className="font-bold">Service Fee - Evnt Platform</p>
-                <p className="text-xs text-gray-600">Platform access, payment processing, and support ({booking.platform_fee_percent}%)</p>
+                <p className="text-sm text-gray-600 mt-1">Platform access, payment processing, and support ({booking.platform_fee_percent}%)</p>
               </td>
-              <td className="text-right">${booking.platform_fee_amount?.toFixed(2)}</td>
+              <td className="text-right px-4 font-semibold">${booking.platform_fee_amount?.toFixed(2)}</td>
             </tr>
 
-            <tr className="border-t-2 border-black">
-              <td className="py-3 text-right font-bold">Subtotal:</td>
-              <td className="text-right font-bold">${subtotal.toFixed(2)}</td>
+            <tr className="border-t-2 border-black bg-gray-100">
+              <td className="py-3 px-4 text-right font-bold text-base">Subtotal:</td>
+              <td className="text-right px-4 font-bold text-base">${subtotal.toFixed(2)}</td>
             </tr>
             
-            <tr>
-              <td className="py-1 text-right text-sm">Applicable taxes:</td>
-              <td className="text-right text-sm">$0.00</td>
+            <tr className="bg-gray-100">
+              <td className="py-2 px-4 text-right text-sm">Applicable taxes:</td>
+              <td className="text-right px-4 text-sm">$0.00</td>
             </tr>
             
-            <tr className="border-t-2 border-black">
-              <td className="py-3 text-right text-xl font-bold">Total Amount Due:</td>
-              <td className="text-right text-xl font-bold">${booking.total_amount?.toFixed(2)}</td>
+            <tr className="border-t-2 border-black bg-black text-white">
+              <td className="py-4 px-4 text-right text-xl font-bold">TOTAL AMOUNT DUE:</td>
+              <td className="text-right px-4 text-xl font-bold">${booking.total_amount?.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
