@@ -10,8 +10,6 @@ import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loade
 import ReviewDialog from "../components/vendor/ReviewDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
-import ProfessionalContract from "../components/documents/ProfessionalContract";
 import PaymentNegotiation from "../components/payment/PaymentNegotiation";
 import StripePayment from "../components/payment/StripePayment";
 import { useNavigate } from "react-router-dom";
@@ -43,9 +41,6 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [vendorResponse, setVendorResponse] = useState("");
-  const [showInvoice, setShowInvoice] = useState(false);
-  const [showContract, setShowContract] = useState(false);
-  const [currentVendor, setCurrentVendor] = useState(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [bookingToReview, setBookingToReview] = useState(null);
   const [negotiationOpen, setNegotiationOpen] = useState(false);
@@ -143,26 +138,7 @@ export default function BookingsPage() {
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setVendorResponse(booking.vendor_response || "");
-    const vendor = vendors.find(v => v.id === booking.vendor_id);
-    setCurrentVendor(vendor);
     setDetailsOpen(true);
-  };
-
-  const handlePrintDocument = (type) => {
-    if (type === 'invoice') {
-      setShowInvoice(true);
-      setShowContract(false);
-    } else {
-      setShowContract(true);
-      setShowInvoice(false);
-    }
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        setShowInvoice(false);
-        setShowContract(false);
-      }, 500);
-    }, 100);
   };
 
   if (isLoading || !currentUser) {
@@ -420,30 +396,7 @@ export default function BookingsPage() {
                   </div>
                 )}
 
-                {/* Documents Section */}
-                {(selectedBooking.status === "confirmed" || selectedBooking.status === "completed" || selectedBooking.status === "in_progress") && selectedBooking.agreed_price && (
-                  <div className="border-t-2 border-gray-200 pt-6">
-                    <h3 className="font-bold text-lg mb-4">Documents</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        variant="outline"
-                        className="border-2 border-black hover:bg-black hover:text-white font-bold"
-                        onClick={() => handlePrintDocument('invoice')}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Invoice
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-2 border-black hover:bg-black hover:text-white font-bold"
-                        onClick={() => handlePrintDocument('contract')}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        View Contract
-                      </Button>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
@@ -548,18 +501,6 @@ export default function BookingsPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Print Views */}
-      {showInvoice && selectedBooking && (
-        <div className="hidden print:block">
-          <ProfessionalInvoice booking={selectedBooking} />
-        </div>
-      )}
-      {showContract && selectedBooking && currentVendor && (
-        <div className="hidden print:block">
-          <ProfessionalContract booking={selectedBooking} vendor={currentVendor} />
-        </div>
-      )}
 
       <ReviewDialog
         booking={bookingToReview}
