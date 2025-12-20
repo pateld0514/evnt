@@ -8,12 +8,12 @@ export default function VendorAnalytics({ vendor, views, swipes, bookings }) {
   const leftSwipes = swipes.filter(s => s.direction === "left").length;
   const totalSwipes = swipes.length;
   
-  const acceptedBookings = bookings.filter(b => b.status === "accepted" || b.status === "completed").length;
+  const acceptedBookings = bookings.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "in_progress").length;
   const conversionRate = rightSwipes > 0 ? ((acceptedBookings / rightSwipes) * 100).toFixed(1) : 0;
   
   const totalRevenue = bookings
-    .filter(b => b.status === "accepted" || b.status === "completed")
-    .reduce((sum, b) => sum + (b.budget || 0), 0);
+    .filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "in_progress")
+    .reduce((sum, b) => sum + (b.total_amount || b.agreed_price || 0), 0);
   
   const avgBudget = acceptedBookings > 0 ? (totalRevenue / acceptedBookings).toFixed(0) : 0;
 
