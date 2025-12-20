@@ -81,8 +81,13 @@ export default function BookingsPage() {
   });
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ['reviews'],
-    queryFn: () => base44.entities.Review.list(),
+    queryKey: ['reviews', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      // Get reviews created by this user
+      return await base44.entities.Review.filter({ created_by: currentUser.email });
+    },
+    enabled: !!currentUser,
     initialData: [],
   });
 

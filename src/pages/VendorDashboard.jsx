@@ -80,7 +80,9 @@ export default function VendorDashboard() {
     queryKey: ['vendor-views', vendor?.id],
     queryFn: async () => {
       if (!vendor?.id) return [];
-      return await base44.entities.VendorView.filter({ vendor_id: vendor.id });
+      const allViews = await base44.entities.VendorView.filter({ vendor_id: vendor.id });
+      // Views are analytics - show all views for this vendor
+      return allViews;
     },
     enabled: !!vendor?.id,
     initialData: [],
@@ -90,7 +92,9 @@ export default function VendorDashboard() {
     queryKey: ['vendor-swipes', vendor?.id],
     queryFn: async () => {
       if (!vendor?.id) return [];
-      return await base44.entities.UserSwipe.filter({ vendor_id: vendor.id });
+      const allSwipes = await base44.entities.UserSwipe.filter({ vendor_id: vendor.id });
+      // Swipes are analytics - show all swipes for this vendor
+      return allSwipes;
     },
     enabled: !!vendor?.id,
     initialData: [],

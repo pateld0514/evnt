@@ -17,8 +17,12 @@ export default function Layout({ children, currentPageName }) {
   });
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['unread-messages'],
-    queryFn: () => base44.entities.Message.list('-created_date'),
+    queryKey: ['unread-messages', currentUserEmail],
+    queryFn: async () => {
+      if (!currentUserEmail) return [];
+      const allMessages = await base44.entities.Message.list('-created_date');
+      return allMessages.filter(m => m.recipient_email === currentUserEmail);
+    },
     enabled: !!currentUserEmail,
     refetchInterval: 3000,
   });
