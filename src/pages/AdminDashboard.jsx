@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store, FileText, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Globe, Instagram, Facebook, Twitter, Music2, Phone, Mail, Settings } from "lucide-react";
 import PlatformSettings from "../components/admin/PlatformSettings";
+import ProfessionalContract from "../components/documents/ProfessionalContract";
+import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -19,6 +22,8 @@ export default function AdminDashboardPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
+  const [viewingBooking, setViewingBooking] = useState(null);
+  const [viewingType, setViewingType] = useState(null); // 'contract' or 'invoice'
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -44,6 +49,12 @@ export default function AdminDashboardPage() {
     queryFn: () => base44.entities.User.list('-created_date'),
     initialData: [],
     refetchInterval: 3000,
+  });
+
+  const { data: allBookings = [] } = useQuery({
+    queryKey: ['admin-bookings'],
+    queryFn: () => base44.entities.Booking.list('-created_date'),
+    initialData: [],
   });
 
   const approveVendorMutation = useMutation({
@@ -409,6 +420,55 @@ export default function AdminDashboardPage() {
                         </a>
                       </div>
 
+                      {/* Bookings & Documents */}
+                      {(() => {
+                        const vendorBookings = allBookings.filter(b => b.vendor_id === vendor.id && (b.status === 'confirmed' || b.status === 'completed'));
+                        if (vendorBookings.length > 0) {
+                          return (
+                            <div>
+                              <p className="font-bold mb-2">Bookings & Documents:</p>
+                              <div className="space-y-2">
+                                {vendorBookings.map(booking => (
+                                  <div key={booking.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-300">
+                                    <div>
+                                      <p className="font-semibold">{booking.client_name}</p>
+                                      <p className="text-sm text-gray-600">{booking.event_type} - ${booking.total_amount}</p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setViewingBooking(booking);
+                                          setViewingType('contract');
+                                        }}
+                                        className="border-black"
+                                      >
+                                        <FileText className="w-4 h-4 mr-1" />
+                                        Contract
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setViewingBooking(booking);
+                                          setViewingType('invoice');
+                                        }}
+                                        className="border-black"
+                                      >
+                                        <DollarSign className="w-4 h-4 mr-1" />
+                                        Invoice
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {selectedVendor === vendor.id ? (
                         <div className="space-y-4 bg-red-50 p-4 rounded-lg">
                           <Textarea
@@ -531,8 +591,34 @@ export default function AdminDashboardPage() {
           <TabsContent value="settings" className="space-y-4">
             <PlatformSettings />
           </TabsContent>
-          </Tabs>
-          </div>
-          </div>
-          );
-          }
+        </Tabs>
+
+        {/* Document Viewer Dialog */}
+        <Dialog open={!!viewingBooking} onOpenChange={() => setViewingBooking(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black">
+                {viewingType === 'contract' ? 'Service Agreement' : 'Invoice'}
+              </DialogTitle>
+            </DialogHeader>
+            {viewingBooking && (
+              <div>
+                {viewingType === 'contract' ? (
+                  <ProfessionalContract 
+                    booking={viewingBooking} 
+                    vendor={vendors.find(v => v.id === viewingBooking.vendor_id)} 
+                  />
+                ) : (
+                  <ProfessionalInvoice 
+                    booking={viewingBooking} 
+                    vendor={vendors.find(v => v.id === viewingBooking.vendor_id)} 
+                  />
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
