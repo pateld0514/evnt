@@ -6,22 +6,16 @@ export default function ProfessionalContract({ booking, vendor }) {
   const effectiveDate = booking.contract_signed_date || new Date().toISOString();
 
   return (
-    <div className="bg-white p-16 max-w-5xl mx-auto print:p-12 text-sm leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>
-      {/* Professional Header */}
-      <div className="text-center mb-12 pb-8 border-b-4 border-black">
-        <div className="inline-block bg-black text-white px-8 py-4 rounded-lg mb-4">
-          <h1 className="text-4xl font-black tracking-tight">EVNT</h1>
-          <p className="text-xs tracking-wider opacity-90 mt-1">EVENT SERVICES PLATFORM</p>
-        </div>
-        <h2 className="text-3xl font-bold mb-4 text-gray-800">SERVICE AGREEMENT</h2>
-        <div className="inline-block bg-gray-100 px-6 py-3 rounded-lg">
-          <p className="text-sm font-bold">Contract No: {contractNumber}</p>
-          <p className="text-xs text-gray-600 mt-1">Date: {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
-        </div>
+    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Times New Roman, serif', fontSize: '11pt', lineHeight: '1.8' }}>
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-4">EVENT SERVICES AGREEMENT</h1>
+        <p><strong>Contract No:</strong> {contractNumber}</p>
+        <p><strong>Effective Date:</strong> {format(new Date(effectiveDate), "MMMM dd, yyyy")}</p>
       </div>
 
       {/* Parties */}
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="mb-4">
           This Event Services Agreement (the "Agreement") is entered into as of {format(new Date(effectiveDate), "MMMM dd, yyyy")}, 
           by and between:
@@ -29,370 +23,340 @@ export default function ProfessionalContract({ booking, vendor }) {
         
         <div className="ml-8 mb-4">
           <p className="font-bold">{booking.vendor_name}</p>
-          <p className="text-gray-700 italic">("Service Provider" or "Vendor")</p>
-          <p className="text-sm text-gray-600 mt-1">Verified through EVNT Platform (ID: {vendor?.id?.slice(0, 8) || "VERIFIED"})</p>
+          <p className="italic">("Service Provider" or "Vendor")</p>
         </div>
 
         <p className="mb-2">and</p>
 
         <div className="ml-8 mb-4">
           <p className="font-bold">{booking.client_name}</p>
-          <p className="text-gray-700 italic">("Client" or "Host")</p>
-          <p className="text-sm text-gray-600 mt-1">{booking.location}</p>
+          <p className="italic">("Client" or "Host")</p>
+          <p className="text-sm">{booking.client_email}</p>
         </div>
 
-        <p>
-          (collectively referred to as the "Parties")
-        </p>
+        <p>(collectively referred to as the "Parties")</p>
       </div>
 
       {/* Important Notice */}
-      <div className="mb-8 bg-yellow-50 border-2 border-yellow-400 p-6 rounded-lg">
-        <h2 className="text-lg font-bold mb-3 text-yellow-900">⚠️ IMPORTANT MARKETPLACE NOTICE</h2>
-        <p className="text-sm mb-2 font-bold">
-          Evnt, Inc. is a technology marketplace platform and does NOT provide event services.
-        </p>
+      <div className="mb-6 p-4 border-2 border-black">
+        <p className="font-bold text-center mb-2">⚠️ IMPORTANT MARKETPLACE NOTICE</p>
         <p className="text-sm mb-2">
-          Service Provider ({booking.vendor_name}) is an independent contractor, not an employee or agent of EVNT. 
-          This agreement is between Client and Service Provider only. EVNT facilitates the connection and payment but is not 
-          responsible for service performance, quality, delays, or disputes.
+          <strong>Evnt, Inc.</strong> is a technology marketplace platform and does NOT provide event services. 
+          Service Provider is an independent contractor, not an employee or agent of Evnt.
         </p>
         <p className="text-sm">
-          By proceeding with this booking, both parties acknowledge they have read and agree to the EVNT Vendor Marketplace Agreement 
-          and Client Terms outlined in this document.
+          This agreement is between Client and Service Provider only. Evnt facilitates the connection and payment 
+          but is not responsible for service performance, quality, delays, or disputes.
         </p>
       </div>
 
-      {/* Recitals */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4 uppercase border-b-2 border-black pb-2">Recitals & Background</h2>
-        <p className="mb-3">
-          <strong>WHEREAS,</strong> Service Provider is an independent contractor engaged in the business of providing 
-          {vendor?.category?.replace(/_/g, ' ') || "event"} services through the EVNT marketplace platform;
-        </p>
-        <p className="mb-3">
-          <strong>WHEREAS,</strong> Client desires to engage Service Provider to provide such services for an event (the "Event");
-        </p>
-        <p className="mb-3">
-          <strong>WHEREAS,</strong> EVNT, Inc. operates a technology platform that facilitates connections between clients and 
-          independent service providers but does not provide services directly;
-        </p>
-        <p>
-          <strong>NOW, THEREFORE,</strong> in consideration of the mutual covenants and agreements herein contained, and for other good and 
-          valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
-        </p>
-      </div>
-
-      {/* Article 1: Event Details */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 1: EVENT DETAILS</h2>
-        <div className="ml-6 space-y-3">
-          <p><span className="font-semibold">1.1 Event Type:</span> {booking.event_type}</p>
-          <p><span className="font-semibold">1.2 Event Date:</span> {format(new Date(booking.event_date), "EEEE, MMMM dd, yyyy")}</p>
-          <p><span className="font-semibold">1.3 Event Location:</span> {booking.location}</p>
-          {booking.guest_count && (
-            <p><span className="font-semibold">1.4 Expected Attendance:</span> Approximately {booking.guest_count} guests</p>
-          )}
+      {/* Event Details */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">1. Event Details</h2>
+        <div className="ml-6">
+          <p><strong>Event Type:</strong> {booking.event_type}</p>
+          <p><strong>Event Date:</strong> {format(new Date(booking.event_date), "EEEE, MMMM dd, yyyy")}</p>
+          <p><strong>Event Location:</strong> {booking.location}</p>
+          {booking.guest_count && <p><strong>Expected Attendance:</strong> Approximately {booking.guest_count} guests</p>}
         </div>
       </div>
 
-      {/* Article 2: Services */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 2: SERVICES TO BE PROVIDED</h2>
-        <div className="ml-6 space-y-3">
-          <p>
-            <span className="font-semibold">2.1 Scope of Services:</span> Service Provider agrees to provide the following services:
-          </p>
-          <div className="ml-6 bg-gray-50 p-4 rounded border border-gray-200">
-            <p>{booking.service_description}</p>
+      {/* Services */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">2. Services to be Provided</h2>
+        <div className="ml-6">
+          <p className="mb-2"><strong>Scope of Services:</strong></p>
+          <div className="ml-4 p-3 bg-gray-100 border border-gray-300">
+            <p>{booking.service_description || `Professional ${booking.event_type} services as described in vendor profile`}</p>
           </div>
-          <p>
-            <span className="font-semibold">2.2 Professional Standards:</span> Service Provider warrants that all services shall be performed 
-            in a professional, workmanlike manner consistent with industry standards and practices.
-          </p>
-          <p>
-            <span className="font-semibold">2.3 Equipment:</span> Service Provider shall provide all necessary equipment, materials, 
-            and supplies required to perform the services, unless otherwise specified in writing.
+          <p className="mt-3">
+            Service Provider warrants that all services shall be performed in a professional, workmanlike manner 
+            consistent with industry standards.
           </p>
         </div>
       </div>
 
-      {/* Article 3: Compensation */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 3: COMPENSATION AND PAYMENT</h2>
-        <div className="ml-6 space-y-3">
-          <p>
-            <span className="font-semibold">3.1 Total Fee:</span> Client agrees to pay Service Provider a total fee of 
-            ${booking.agreed_price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
+      {/* Compensation */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">3. Compensation and Payment</h2>
+        <div className="ml-6">
+          <p className="mb-2">
+            <strong>Service Fee:</strong> Client agrees to pay Service Provider ${booking.agreed_price?.toFixed(2)} 
             for the services described herein.
           </p>
           
           {booking.additional_fees && booking.additional_fees.length > 0 && (
-            <div>
-              <p className="font-semibold">3.2 Additional Fees:</p>
-              <div className="ml-6">
+            <div className="mb-2">
+              <p className="font-bold">Additional Fees:</p>
+              <ul className="ml-6 list-disc">
                 {booking.additional_fees.map((fee, idx) => (
-                  <p key={idx}>• {fee.name}: ${fee.amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <li key={idx}>{fee.name}: ${parseFloat(fee.amount)?.toFixed(2)}</li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
 
-          <p>
-            <span className="font-semibold">3.3 Platform Fee:</span> In addition to the service fee, Client shall pay a platform 
-            and processing fee of ${booking.platform_fee_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
-            ({booking.platform_fee_percent}% of total services) to EVNT Platform Services LLC.
+          <p className="mb-2">
+            <strong>Platform Fee:</strong> Client shall pay ${booking.platform_fee_amount?.toFixed(2)} 
+            ({booking.platform_fee_percent}%) to Evnt, Inc. for platform services.
+          </p>
+
+          <p className="mb-2">
+            <strong>Total Amount Due:</strong> ${booking.total_amount?.toFixed(2)}
           </p>
 
           <p>
-            <span className="font-semibold">3.4 Total Amount Due:</span> The total amount payable by Client is 
-            ${booking.total_amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.
-          </p>
-
-          <p>
-            <span className="font-semibold">3.5 Payment Terms:</span> Payment shall be processed through the EVNT Platform 
-            prior to the Event date. Funds shall be held in escrow by EVNT and released to Service Provider 24 hours after 
-            the Event, subject to the dispute resolution provisions of this Agreement.
+            <strong>Payment Terms:</strong> Payment processed through Evnt Platform. Funds held in escrow and released 
+            to Service Provider 24-48 hours after Event completion, subject to dispute resolution.
           </p>
         </div>
       </div>
 
-      {/* Article 4: Cancellation */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 4: CANCELLATION AND TERMINATION</h2>
-        <div className="ml-6 space-y-3">
-          <p>
-            <span className="font-semibold">4.1 Client Cancellation:</span> Client may cancel this Agreement subject to the following terms:
+      <div className="page-break-after"></div>
+
+      {/* Cancellation */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">4. Cancellation and Termination</h2>
+        <div className="ml-6 text-sm">
+          <p className="mb-2"><strong>Client Cancellation:</strong></p>
+          <ul className="ml-6 list-disc mb-3">
+            <li>More than 60 days before Event: Full refund minus 5% processing fee</li>
+            <li>30-60 days before Event: 50% refund</li>
+            <li>Less than 30 days before Event: No refund</li>
+          </ul>
+          <p className="mb-2">
+            <strong>Service Provider Cancellation:</strong> If Service Provider cancels within 30 days without cause, 
+            Service Provider forfeits deposits and Client receives full refund plus 10% compensation.
           </p>
-          <div className="ml-6">
-            <p>a) Cancellation more than 60 days before Event: Full refund minus 5% processing fee</p>
-            <p>b) Cancellation 30-60 days before Event: 50% refund</p>
-            <p>c) Cancellation less than 30 days before Event: No refund</p>
-          </div>
           <p>
-            <span className="font-semibold">4.2 Service Provider Cancellation:</span> If Service Provider cancels within 30 days of the Event 
-            without cause, Service Provider shall forfeit any deposits and Client shall receive a full refund plus 10% of the 
-            service fee as compensation.
-          </p>
-          <p>
-            <span className="font-semibold">4.3 Force Majeure:</span> Neither party shall be liable for failure to perform due to causes 
-            beyond reasonable control, including but not limited to acts of God, war, strikes, or government restrictions.
+            <strong>Force Majeure:</strong> Neither party liable for failure to perform due to causes beyond reasonable control.
           </p>
         </div>
       </div>
 
-      {/* Article 5: Liability and Insurance */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 5: LIABILITY AND INSURANCE</h2>
-        <div className="ml-6 space-y-3">
-          <p>
-            <span className="font-semibold">5.1 Insurance:</span> Service Provider represents that they maintain appropriate liability 
-            insurance coverage for the services to be provided.
+      {/* Liability */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">5. Liability and Insurance</h2>
+        <div className="ml-6 text-sm">
+          <p className="mb-2">
+            Service Provider maintains appropriate liability insurance. Service Provider's total liability shall not 
+            exceed total compensation paid by Client.
           </p>
           <p>
-            <span className="font-semibold">5.2 Limitation of Liability:</span> Service Provider's total liability under this Agreement 
-            shall not exceed the total compensation paid by Client.
-          </p>
-          <p>
-            <span className="font-semibold">5.3 Indemnification:</span> Each party agrees to indemnify and hold harmless the other party 
-            from any claims arising from their own negligence or willful misconduct.
+            Each party indemnifies the other from claims arising from their own negligence or willful misconduct.
           </p>
         </div>
       </div>
 
-      {/* Article 6: Dispute Resolution */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 6: DISPUTE RESOLUTION</h2>
-        <div className="ml-6 space-y-3">
-          <p>
-            <span className="font-semibold">6.1 Good Faith Negotiation:</span> In the event of any dispute, the Parties agree to first 
-            attempt resolution through good faith negotiation.
+      {/* Dispute Resolution */}
+      <div className="mb-6">
+        <h2 className="font-bold text-lg mb-3 uppercase border-b border-black pb-1">6. Dispute Resolution</h2>
+        <div className="ml-6 text-sm">
+          <p className="mb-2">
+            Parties agree to first attempt resolution through good faith negotiation. If unsuccessful, disputes may be 
+            submitted to mediation through Evnt Platform Services.
           </p>
           <p>
-            <span className="font-semibold">6.2 EVNT Mediation:</span> If direct negotiation fails, the Parties agree to submit the 
-            dispute to mediation through EVNT Platform Services LLC before pursuing legal action.
-          </p>
-          <p>
-            <span className="font-semibold">6.3 Governing Law:</span> This Agreement shall be governed by the laws of the District of Columbia, 
-            without regard to conflict of law principles.
+            This Agreement governed by laws of District of Columbia. Digital signatures via Evnt Platform have same 
+            legal effect as handwritten signatures.
           </p>
         </div>
       </div>
 
-      {/* Article 7: General Provisions */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-4">ARTICLE 7: GENERAL PROVISIONS</h2>
-        <div className="ml-6 space-y-3">
+      {/* Vendor Marketplace Agreement */}
+      <div className="mt-8 pt-8 border-t-2 border-black">
+        <h2 className="font-bold text-center text-xl mb-6 uppercase">EVNT VENDOR MARKETPLACE AGREEMENT</h2>
+        
+        <div className="text-xs space-y-4">
           <p>
-            <span className="font-semibold">7.1 Entire Agreement:</span> This Agreement, together with the EVNT Vendor Marketplace Agreement 
-            and Client Terms, constitutes the entire agreement between the Parties and supersedes all prior negotiations, representations, or agreements.
+            This Vendor Marketplace Agreement is entered into by and between Evnt, Inc. ("Evnt," "Company," or "Platform") 
+            and {booking.vendor_name} ("Vendor").
           </p>
-          <p>
-            <span className="font-semibold">7.2 Amendments:</span> This Agreement may only be amended in writing signed by both Parties.
-          </p>
-          <p>
-            <span className="font-semibold">7.3 Severability:</span> If any provision of this Agreement is found to be unenforceable, 
-            the remaining provisions shall remain in full force and effect.
-          </p>
-          <p>
-            <span className="font-semibold">7.4 Digital Signatures:</span> The Parties agree that digital signatures executed through 
-            the EVNT Platform shall have the same legal effect as handwritten signatures under the ESIGN Act and applicable state law.
-          </p>
-          <p>
-            <span className="font-semibold">7.5 Independent Contractors:</span> Service Provider is an independent contractor and not an 
-            employee, agent, or representative of EVNT or Client. Service Provider is solely responsible for all taxes, insurance, licenses, 
-            permits, and equipment.
-          </p>
-        </div>
-      </div>
 
-      {/* EVNT Marketplace Terms */}
-      <div className="mb-12 page-break-before">
-        <div className="bg-gray-100 p-8 rounded-lg border-2 border-gray-300">
-          <h2 className="text-xl font-black mb-6 text-center uppercase">EVNT VENDOR MARKETPLACE AGREEMENT</h2>
-          
-          <div className="space-y-4 text-xs leading-relaxed">
-            <p className="font-bold">
-              By registering for, accessing, or providing services through the EVNT platform, Vendor ({booking.vendor_name}) 
-              agrees to be bound by these terms.
+          <div>
+            <p className="font-bold mb-1">PLATFORM ROLE AND PURPOSE</p>
+            <p>
+              Evnt operates a technology-based marketplace connecting event clients with independent service providers. 
+              Evnt does not provide event services, does not control Vendor operations, and is not a party to any agreement 
+              between Vendor and Client.
             </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">PLATFORM ROLE AND PURPOSE</p>
-              <p>
-                EVNT operates a technology-based marketplace that connects event clients with independent event service providers. 
-                EVNT does not provide event services, does not control Vendor operations, and is not a party to any agreement between 
-                Vendor and Client beyond payment facilitation.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">INDEPENDENT CONTRACTOR STATUS</p>
+            <p>
+              Vendor is an independent contractor and not an employee, agent, partner, or representative of Evnt. 
+              Vendor is solely responsible for all taxes, withholdings, insurance, permits, licenses, certifications, 
+              equipment, personnel, and expenses related to services.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">INDEPENDENT CONTRACTOR STATUS</p>
-              <p>
-                Vendor is an independent contractor and not an employee, agent, partner, or representative of EVNT. Vendor has no 
-                authority to bind EVNT. Vendor is solely responsible for all taxes, withholdings, insurance, permits, licenses, 
-                certifications, equipment, personnel, and expenses related to services.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">SERVICES AND BOOKINGS</p>
+            <p>
+              Vendor agrees to provide event-related services as described in Vendor's profile and individual bookings. 
+              All service details, pricing, timelines, deliverables, and cancellation terms must be clearly disclosed 
+              to Clients prior to booking. Vendor is solely responsible for performing services in a professional, 
+              lawful, and timely manner.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">PAYMENTS, FEES, AND PAYOUTS</p>
-              <p>
-                Clients remit payment through the EVNT platform. EVNT charges Vendor a platform service fee (currently {booking.platform_fee_percent}%) 
-                for marketplace access, payment processing, dispute resolution, and support services. EVNT will remit Vendor payouts within 24-48 hours 
-                following successful completion of services, subject to dispute resolution, refunds, chargebacks, or violations of this Agreement.
-              </p>
-              <p className="mt-2">
-                EVNT reserves the right to withhold, delay, or reverse payouts in cases of suspected fraud, non-performance, misconduct, or Client disputes.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">PAYMENTS, FEES, AND PAYOUTS</p>
+            <p>
+              Clients remit payment through Evnt platform. Evnt charges Vendor a platform service fee ({booking.platform_fee_percent}%) 
+              for marketplace access, payment processing, dispute resolution, and support. Evnt remits Vendor payouts within 24-48 hours 
+              following successful service completion, subject to dispute resolution, refunds, or violations.
+            </p>
+            <p className="mt-2">
+              Evnt reserves the right to withhold, delay, or reverse payouts in cases of suspected fraud, non-performance, 
+              misconduct, or Client disputes.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">QUALITY STANDARDS AND CONDUCT</p>
-              <p>
-                Vendor agrees to maintain high standards of professionalism, responsiveness, accuracy, and reliability. Vendor shall not engage in 
-                misleading representations, discriminatory behavior, harassment, illegal activity, or conduct that harms Clients, EVNT, or the 
-                platform's reputation. Violation may result in immediate account suspension or termination.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">CANCELLATIONS, REFUNDS, AND DISPUTES</p>
+            <p>
+              Vendor must clearly define and honor cancellation and refund policies. Failure to appear, last-minute 
+              cancellations without cause, or material deviation from agreed services may result in mandatory refunds, 
+              penalties, account suspension, or termination. Evnt may assist with dispute resolution. Evnt's determination 
+              regarding platform-related disputes is final.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">INSURANCE AND LIABILITY</p>
-              <p>
-                Vendor is solely responsible for maintaining appropriate insurance coverage, including general liability and any industry-specific insurance. 
-                EVNT does not provide insurance coverage for Vendor or Vendor's services. Vendor assumes all risk arising from performance of services.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">QUALITY STANDARDS AND CONDUCT</p>
+            <p>
+              Vendor maintains high standards of professionalism, responsiveness, accuracy, and reliability. Vendor shall not 
+              engage in misleading representations, discriminatory behavior, harassment, illegal activity, or conduct that 
+              harms Clients, Evnt, or platform reputation.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">INDEMNIFICATION</p>
-              <p>
-                Vendor agrees to indemnify, defend, and hold harmless EVNT and its officers, directors, employees, and affiliates from any claims, damages, 
-                losses, liabilities, costs, or expenses arising out of or related to Vendor's services, actions, omissions, breaches of this Agreement, 
-                or interactions with Clients.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">INSURANCE AND LIABILITY</p>
+            <p>
+              Vendor is solely responsible for maintaining appropriate insurance coverage, including general liability and 
+              industry-specific insurance. Evnt does not provide insurance coverage for Vendor. Vendor assumes all risk 
+              arising from performance of services.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">LIMITATION OF LIABILITY</p>
-              <p>
-                To the maximum extent permitted by law, EVNT shall not be liable for indirect, incidental, consequential, special, or punitive damages. 
-                EVNT's total liability shall not exceed the platform fees paid by Vendor to EVNT during the six (6) months preceding the claim.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">INDEMNIFICATION</p>
+            <p>
+              Vendor indemnifies, defends, and holds harmless Evnt and its officers, directors, employees, and affiliates 
+              from any claims, damages, losses, liabilities, costs, or expenses arising from Vendor's services, actions, 
+              omissions, breaches, or Client interactions.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">NON-CIRCUMVENTION</p>
-              <p>
-                Vendor agrees not to bypass the EVNT platform to transact directly with Clients introduced through EVNT for a period of twelve (12) months 
-                following initial contact. Violation may result in liability for unpaid platform fees and account termination.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">LIMITATION OF LIABILITY</p>
+            <p>
+              To maximum extent permitted by law, Evnt not liable for indirect, incidental, consequential, special, or 
+              punitive damages. Evnt's total liability shall not exceed platform fees paid by Vendor during six (6) months 
+              preceding the claim.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">TERMINATION</p>
-              <p>
-                Either party may terminate this Agreement at any time. EVNT may immediately suspend or terminate Vendor access for violations, misconduct, 
-                or harm to platform integrity. Termination does not relieve Vendor of obligations incurred prior to termination.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">INTELLECTUAL PROPERTY</p>
+            <p>
+              Vendor retains ownership of Vendor intellectual property. Vendor grants Evnt a non-exclusive, worldwide, 
+              royalty-free license to use Vendor's name, trademarks, images, service descriptions, and content for platform 
+              operations, marketing, and promotion.
+            </p>
+          </div>
 
-            <div>
-              <p className="font-bold text-sm mb-2">GOVERNING LAW</p>
-              <p>
-                This Agreement shall be governed by the laws of the District of Columbia, without regard to conflict of law principles. 
-                Any disputes shall be resolved through binding arbitration in Washington, DC, except where prohibited by law.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold mb-1">DATA AND COMMUNICATIONS</p>
+            <p>
+              Evnt may collect, store, and use platform data to operate and improve services. Vendor shall not misuse 
+              Client data or communicate outside platform to circumvent fees.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-1">NON-CIRCUMVENTION</p>
+            <p>
+              Vendor agrees not to bypass Evnt platform to transact directly with Clients introduced through Evnt for 
+              twelve (12) months following initial contact.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-1">TERMINATION</p>
+            <p>
+              Either party may terminate this Agreement at any time. Evnt may immediately suspend or terminate Vendor 
+              access for violations, misconduct, or harm to platform integrity. Termination does not relieve Vendor of 
+              obligations incurred prior to termination.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-1">FORCE MAJEURE</p>
+            <p>
+              Neither party liable for delays or failure to perform due to events beyond reasonable control, including 
+              natural disasters, government actions, labor disputes, or acts of God.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-1">GOVERNING LAW AND DISPUTE RESOLUTION</p>
+            <p>
+              This Agreement governed by laws of District of Columbia. Disputes resolved through binding arbitration, 
+              except where prohibited by law.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-1">ENTIRE AGREEMENT</p>
+            <p>
+              This Agreement constitutes entire agreement between parties and supersedes prior agreements. Evnt may 
+              modify this Agreement with notice through platform.
+            </p>
           </div>
         </div>
       </div>
 
       {/* Signatures */}
-      <div className="border-t-4 border-black pt-10 bg-gradient-to-b from-white to-gray-50 -mx-16 px-16 -mb-16 pb-16 print:-mx-12 print:px-12 print:-mb-12 print:pb-12">
-        <p className="mb-10 text-center font-bold text-lg text-gray-700">
-          IN WITNESS WHEREOF, the Parties have executed this Agreement electronically
+      <div className="mt-8 pt-8 border-t-2 border-black">
+        <p className="text-center font-bold mb-6">
+          IN WITNESS WHEREOF, the Parties have executed this Agreement as of the date first written above.
         </p>
 
-        <div className="grid grid-cols-2 gap-12 mb-10">
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-6 shadow-lg">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Client / Host</p>
-            <p className="text-3xl mb-4 text-gray-800" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
-            <div className="border-t-2 border-black pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-sm">Digital Signature</span>
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">✓ SIGNED</span>
-              </div>
-              <p className="text-xs text-gray-600">Authenticated via EVNT Platform</p>
-              <p className="text-xs text-gray-600 mt-2 font-bold">
-                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMM dd, yyyy") : "Pending"}
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          <div>
+            <p className="text-2xl mb-8" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
+            <div className="border-t-2 border-black pt-2">
+              <p className="font-bold">Client Signature</p>
+              <p className="text-xs">Digitally signed via Evnt Platform</p>
+              <p className="text-xs mt-1">
+                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
               </p>
             </div>
           </div>
 
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-6 shadow-lg">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Service Provider</p>
-            <p className="text-3xl mb-4 text-gray-800" style={{ fontFamily: 'cursive' }}>{booking.vendor_name}</p>
-            <div className="border-t-2 border-black pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-sm">Digital Signature</span>
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">✓ SIGNED</span>
-              </div>
-              <p className="text-xs text-gray-600">Authenticated via EVNT Platform</p>
-              <p className="text-xs text-gray-600 mt-2 font-bold">
-                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMM dd, yyyy") : "Pending"}
+          <div>
+            <p className="text-2xl mb-8" style={{ fontFamily: 'cursive' }}>{booking.vendor_name}</p>
+            <div className="border-t-2 border-black pt-2">
+              <p className="font-bold">Service Provider Signature</p>
+              <p className="text-xs">Digitally signed via Evnt Platform</p>
+              <p className="text-xs mt-1">
+                Date: {booking.contract_signed_date ? format(new Date(booking.contract_signed_date), "MMMM dd, yyyy") : "________________"}
               </p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-black text-white p-6 rounded-lg mt-8 text-xs text-center">
-          <p className="font-bold text-sm mb-2">This agreement is facilitated through Evnt, Inc.</p>
-          <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
-          <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
-          <p className="mt-3 opacity-75">Contract ID: {contractNumber}</p>
-          <p className="mt-1 opacity-75">This is a legally binding agreement. Both parties should retain a copy for their records.</p>
-        </div>
+      {/* Footer */}
+      <div className="mt-8 pt-6 border-t border-gray-400 text-center text-xs">
+        <p className="font-bold">Evnt, Inc.</p>
+        <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
+        <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
+        <p className="mt-2">Contract ID: {contractNumber}</p>
       </div>
     </div>
   );

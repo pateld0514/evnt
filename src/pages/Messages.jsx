@@ -48,8 +48,17 @@ export default function MessagesPage() {
   }, []);
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['messages'],
-    queryFn: () => base44.entities.Message.list('-created_date'),
+    queryKey: ['messages', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      // Get messages where user is sender OR recipient
+      const allMessages = await base44.entities.Message.list('-created_date');
+      return allMessages.filter(m => 
+        m.sender_email === currentUser.email || 
+        m.recipient_email === currentUser.email
+      );
+    },
+    enabled: !!currentUser,
     initialData: [],
     refetchInterval: 3000,
   });

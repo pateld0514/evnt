@@ -59,8 +59,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
-      toast.success(isVendor ? "Proposal sent!" : "Proposal accepted!");
       onClose();
+      toast.success(isVendor ? "Proposal sent!" : "Proposal accepted!");
     },
   });
 
