@@ -94,7 +94,7 @@ export default function VendorDocumentUpload({ vendor }) {
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         <p className="text-sm text-gray-600">
-          Upload your own branded contract and invoice templates (PDF format). If not uploaded, EVNT will generate professional documents for you.
+          Upload your own branded contract and invoice templates (PDF format).
         </p>
 
         {/* Contract Template */}
