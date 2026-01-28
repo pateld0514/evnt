@@ -139,6 +139,16 @@ export default function SwipePage() {
   
   const uniqueAvailableCategories = [...new Set(availableCategories)];
 
+  // Calculate vendor tier based on completed bookings
+  const getVendorTier = (vendorId) => {
+    const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
+    if (completedCount >= 100) return 5; // Elite
+    if (completedCount >= 51) return 4;  // Master
+    if (completedCount >= 16) return 3;  // Expert
+    if (completedCount >= 6) return 2;   // Pro
+    return 1; // Rising Star
+  };
+
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
     const profileComplete = vendor.profile_complete === true;
@@ -171,29 +181,32 @@ export default function SwipePage() {
     
     return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
   }).sort((a, b) => {
-    // Prioritize vendors based on user preferences
-    if (!currentUser) return 0;
+    // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
+    const tierA = getVendorTier(a.id);
+    const tierB = getVendorTier(b.id);
+    if (tierA !== tierB) return tierB - tierA;
     
-    // 1. Exact location match gets highest priority
+    // 2. Exact location match
+    if (!currentUser) return 0;
     const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
     const aLocationMatch = a.location?.toLowerCase() === userLocation;
     const bLocationMatch = b.location?.toLowerCase() === userLocation;
     if (aLocationMatch && !bLocationMatch) return -1;
     if (!aLocationMatch && bLocationMatch) return 1;
     
-    // 2. Location contains user's city/state
+    // 3. Location contains user's city/state
     const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
     const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
     if (aLocationPartial && !bLocationPartial) return -1;
     if (!aLocationPartial && bLocationPartial) return 1;
     
-    // 3. Event type specialties match
+    // 4. Event type specialties match
     const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
     const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
     if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
     if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
     
-    // 4. Better rating (if reviews exist)
+    // 5. Better rating (if reviews exist)
     const aReviews = reviews.filter(r => r.vendor_id === a.id);
     const bReviews = reviews.filter(r => r.vendor_id === b.id);
     if (aReviews.length > 0 && bReviews.length > 0) {
@@ -202,7 +215,7 @@ export default function SwipePage() {
       if (aAvgRating !== bAvgRating) return bAvgRating - aAvgRating;
     }
     
-    // 5. More reviews = more popular
+    // 6. More reviews = more popular
     if (aReviews.length !== bReviews.length) return bReviews.length - aReviews.length;
     
     return 0;
