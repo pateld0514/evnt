@@ -39,12 +39,15 @@ export default function AdminDashboardPage() {
     checkAdmin();
   }, [navigate]);
 
-  const { data: vendors = [] } = useQuery({
+  const { data: allVendors = [] } = useQuery({
     queryKey: ['admin-vendors'],
     queryFn: () => base44.entities.Vendor.list('-created_date'),
     initialData: [],
     refetchInterval: 3000,
   });
+  
+  // Filter out demo vendors
+  const vendors = allVendors.filter(v => !v.contact_email?.includes("demo_vendor_admin"));
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['admin-users'],
