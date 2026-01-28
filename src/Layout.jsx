@@ -32,7 +32,12 @@ export default function Layout({ children, currentPageName }) {
       try {
         const user = await base44.auth.me();
         setCurrentUserEmail(user.email);
-        if (user.email === "pateld0514@gmail.com") {
+        
+        // Check for demo mode
+        if (user.demo_mode) {
+          setUserType(user.demo_user_type);
+          setOnboardingComplete(user.demo_onboarding_complete || false);
+        } else if (user.email === "pateld0514@gmail.com") {
           setUserType("admin");
           setOnboardingComplete(true);
         } else {
@@ -78,6 +83,18 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const navItems = userType === "admin" ? adminNavItems : userType === "vendor" ? vendorNavItems : clientNavItems;
+  
+  const [demoMode, setDemoMode] = React.useState(false);
+  
+  React.useEffect(() => {
+    const checkDemoMode = async () => {
+      try {
+        const user = await base44.auth.me();
+        setDemoMode(!!user.demo_mode);
+      } catch (error) {}
+    };
+    checkDemoMode();
+  }, [location]);
 
   // Only allow About and Profile pages if onboarding not complete
   const allowedPages = ["About", "Profile", "Onboarding", "ClientRegistration", "VendorRegistration", "VendorPending"];
@@ -85,6 +102,29 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Demo Mode Banner */}
+      {demoMode && (
+        <div className="bg-yellow-400 text-black text-center py-2 px-4 font-bold text-sm">
+          🎭 DEMO MODE - All actions are simulated and won't affect real data
+          <Button
+            onClick={async () => {
+              await base44.auth.updateMe({ 
+                demo_mode: null,
+                demo_user_type: null,
+                demo_vendor_id: null,
+                demo_onboarding_complete: null,
+                demo_approval_status: null
+              });
+              window.location.href = createPageUrl("AdminDashboard");
+            }}
+            size="sm"
+            className="ml-4 bg-black text-yellow-400 hover:bg-gray-800 h-6 px-3 text-xs"
+          >
+            Exit Demo Mode
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
         <div className={`${isMobileView ? 'px-4' : 'max-w-7xl mx-auto px-6 lg:px-8'}`}>

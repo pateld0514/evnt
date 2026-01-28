@@ -182,52 +182,58 @@ export default function AdminDashboardPage() {
     },
   });
 
-  const pendingVendors = vendors.filter(v => v.approval_status === "pending");
-  const approvedVendors = vendors.filter(v => v.approval_status === "approved");
-  const rejectedVendors = vendors.filter(v => v.approval_status === "rejected");
+
+  // Filter out demo vendors from counts
+  const realVendors = vendors.filter(v => !v.contact_email?.includes("demo_vendor_admin"));
+  const pendingVendors = realVendors.filter(v => v.approval_status === "pending");
+  const approvedVendors = realVendors.filter(v => v.approval_status === "approved");
+  const rejectedVendors = realVendors.filter(v => v.approval_status === "rejected");
+  
   const clientUsers = allUsers.filter(u => u.user_type === "client" && u.email !== "pateld0514@gmail.com");
   const vendorUsers = allUsers.filter(u => u.user_type === "vendor");
 
   const switchToClient = async () => {
     await base44.auth.updateMe({ 
-      user_type: "client", 
-      onboarding_complete: true,
-      vendor_id: null
+      demo_mode: "client",
+      demo_user_type: "client",
+      demo_onboarding_complete: true
     });
-    toast.success("Switched to Client view");
+    toast.success("Switched to Demo Client Mode - All actions are simulated");
     window.location.href = createPageUrl("Home");
   };
 
   const switchToVendor = async () => {
-    // Find or create test vendor
-    let testVendors = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-    let testVendor;
+    // Create demo vendor profile if it doesn't exist
+    let demoVendors = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
+    let demoVendor;
     
-    if (testVendors.length === 0) {
-      testVendor = await base44.entities.Vendor.create({
-        business_name: "Test Vendor (Admin)",
+    if (demoVendors.length === 0) {
+      demoVendor = await base44.entities.Vendor.create({
+        business_name: "🎭 Demo Vendor (Testing Mode)",
         category: "dj",
-        description: "This is a test vendor account for admin testing purposes",
-        contact_email: currentUser.email,
+        description: "This is a demo vendor account for admin testing. All bookings and messages are simulated.",
+        contact_email: "demo_vendor_admin@test.com",
         contact_phone: "609-442-3524",
         location: "Washington, DC",
         price_range: "$$",
         approval_status: "approved",
         profile_complete: true,
         starting_price: 500,
-        pricing_type: "package"
+        pricing_type: "package",
+        image_url: "https://images.unsplash.com/photo-1571266028243-d220c9f8c3e4?w=400"
       });
     } else {
-      testVendor = testVendors[0];
+      demoVendor = demoVendors[0];
     }
     
     await base44.auth.updateMe({ 
-      user_type: "vendor", 
-      vendor_id: testVendor.id,
-      onboarding_complete: true,
-      approval_status: "approved"
+      demo_mode: "vendor",
+      demo_vendor_id: demoVendor.id,
+      demo_user_type: "vendor",
+      demo_onboarding_complete: true,
+      demo_approval_status: "approved"
     });
-    toast.success("Switched to Vendor view");
+    toast.success("Switched to Demo Vendor Mode - All actions are simulated");
     window.location.href = createPageUrl("VendorDashboard");
   };
 
