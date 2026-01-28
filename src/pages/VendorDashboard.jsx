@@ -24,6 +24,16 @@ export default function VendorDashboard() {
         const user = await base44.auth.me();
         setCurrentUser(user);
 
+        // Handle demo mode
+        if (user.demo_mode === "vendor") {
+          const vendorsList = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
+          if (vendorsList && vendorsList.length > 0) {
+            setVendor(vendorsList[0]);
+          }
+          setLoading(false);
+          return;
+        }
+
         if (user.user_type === "vendor" && user.approval_status !== "approved" && user.email !== "pateld0514@gmail.com") {
           navigate(createPageUrl("VendorPending"));
           return;
