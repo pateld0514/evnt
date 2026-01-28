@@ -183,11 +183,14 @@ export default function AdminDashboardPage() {
   });
 
 
-  // Filter out demo vendors from counts
-  const realVendors = vendors.filter(v => 
-    v.contact_email !== "demo_vendor_admin@test.com" && 
-    !v.business_name?.includes("🎭 Demo Vendor")
-  );
+  // Filter out demo vendors from counts - check both email and business name
+  const isDemoVendor = (v) => {
+    return v.contact_email === "demo_vendor_admin@test.com" || 
+           v.business_name?.includes("🎭 Demo Vendor") ||
+           v.business_name?.includes("Demo Vendor");
+  };
+  
+  const realVendors = vendors.filter(v => !isDemoVendor(v));
   const pendingVendors = realVendors.filter(v => v.approval_status === "pending");
   const approvedVendors = realVendors.filter(v => v.approval_status === "approved");
   const rejectedVendors = realVendors.filter(v => v.approval_status === "rejected");
@@ -689,27 +692,36 @@ export default function AdminDashboardPage() {
           </TabsContent>
 
           <TabsContent value="approved" className="space-y-4">
-            {approvedVendors.map(vendor => (
-              <Card key={vendor.id} className="border-2 border-black">
-                <CardHeader className="bg-green-50">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-2xl font-black">{vendor.business_name}</CardTitle>
-                      <p className="text-gray-600 mt-1">
-                        {vendor.category?.replace(/_/g, ' ')} • {vendor.location}
-                      </p>
-                    </div>
-                    <Badge className="bg-green-600 text-white">Approved</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <p className="text-gray-700">{vendor.description}</p>
-                  <p className="text-sm text-gray-500 mt-4">
-                    Contact: {vendor.contact_email} • {vendor.contact_phone}
-                  </p>
+            {approvedVendors.length === 0 ? (
+              <Card className="border-2 border-gray-300">
+                <CardContent className="text-center py-12">
+                  <CheckCircle className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500 font-medium">No approved vendors yet</p>
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              approvedVendors.map(vendor => (
+                <Card key={vendor.id} className="border-2 border-black">
+                  <CardHeader className="bg-green-50">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-2xl font-black">{vendor.business_name}</CardTitle>
+                        <p className="text-gray-600 mt-1">
+                          {vendor.category?.replace(/_/g, ' ')} • {vendor.location}
+                        </p>
+                      </div>
+                      <Badge className="bg-green-600 text-white">Approved</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <p className="text-gray-700">{vendor.description}</p>
+                    <p className="text-sm text-gray-500 mt-4">
+                      Contact: {vendor.contact_email} • {vendor.contact_phone}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="rejected" className="space-y-4">
