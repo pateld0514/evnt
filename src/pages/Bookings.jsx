@@ -66,7 +66,12 @@ export default function BookingsPage() {
     queryFn: async () => {
       if (!currentUser) return [];
       
-      if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
+      // Handle demo mode
+      if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
+        return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
+      } else if (currentUser.demo_mode === "client") {
+        return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
+      } else if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.vendor_id }, '-created_date');
       } else {
         return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
@@ -175,7 +180,7 @@ export default function BookingsPage() {
     );
   }
 
-  const isVendor = currentUser.user_type === "vendor";
+  const isVendor = currentUser.user_type === "vendor" || currentUser.demo_mode === "vendor";
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
@@ -468,9 +473,9 @@ export default function BookingsPage() {
                   )}
 
                   {!negotiationOpen && !paymentOpen && (
-                    <div className="flex gap-3">
+                    <div className="flex flex-col gap-3">
                       {isVendor && selectedBooking.status === "pending" && (
-                        <>
+                        <div className="flex gap-3">
                           <Button
                             onClick={handleOpenNegotiation}
                             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
@@ -486,17 +491,27 @@ export default function BookingsPage() {
                             <XCircle className="w-4 h-4 mr-2" />
                             Decline
                           </Button>
-                        </>
+                        </div>
                       )}
 
-                      {!isVendor && selectedBooking.status === "negotiating" && selectedBooking.agreed_price && (
-                        <Button
-                          onClick={handleOpenNegotiation}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
-                        >
-                          <DollarSign className="w-4 h-4 mr-2" />
-                          Review Proposal
-                        </Button>
+                      {!isVendor && selectedBooking.status === "negotiating" && (
+                        <>
+                          {selectedBooking.agreed_price ? (
+                            <Button
+                              onClick={handleOpenNegotiation}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Review Proposal
+                            </Button>
+                          ) : (
+                            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
+                              <p className="text-sm text-blue-900 font-medium">
+                                Waiting for vendor to send pricing proposal...
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
 
                       {!isVendor && selectedBooking.status === "payment_pending" && (
