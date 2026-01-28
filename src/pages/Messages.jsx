@@ -204,52 +204,38 @@ export default function MessagesPage() {
 
   const getComposeOptions = () => {
     if (isVendor) {
-      const uniqueClients = bookings.reduce((acc, booking) => {
-        const existingConvo = conversations.find(c => 
-          c.clientEmail === booking.client_email
-        );
-        if (!existingConvo && !acc.find(c => c.email === booking.client_email)) {
-          acc.push({
-            name: booking.client_name,
-            email: booking.client_email,
+      // Vendors can message clients from bookings AND existing conversations
+      const existingClients = messages
+        .filter(m => m.sender_email !== currentUser.email)
+        .map(m => m.sender_email)
+        .filter((email, index, self) => self.indexOf(email) === index);
+      
+      const clientsFromBookings = bookings.map(b => b.client_email);
+      const allClientEmails = [...new Set([...existingClients, ...clientsFromBookings])];
+      
+      return allClientEmails
+        .filter(email => !conversations.find(c => c.clientEmail === email))
+        .map(email => {
+          const booking = bookings.find(b => b.client_email === email);
+          const msg = messages.find(m => m.sender_email === email);
+          return {
+            name: booking?.client_name || msg?.sender_name || email.split('@')[0],
+            email: email,
             vendorId: vendorData?.id,
             vendorName: vendorData?.business_name,
-          });
-        }
-        return acc;
-      }, []);
-      return uniqueClients;
+          };
+        });
     } else {
-      const options = [];
-      
-      savedVendors.forEach(saved => {
-        const vendor = vendors.find(v => v.id === saved.vendor_id);
-        if (vendor) {
-          const existingConvo = conversations.find(c => c.vendorId === vendor.id);
-          if (!existingConvo && !options.find(o => o.vendorId === vendor.id)) {
-            options.push({
-              name: vendor.business_name,
-              email: vendor.contact_email,
-              vendorId: vendor.id,
-              vendorName: vendor.business_name,
-            });
-          }
-        }
-      });
-      
-      bookings.forEach(booking => {
-        const existingConvo = conversations.find(c => c.vendorId === booking.vendor_id);
-        if (!existingConvo && !options.find(o => o.vendorId === booking.vendor_id)) {
-          options.push({
-            name: booking.vendor_name,
-            email: booking.vendor_id,
-            vendorId: booking.vendor_id,
-            vendorName: booking.vendor_name,
-          });
-        }
-      });
-      
-      return options;
+      // Clients can message ANY approved vendor
+      return vendors
+        .filter(v => v.approval_status === "approved")
+        .filter(v => !conversations.find(c => c.vendorId === v.id))
+        .map(v => ({
+          name: v.business_name,
+          email: v.contact_email,
+          vendorId: v.id,
+          vendorName: v.business_name,
+        }));
     }
   };
 
