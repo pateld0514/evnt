@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DollarSign, Plus, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { createPageUrl } from "@/utils";
 
 export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const queryClient = useQueryClient();
@@ -59,8 +60,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
-      onClose();
       toast.success(isVendor ? "Proposal sent!" : "Proposal accepted!");
+      onClose();
+      
+      // Redirect vendor to bookings page after sending proposal
+      if (isVendor) {
+        window.location.href = createPageUrl("Bookings");
+      }
     },
   });
 

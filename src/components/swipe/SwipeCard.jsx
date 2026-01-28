@@ -393,15 +393,20 @@ export default function SwipeCard({ vendor, onSwipe }) {
               <Button
                 variant="outline"
                 onClick={async () => {
+                  const shareUrl = `${window.location.origin}${createPageUrl("VendorView")}?id=${vendor.id}`;
                   if (navigator.share) {
                     try {
                       await navigator.share({
                         title: vendor.business_name,
-                        text: `Check out ${vendor.business_name} on EVNT!`
+                        text: `Check out ${vendor.business_name} on EVNT!`,
+                        url: shareUrl
                       });
-                    } catch (error) {}
+                      toast.success("Shared!");
+                    } catch (error) {
+                      // User cancelled or error
+                    }
                   } else {
-                    navigator.clipboard.writeText(window.location.href);
+                    navigator.clipboard.writeText(shareUrl);
                     toast.success("Link copied!");
                   }
                 }}

@@ -489,7 +489,7 @@ export default function BookingsPage() {
                         </>
                       )}
 
-                      {!isVendor && selectedBooking.status === "negotiating" && (
+                      {!isVendor && selectedBooking.status === "negotiating" && selectedBooking.agreed_price && (
                         <Button
                           onClick={handleOpenNegotiation}
                           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"

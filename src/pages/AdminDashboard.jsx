@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
 
 
   // Filter out demo vendors from counts
-  const realVendors = vendors.filter(v => !v.contact_email?.includes("demo_vendor_admin"));
+  const realVendors = vendors.filter(v => !v.contact_email?.includes("demo_vendor") && !v.business_name?.includes("🎭 Demo Vendor"));
   const pendingVendors = realVendors.filter(v => v.approval_status === "pending");
   const approvedVendors = realVendors.filter(v => v.approval_status === "approved");
   const rejectedVendors = realVendors.filter(v => v.approval_status === "rejected");

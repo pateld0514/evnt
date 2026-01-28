@@ -66,6 +66,12 @@ export default function SwipePage() {
     initialData: [],
   });
 
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['all-bookings'],
+    queryFn: () => base44.entities.Booking.list(),
+    initialData: [],
+  });
+
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
