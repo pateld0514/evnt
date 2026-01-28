@@ -2,10 +2,12 @@ import { base44 } from "@/api/base44Client";
 
 export async function sendNotification({ recipientEmail, type, title, message, link }) {
   try {
-    const user = await base44.entities.User.filter({ email: recipientEmail });
-    if (!user || user.length === 0) return;
+    const users = await base44.entities.User.filter({ email: recipientEmail });
+    if (!users || users.length === 0) return;
 
-    const notificationPref = user[0].notification_preference || "email";
+    const user = users[0];
+    const notificationPref = user.notification_preference || "email";
+    const userPhone = user.phone;
     
     // Create notification record
     await base44.entities.Notification.create({
@@ -22,35 +24,37 @@ export async function sendNotification({ recipientEmail, type, title, message, l
     if (notificationPref === "email" || notificationPref === "both") {
       await base44.integrations.Core.SendEmail({
         to: recipientEmail,
-        from_name: "EVNT Platform",
-        subject: title,
+        from_name: "EVNT",
+        subject: `EVNT - ${title}`,
         body: `
 <!DOCTYPE html>
 <html>
 <head>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #fff; padding: 30px; text-center; border-radius: 8px 8px 0 0; }
-    .logo { font-size: 36px; font-weight: 900; }
-    .content { padding: 30px; background: #f9f9f9; border-radius: 0 0 8px 8px; }
-    .button { display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 500px; margin: 0 auto; }
+    .header { background: #000; color: #fff; padding: 20px; text-align: center; }
+    .logo { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+    .logo-text { color: #000; font-size: 24px; font-weight: 900; }
+    .brand { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
+    .content { padding: 30px 20px; background: #fff; }
+    .title { font-size: 18px; font-weight: 700; margin: 0 0 15px 0; color: #000; }
+    .message { font-size: 15px; color: #333; margin: 0 0 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">EVNT</div>
+      <div class="logo"><span class="logo-text">E</span></div>
+      <div class="brand">EVNT</div>
     </div>
     <div class="content">
-      <h2>${title}</h2>
-      <p>${message}</p>
-      ${link ? `<a href="${link}" class="button">View Details</a>` : ''}
+      <p class="title">${title}</p>
+      <p class="message">${message}</p>
     </div>
     <div class="footer">
-      <p>EVNT - Modern Event Planning Platform</p>
-      <p>You're receiving this because of your notification preferences</p>
+      <p>EVNT Management</p>
     </div>
   </div>
 </body>
@@ -59,10 +63,11 @@ export async function sendNotification({ recipientEmail, type, title, message, l
       });
     }
 
-    // SMS would be implemented here if sms or both
-    // For now, we'll just log it
-    if (notificationPref === "sms" || notificationPref === "both") {
-      console.log(`SMS notification would be sent to user's phone`);
+    // SMS - Text message format (future implementation with Twilio/etc)
+    if ((notificationPref === "sms" || notificationPref === "both") && userPhone) {
+      // Placeholder for SMS sending via integration
+      // When implemented: await base44.integrations.SMS.Send({ to: userPhone, message: `EVNT: ${title} - ${message}` });
+      console.log(`SMS would be sent to ${userPhone}: EVNT - ${title}`);
     }
 
   } catch (error) {
@@ -150,13 +155,16 @@ export async function notifyBookingStatusChange(booking, oldStatus, newStatus) {
 }
 
 export async function notifyNewMessage(message, conversationId) {
-  const { recipient_email, sender_name, vendor_name } = message;
+  const { recipient_email, sender_name, vendor_name, created_date } = message;
+  const messageDate = created_date ? new Date(created_date) : new Date();
+  const timeStr = messageDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const dateStr = messageDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   
   await sendNotification({
     recipientEmail: recipient_email,
     type: "new_message",
-    title: "💬 New Message Received",
-    message: `You have a new message from ${sender_name || vendor_name}`,
+    title: `Unread Message from ${sender_name || vendor_name}`,
+    message: `You have an unread message from ${sender_name || vendor_name} sent on ${dateStr} at ${timeStr}.`,
     link: `/messages?conversation=${conversationId}`
   });
 }
