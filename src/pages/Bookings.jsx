@@ -471,32 +471,21 @@ export default function BookingsPage() {
                     <div className="flex gap-3">
                       {isVendor && selectedBooking.status === "pending" && (
                         <>
-                          {!currentVendor?.stripe_account_id ? (
-                            <div className="w-full p-4 bg-red-50 border-2 border-red-200 rounded-lg">
-                              <p className="text-red-800 font-bold mb-2">⚠️ Banking Information Required</p>
-                              <p className="text-sm text-red-700">
-                                Please add your Stripe account information in your profile before accepting bookings. This is required to receive payments.
-                              </p>
-                            </div>
-                          ) : (
-                            <>
-                              <Button
-                                onClick={handleOpenNegotiation}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                              >
-                                <DollarSign className="w-4 h-4 mr-2" />
-                                Send Pricing Proposal
-                              </Button>
-                              <Button
-                                onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
-                                variant="outline"
-                                className="flex-1 border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-                              >
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Decline
-                              </Button>
-                            </>
-                          )}
+                          <Button
+                            onClick={handleOpenNegotiation}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Send Pricing Proposal
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
+                            variant="outline"
+                            className="flex-1 border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Decline
+                          </Button>
                         </>
                       )}
 
