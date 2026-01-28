@@ -427,6 +427,21 @@ export default function BookingsPage() {
                   </div>
                 )}
 
+                {/* Message Button */}
+                <div>
+                  <Button
+                    onClick={() => {
+                      navigate(createPageUrl("Messages") + `?vendor=${selectedBooking.vendor_id}`);
+                      setDetailsOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full border-2 border-black hover:bg-black hover:text-white font-bold"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Send Message to {isVendor ? selectedBooking.client_name : selectedBooking.vendor_name}
+                  </Button>
+                </div>
+
                 {/* Documents Section */}
                 {(selectedBooking.status === "confirmed" || selectedBooking.status === "completed" || selectedBooking.status === "in_progress") && selectedBooking.agreed_price && (
                   <div className="border-t-2 border-gray-200 pt-6">
@@ -453,16 +468,16 @@ export default function BookingsPage() {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-col gap-3">
-                  {negotiationOpen && (
+                <div className="border-t-2 border-gray-200 pt-6">
+                  <h3 className="font-bold text-lg mb-4">Actions</h3>
+                  
+                  {negotiationOpen ? (
                     <PaymentNegotiation 
                       booking={selectedBooking} 
                       isVendor={isVendor}
                       onClose={() => setNegotiationOpen(false)}
                     />
-                  )}
-
-                  {paymentOpen && (
+                  ) : paymentOpen ? (
                     <StripePayment
                       booking={selectedBooking}
                       onSuccess={() => {
@@ -470,15 +485,14 @@ export default function BookingsPage() {
                         setDetailsOpen(false);
                       }}
                     />
-                  )}
-
-                  {!negotiationOpen && !paymentOpen && (
-                    <div className="flex flex-col gap-3">
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Vendor Actions */}
                       {isVendor && selectedBooking.status === "pending" && (
-                        <div className="flex gap-3">
+                        <>
                           <Button
                             onClick={handleOpenNegotiation}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
                           >
                             <DollarSign className="w-4 h-4 mr-2" />
                             Send Pricing Proposal
@@ -486,14 +500,38 @@ export default function BookingsPage() {
                           <Button
                             onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
                             variant="outline"
-                            className="flex-1 border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+                            className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
                           >
                             <XCircle className="w-4 h-4 mr-2" />
-                            Decline
+                            Decline Booking
                           </Button>
-                        </div>
+                        </>
                       )}
 
+                      {isVendor && selectedBooking.status === "confirmed" && (
+                        <Button
+                          onClick={() => handleStatusUpdate(selectedBooking.id, "in_progress")}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Mark as In Progress
+                        </Button>
+                      )}
+
+                      {isVendor && selectedBooking.status === "in_progress" && (
+                        <Button
+                          onClick={() => {
+                            handleStatusUpdate(selectedBooking.id, "completed");
+                            setDetailsOpen(false);
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Mark as Completed
+                        </Button>
+                      )}
+
+                      {/* Client Actions */}
                       {!isVendor && selectedBooking.status === "negotiating" && (
                         <>
                           {selectedBooking.agreed_price ? (
@@ -502,12 +540,13 @@ export default function BookingsPage() {
                               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
                             >
                               <DollarSign className="w-4 h-4 mr-2" />
-                              Review Proposal
+                              Review Price Proposal
                             </Button>
                           ) : (
                             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
+                              <Clock className="w-5 h-5 mx-auto mb-2 text-blue-600" />
                               <p className="text-sm text-blue-900 font-medium">
-                                Waiting for vendor to send pricing proposal...
+                                Waiting for vendor to send pricing proposal
                               </p>
                             </div>
                           )}
@@ -532,29 +571,6 @@ export default function BookingsPage() {
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           Cancel Booking
-                        </Button>
-                      )}
-
-                      {isVendor && selectedBooking.status === "confirmed" && (
-                        <Button
-                          onClick={() => handleStatusUpdate(selectedBooking.id, "in_progress")}
-                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                        >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Mark as In Progress
-                        </Button>
-                      )}
-
-                      {isVendor && selectedBooking.status === "in_progress" && (
-                        <Button
-                          onClick={() => {
-                            handleStatusUpdate(selectedBooking.id, "completed");
-                            setDetailsOpen(false);
-                          }}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Mark as Completed
                         </Button>
                       )}
                     </div>
