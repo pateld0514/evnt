@@ -17,6 +17,8 @@ import StripePayment from "../components/payment/StripePayment";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { notifyBookingStatusChange, notifyVendorResponse } from "../components/notifications/NotificationSystem";
+import BookingStatusTracker from "../components/booking/BookingStatusTracker";
+import EmptyState from "../components/common/EmptyState";
 import {
   Dialog,
   DialogContent,
@@ -215,17 +217,15 @@ export default function BookingsPage() {
 
       {/* Bookings List */}
       {filteredBookings.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
-            <Calendar className="w-12 h-12 text-gray-400" />
-          </div>
-          <h3 className="text-2xl font-black text-black mb-2">
-            No Bookings Yet
-          </h3>
-          <p className="text-gray-600">
-            {isVendor ? "Booking requests will appear here" : "Start booking vendors for your events!"}
-          </p>
-        </div>
+        <EmptyState
+          icon={Calendar}
+          title="No Bookings Yet"
+          description={isVendor 
+            ? "Booking requests will appear here when clients book your services" 
+            : "Start discovering and booking amazing vendors for your events!"}
+          actionLabel={isVendor ? null : "Browse Vendors"}
+          onAction={isVendor ? null : () => navigate(createPageUrl("Swipe"))}
+        />
       ) : (
         <div className="grid gap-6">
           {filteredBookings.map((booking) => {
@@ -333,6 +333,8 @@ export default function BookingsPage() {
               </DialogHeader>
               
               <div className="space-y-6">
+                <BookingStatusTracker status={selectedBooking.status} />
+
                 <div>
                   <Badge className={`${statusConfig[selectedBooking.status].color} border-2 font-bold text-base px-3 py-1`}>
                     {statusConfig[selectedBooking.status].label}
