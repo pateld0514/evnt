@@ -218,6 +218,18 @@ export default function AdminDashboardPage() {
               <Store className="w-4 h-4 mr-2" />
               View as Vendor
             </Button>
+            <Button 
+              onClick={async () => {
+                await base44.auth.updateMe({ user_type: "admin", onboarding_complete: true });
+                toast.success("Admin setup complete!");
+                window.location.reload();
+              }}
+              variant="outline" 
+              className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-bold"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Setup Admin Account
+            </Button>
           </div>
         </div>
 
