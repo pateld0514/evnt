@@ -25,6 +25,12 @@ export default function ProfilePage() {
         setUser(currentUser);
         setNotificationPref(currentUser.notification_preference || "email");
 
+        // Redirect to onboarding if not complete
+        if (!currentUser.onboarding_complete && currentUser.email !== "pateld0514@gmail.com") {
+          navigate(createPageUrl("Onboarding"));
+          return;
+        }
+
         if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
           const vendors = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
           if (vendors && vendors.length > 0) {
@@ -40,7 +46,7 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     base44.auth.logout();

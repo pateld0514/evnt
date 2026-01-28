@@ -7,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store, FileText, DollarSign } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store, FileText, DollarSign, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Globe, Instagram, Facebook, Twitter, Music2, Phone, Mail, Settings } from "lucide-react";
 import PlatformSettings from "../components/admin/PlatformSettings";
+import SystemMonitoring from "../components/admin/SystemMonitoring";
 import ProfessionalContract from "../components/documents/ProfessionalContract";
 import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
 
@@ -275,10 +276,14 @@ export default function AdminDashboardPage() {
         </div>
 
         <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-black text-white">
+          <TabsList className="grid w-full grid-cols-5 bg-black text-white">
             <TabsTrigger value="pending">Pending ({pendingVendors.length})</TabsTrigger>
             <TabsTrigger value="approved">Approved ({approvedVendors.length})</TabsTrigger>
             <TabsTrigger value="rejected">Rejected ({rejectedVendors.length})</TabsTrigger>
+            <TabsTrigger value="monitoring">
+              <Activity className="w-4 h-4 mr-2" />
+              System
+            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="w-4 h-4 mr-2" />
               Settings
@@ -598,6 +603,10 @@ export default function AdminDashboardPage() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="monitoring" className="space-y-4">
+            <SystemMonitoring />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
