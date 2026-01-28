@@ -17,6 +17,7 @@ import VendorRegistration from './pages/VendorRegistration';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import Refund from './pages/Refund';
+import VendorView from './pages/VendorView';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "Terms": Terms,
     "Privacy": Privacy,
     "Refund": Refund,
+    "VendorView": VendorView,
 }
 
 export const pagesConfig = {
