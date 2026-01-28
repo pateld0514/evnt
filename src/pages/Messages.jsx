@@ -312,12 +312,12 @@ export default function MessagesPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
-                              {convo.otherPartyName}
-                            </h3>
-                            <Badge variant="outline" className="text-xs flex-shrink-0">
-                              {isVendor ? 'C' : 'V'}
-                            </Badge>
+                          <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
+                            {convo.otherPartyName}
+                          </h3>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">
+                            {isVendor ? 'Client' : 'Vendor'}
+                          </Badge>
                           </div>
                           {convo.unreadCount > 0 && (
                             <Badge className="bg-red-500 text-white ml-2 flex-shrink-0">{convo.unreadCount}</Badge>
@@ -366,7 +366,7 @@ export default function MessagesPage() {
                   >
                     <div className="flex items-center gap-2">
                       <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
-                      <Badge variant="outline" className="text-xs border-white text-white">
+                      <Badge variant="outline" className="text-xs border-white text-white bg-white/20">
                         {isVendor ? 'Client' : 'Vendor'}
                       </Badge>
                     </div>

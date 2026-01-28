@@ -215,14 +215,14 @@ export default function AdminDashboardPage() {
     
     if (demoVendors.length === 0) {
       demoVendor = await base44.entities.Vendor.create({
-        business_name: "🎭 Demo Vendor (Testing Mode)",
+        business_name: "👻 Ghost Vendor (Admin Testing)",
         category: "dj",
-        description: "This is a demo vendor account for admin testing. All bookings and messages are simulated.",
+        description: "This is a ghost vendor account for admin testing. All bookings and messages are simulated. Not counted in statistics.",
         contact_email: "demo_vendor_admin@test.com",
         contact_phone: "609-442-3524",
         location: "Washington, DC",
         price_range: "$$",
-        approval_status: "approved",
+        approval_status: "ghost",
         profile_complete: true,
         starting_price: 500,
         pricing_type: "package",
@@ -230,6 +230,11 @@ export default function AdminDashboardPage() {
       });
     } else {
       demoVendor = demoVendors[0];
+      // Update existing demo vendor to ghost status
+      await base44.entities.Vendor.update(demoVendor.id, { 
+        approval_status: "ghost",
+        business_name: "👻 Ghost Vendor (Admin Testing)"
+      });
     }
     
     await base44.auth.updateMe({ 
