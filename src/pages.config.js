@@ -14,6 +14,9 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Refund from './pages/Refund';
 import __Layout from './Layout.jsx';
 
 
@@ -34,6 +37,9 @@ export const PAGES = {
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
+    "Terms": Terms,
+    "Privacy": Privacy,
+    "Refund": Refund,
 }
 
 export const pagesConfig = {
