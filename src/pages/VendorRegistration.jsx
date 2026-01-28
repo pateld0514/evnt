@@ -26,7 +26,8 @@ const categories = [
   { value: "banquet_hall", label: "Banquet Hall/Venue" },
   { value: "rental_services", label: "Rental Services" },
   { value: "event_planner", label: "Event Planner" },
-  { value: "luxury_car_rental", label: "Luxury Car Rental" }
+  { value: "luxury_car_rental", label: "Luxury Car Rental" },
+  { value: "custom", label: "Other (Specify Custom Category)" }
 ];
 
 export default function VendorRegistrationPage() {
@@ -35,6 +36,10 @@ export default function VendorRegistrationPage() {
   const [uploadingId, setUploadingId] = useState(false);
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingContract, setUploadingContract] = useState(false);
+  const [uploadingInvoice, setUploadingInvoice] = useState(false);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
   const [formData, setFormData] = useState({
     business_name: "",
     category: "",
@@ -56,7 +61,10 @@ export default function VendorRegistrationPage() {
     instagram: "",
     facebook: "",
     twitter: "",
-    tiktok: ""
+    tiktok: "",
+    custom_contract_template_url: "",
+    custom_invoice_template_url: "",
+    stripe_account_id: ""
   });
 
   const handleIdUpload = async (e) => {
@@ -122,6 +130,48 @@ export default function VendorRegistrationPage() {
     }));
   };
 
+  const handleContractUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    setUploadingContract(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, custom_contract_template_url: file_url }));
+      toast.success("Contract template uploaded");
+    } catch (error) {
+      toast.error("Failed to upload contract");
+    } finally {
+      setUploadingContract(false);
+    }
+  };
+
+  const handleInvoiceUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    setUploadingInvoice(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, custom_invoice_template_url: file_url }));
+      toast.success("Invoice template uploaded");
+    } catch (error) {
+      toast.error("Failed to upload invoice");
+    } finally {
+      setUploadingInvoice(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -134,13 +184,23 @@ export default function VendorRegistrationPage() {
       return;
     }
 
+    if (formData.category === "custom" && !customCategory.trim()) {
+      toast.error("Please specify your custom category");
+      return;
+    }
+
     setLoading(true);
     try {
       const user = await base44.auth.me();
       
+      // Format custom category
+      const finalCategory = formData.category === "custom" 
+        ? customCategory.trim().toLowerCase().replace(/\s+/g, '_')
+        : formData.category;
+      
       const vendor = await base44.entities.Vendor.create({
         business_name: formData.business_name,
-        category: formData.category,
+        category: finalCategory,
         description: formData.description,
         contact_phone: formData.phone,
         location: formData.location,
@@ -160,6 +220,10 @@ export default function VendorRegistrationPage() {
         facebook: formData.facebook || null,
         twitter: formData.twitter || null,
         tiktok: formData.tiktok || null,
+        custom_contract_template_url: formData.custom_contract_template_url || null,
+        custom_invoice_template_url: formData.custom_invoice_template_url || null,
+        use_custom_documents: !!(formData.custom_contract_template_url || formData.custom_invoice_template_url),
+        stripe_account_id: formData.stripe_account_id || null,
         approval_status: "pending",
         profile_complete: true
       });
@@ -170,6 +234,7 @@ export default function VendorRegistrationPage() {
         phone: formData.phone,
         location: formData.location,
         approval_status: "pending",
+        stripe_account_id: formData.stripe_account_id || null,
         onboarding_complete: true
       });
 
@@ -247,7 +312,10 @@ export default function VendorRegistrationPage() {
               <Label className="text-lg font-bold">Category *</Label>
               <Select 
                 value={formData.category} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                onValueChange={(value) => {
+                  setFormData(prev => ({ ...prev, category: value }));
+                  setShowCustomCategory(value === "custom");
+                }}
               >
                 <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
                   <SelectValue placeholder="Select your category" />
@@ -258,6 +326,20 @@ export default function VendorRegistrationPage() {
                   ))}
                 </SelectContent>
               </Select>
+              
+              {showCustomCategory && (
+                <div className="mt-4">
+                  <Label className="text-base font-medium">Specify Your Category *</Label>
+                  <Input
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="e.g., Floral Designer"
+                    className="border-2 border-gray-300 h-12 text-lg mt-2"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">This will be formatted as: {customCategory.trim().toLowerCase().replace(/\s+/g, '_') || 'your_category'}</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -517,6 +599,89 @@ export default function VendorRegistrationPage() {
               </div>
             </div>
 
+            {/* Custom Documents */}
+            <div className="space-y-4 bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+              <div>
+                <Label className="text-lg font-bold">Custom Contract & Invoice Templates (Optional)</Label>
+                <p className="text-sm text-gray-500 mt-1">Upload your own branded templates. PDF format only, max 5MB each.</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="font-medium">Contract Template</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleContractUpload}
+                      className="hidden"
+                      id="contract-upload"
+                    />
+                    <label htmlFor="contract-upload" className="cursor-pointer">
+                      {uploadingContract ? (
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+                      ) : formData.custom_contract_template_url ? (
+                        <div className="text-green-600">
+                          <CheckCircle className="w-8 h-8 mx-auto mb-1" />
+                          <p className="text-sm font-bold">Contract Uploaded</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-1" />
+                          <p className="text-sm font-bold text-gray-700">Upload Contract</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="font-medium">Invoice Template</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleInvoiceUpload}
+                      className="hidden"
+                      id="invoice-upload"
+                    />
+                    <label htmlFor="invoice-upload" className="cursor-pointer">
+                      {uploadingInvoice ? (
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+                      ) : formData.custom_invoice_template_url ? (
+                        <div className="text-green-600">
+                          <CheckCircle className="w-8 h-8 mx-auto mb-1" />
+                          <p className="text-sm font-bold">Invoice Uploaded</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-1" />
+                          <p className="text-sm font-bold text-gray-700">Upload Invoice</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stripe Banking Info */}
+            <div className="space-y-2 bg-green-50 p-6 rounded-lg border-2 border-green-200">
+              <Label className="text-lg font-bold">Banking Information (Optional - Can Add Later)</Label>
+              <p className="text-sm text-gray-500 mb-2">
+                To receive payments, you'll need to connect your bank account via Stripe. You can set this up now or later in your dashboard.
+              </p>
+              <Input
+                value={formData.stripe_account_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, stripe_account_id: e.target.value }))}
+                placeholder="Stripe Connect Account ID (Optional)"
+                className="border-2 border-gray-300 h-12"
+              />
+              <p className="text-xs text-gray-500">
+                Note: Without banking information, you won't be able to accept bookings that require payment.
+              </p>
+            </div>
+
             {/* Website & Social Media */}
             <div className="space-y-2">
               <Label className="text-lg font-bold">Website & Social Media (Optional)</Label>
@@ -598,7 +763,7 @@ export default function VendorRegistrationPage() {
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId || uploadingMain || uploadingGallery}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingContract || uploadingInvoice}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
             </Button>
