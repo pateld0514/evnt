@@ -311,9 +311,14 @@ export default function MessagesPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
-                            {convo.otherPartyName}
-                          </h3>
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
+                              {convo.otherPartyName}
+                            </h3>
+                            <Badge variant="outline" className="text-xs flex-shrink-0">
+                              {isVendor ? 'C' : 'V'}
+                            </Badge>
+                          </div>
                           {convo.unreadCount > 0 && (
                             <Badge className="bg-red-500 text-white ml-2 flex-shrink-0">{convo.unreadCount}</Badge>
                           )}
@@ -359,7 +364,12 @@ export default function MessagesPage() {
                     }}
                     className="text-left hover:opacity-80 transition-opacity"
                   >
-                    <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                      <Badge variant="outline" className="text-xs border-white text-white">
+                        {isVendor ? 'Client' : 'Vendor'}
+                      </Badge>
+                    </div>
                     <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
                     {isVendor && (
                       <p className="text-xs text-gray-400 mt-1">Click to view booking</p>
