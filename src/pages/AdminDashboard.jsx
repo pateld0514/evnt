@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store, FileText, DollarSign, Activity } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ExternalLink, Loader2, Users, Store, FileText, DollarSign, Activity, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -25,6 +25,7 @@ export default function AdminDashboardPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [viewingBooking, setViewingBooking] = useState(null);
   const [viewingType, setViewingType] = useState(null); // 'contract' or 'invoice'
+  const [sendingNotification, setSendingNotification] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -230,6 +231,95 @@ export default function AdminDashboardPage() {
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               Setup Admin Account
+            </Button>
+            <Button 
+              onClick={async () => {
+                setSendingNotification(true);
+                try {
+                  await base44.integrations.Core.SendEmail({
+                    to: "pateld0514@gmail.com",
+                    from_name: "EVNT Notifications",
+                    subject: "🎉 Example Notification - New Booking Request",
+                    body: `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #000; color: #fff; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .logo { font-size: 36px; font-weight: 900; margin-bottom: 10px; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .highlight { background: #fff; border-left: 4px solid #000; padding: 15px; margin: 20px 0; border-radius: 5px; }
+    .button { display: inline-block; padding: 15px 30px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">EVNT</div>
+      <p>Event Planning Made Simple</p>
+    </div>
+    <div class="content">
+      <h1>📬 Sample Notification</h1>
+      <p>Hi there!</p>
+      <p>This is an example of how notifications will look when sent from EVNT. Here's a sample booking notification:</p>
+      
+      <div class="highlight">
+        <p><strong>🎉 New Booking Request</strong></p>
+        <p><strong>From:</strong> Sarah Johnson</p>
+        <p><strong>Event:</strong> Sweet 16 Party</p>
+        <p><strong>Date:</strong> March 15, 2026</p>
+        <p><strong>Location:</strong> Washington, DC</p>
+        <p><strong>Budget:</strong> $2,500</p>
+        <p><strong>Message:</strong> Looking for an amazing DJ for my daughter's Sweet 16! Need someone experienced with teen parties.</p>
+      </div>
+      
+      <a href="#" class="button">View Booking Request</a>
+      
+      <p><strong>Other notification types you'll receive:</strong></p>
+      <ul>
+        <li>✅ Booking status updates (confirmed, completed, etc.)</li>
+        <li>💬 New messages from clients/vendors</li>
+        <li>💰 Payment received confirmations</li>
+        <li>⭐ New review notifications</li>
+        <li>📝 Vendor response updates</li>
+      </ul>
+      
+      <p>You can manage your notification preferences (email, SMS, or both) in your Profile settings.</p>
+    </div>
+    <div class="footer">
+      <p>EVNT - Modern Event Planning Platform</p>
+      <p>Questions? Reply to this email or text 609-442-3524</p>
+    </div>
+  </div>
+</body>
+</html>
+                    `
+                  });
+                  toast.success("Test notification sent to pateld0514@gmail.com!");
+                } catch (error) {
+                  toast.error("Failed to send notification");
+                } finally {
+                  setSendingNotification(false);
+                }
+              }}
+              variant="outline" 
+              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
+              disabled={sendingNotification}
+            >
+              {sendingNotification ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4 mr-2" />
+                  Test Notification
+                </>
+              )}
             </Button>
           </div>
         </div>

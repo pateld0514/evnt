@@ -19,7 +19,6 @@ import Privacy from './pages/Privacy';
 import Refund from './pages/Refund';
 import VendorView from './pages/VendorView';
 import AdminSetup from './pages/AdminSetup';
-import TestNotification from './pages/TestNotification';
 import __Layout from './Layout.jsx';
 
 
@@ -45,7 +44,6 @@ export const PAGES = {
     "Refund": Refund,
     "VendorView": VendorView,
     "AdminSetup": AdminSetup,
-    "TestNotification": TestNotification,
 }
 
 export const pagesConfig = {
