@@ -294,7 +294,7 @@ export default function MessagesPage() {
               {conversations.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
                   <p className="font-medium">No messages yet</p>
-                  <p className="text-sm mt-2">Start connecting with {isVendor ? 'clients' : 'vendors'}!</p>
+                  <p className="text-sm mt-2">Start connecting with vendors!</p>
                 </div>
               ) : (
                 conversations.map((convo) => (

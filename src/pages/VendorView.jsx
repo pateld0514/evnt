@@ -225,7 +225,7 @@ export default function VendorViewPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-8 -mt-8">
+      <div className="max-w-6xl mx-auto px-8 mt-8">
         <div className="grid md:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="md:col-span-2 space-y-8">

@@ -1,5 +1,5 @@
 import About from './pages/About';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminSetup from './pages/AdminSetup';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
 import EventDashboard from './pages/EventDashboard';
@@ -7,24 +7,24 @@ import EventVendors from './pages/EventVendors';
 import Home from './pages/Home';
 import Messages from './pages/Messages';
 import Onboarding from './pages/Onboarding';
+import Privacy from './pages/Privacy';
 import Profile from './pages/Profile';
+import Refund from './pages/Refund';
 import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
+import Terms from './pages/Terms';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import Refund from './pages/Refund';
 import VendorView from './pages/VendorView';
-import AdminSetup from './pages/AdminSetup';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "About": About,
-    "AdminDashboard": AdminDashboard,
+    "AdminSetup": AdminSetup,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
     "EventDashboard": EventDashboard,
@@ -32,18 +32,18 @@ export const PAGES = {
     "Home": Home,
     "Messages": Messages,
     "Onboarding": Onboarding,
+    "Privacy": Privacy,
     "Profile": Profile,
+    "Refund": Refund,
     "Saved": Saved,
     "Swipe": Swipe,
+    "Terms": Terms,
     "VendorDashboard": VendorDashboard,
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
-    "Terms": Terms,
-    "Privacy": Privacy,
-    "Refund": Refund,
     "VendorView": VendorView,
-    "AdminSetup": AdminSetup,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
