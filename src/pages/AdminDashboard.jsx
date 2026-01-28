@@ -188,12 +188,47 @@ export default function AdminDashboardPage() {
   const clientUsers = allUsers.filter(u => u.user_type === "client" && u.email !== "pateld0514@gmail.com");
   const vendorUsers = allUsers.filter(u => u.user_type === "vendor");
 
-  const switchToClient = () => {
-    navigate(createPageUrl("Home"));
+  const switchToClient = async () => {
+    await base44.auth.updateMe({ 
+      user_type: "client", 
+      onboarding_complete: true,
+      vendor_id: null
+    });
+    toast.success("Switched to Client view");
+    window.location.href = createPageUrl("Home");
   };
 
-  const switchToVendor = () => {
-    navigate(createPageUrl("VendorDashboard"));
+  const switchToVendor = async () => {
+    // Find or create test vendor
+    let testVendors = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
+    let testVendor;
+    
+    if (testVendors.length === 0) {
+      testVendor = await base44.entities.Vendor.create({
+        business_name: "Test Vendor (Admin)",
+        category: "dj",
+        description: "This is a test vendor account for admin testing purposes",
+        contact_email: currentUser.email,
+        contact_phone: "609-442-3524",
+        location: "Washington, DC",
+        price_range: "$$",
+        approval_status: "approved",
+        profile_complete: true,
+        starting_price: 500,
+        pricing_type: "package"
+      });
+    } else {
+      testVendor = testVendors[0];
+    }
+    
+    await base44.auth.updateMe({ 
+      user_type: "vendor", 
+      vendor_id: testVendor.id,
+      onboarding_complete: true,
+      approval_status: "approved"
+    });
+    toast.success("Switched to Vendor view");
+    window.location.href = createPageUrl("VendorDashboard");
   };
 
   if (!currentUser) {
