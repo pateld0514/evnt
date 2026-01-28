@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -53,8 +53,27 @@ export default function SwipeCard({ vendor, onSwipe }) {
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
+  const [completedBookings, setCompletedBookings] = useState(0);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      const bookings = await base44.entities.Booking.filter({ vendor_id: vendor.id, status: "completed" });
+      setCompletedBookings(bookings.length);
+    };
+    loadBookings();
+  }, [vendor.id]);
+
+  const getTier = (completedCount) => {
+    if (completedCount >= 100) return { name: "Elite", icon: "👑", color: "bg-purple-100 text-purple-800 border-purple-300" };
+    if (completedCount >= 51) return { name: "Master", icon: "⭐", color: "bg-yellow-100 text-yellow-800 border-yellow-300" };
+    if (completedCount >= 16) return { name: "Expert", icon: "🔥", color: "bg-orange-100 text-orange-800 border-orange-300" };
+    if (completedCount >= 6) return { name: "Pro", icon: "💎", color: "bg-blue-100 text-blue-800 border-blue-300" };
+    return { name: "Rising Star", icon: "🌟", color: "bg-green-100 text-green-800 border-green-300" };
+  };
+
+  const tier = getTier(completedBookings);
 
   useEffect(() => {
     const trackView = async () => {
@@ -113,9 +132,12 @@ export default function SwipeCard({ vendor, onSwipe }) {
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 flex gap-2">
               <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
                 {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
+              </Badge>
+              <Badge className={`${tier.color} border-2 text-sm px-3 py-1.5 font-bold`}>
+                {tier.icon} {tier.name}
               </Badge>
             </div>
 
@@ -172,6 +194,10 @@ export default function SwipeCard({ vendor, onSwipe }) {
                     From ${vendor.starting_price}
                   </Badge>
                 )}
+                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
+                  <Award className="w-3 h-3" />
+                  {completedBookings} events
+                </Badge>
                 {vendor.specialties && vendor.specialties.length > 0 && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
                     <Sparkles className="w-3 h-3" />
@@ -185,9 +211,9 @@ export default function SwipeCard({ vendor, onSwipe }) {
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold"
-                onClick={() => setShowDetails(true)}
+                onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
-                View Details
+                View Profile
               </Button>
               <Button
                 className="bg-black text-white hover:bg-gray-800 font-bold"
