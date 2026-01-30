@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Store, LogOut, Loader2, RefreshCw, Bell } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { User, Store, LogOut, Loader2, RefreshCw, Bell, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -17,6 +18,8 @@ export default function ProfilePage() {
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notificationPref, setNotificationPref] = useState("email");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -75,6 +78,32 @@ export default function ProfilePage() {
   const handleNotificationChange = (pref) => {
     setNotificationPref(pref);
     updateNotificationMutation.mutate(pref);
+  };
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      const response = await base44.functions.invoke('deleteUserData', { 
+        user_email: user.email 
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Account deleted successfully");
+      base44.auth.logout();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete account");
+      setDeleteStep(1);
+      setShowDeleteConfirm(false);
+    }
+  });
+
+  const handleDeleteAccount = () => {
+    if (deleteStep === 1) {
+      setDeleteStep(2);
+    } else {
+      deleteAccountMutation.mutate();
+    }
   };
 
   if (loading) {
@@ -252,6 +281,71 @@ export default function ProfilePage() {
           <LogOut className="w-5 h-5 mr-2" />
           Log Out
         </Button>
+
+        <AlertDialog open={showDeleteConfirm} onOpenChange={(open) => {
+          setShowDeleteConfirm(open);
+          if (!open) setDeleteStep(1);
+        }}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold"
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              Delete Account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {deleteStep === 1 ? "Delete Account?" : "Are you absolutely sure?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteStep === 1 ? (
+                  <>
+                    This will permanently delete your account and all associated data including:
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Profile information</li>
+                      <li>All messages and conversations</li>
+                      <li>Bookings and events</li>
+                      {user?.user_type === "vendor" && <li>Vendor profile and reviews</li>}
+                      <li>Saved vendors and preferences</li>
+                    </ul>
+                    <p className="mt-3 font-bold text-red-600">This action cannot be undone.</p>
+                  </>
+                ) : (
+                  <p className="text-red-600 font-bold text-lg">
+                    Click "Delete Forever" below to permanently delete your account. This is your last chance to cancel.
+                  </p>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setDeleteStep(1);
+                setShowDeleteConfirm(false);
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleteAccountMutation.isPending}
+              >
+                {deleteAccountMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : deleteStep === 1 ? (
+                  "Continue"
+                ) : (
+                  "Delete Forever"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
