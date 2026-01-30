@@ -127,10 +127,32 @@ export default function VendorViewPage() {
 
   const tier = getTier(completedBookings);
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}${createPageUrl("VendorView")}?id=${vendor.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: vendor.business_name,
+          text: `Check out ${vendor.business_name} on EVNT!`,
+          url: shareUrl
+        });
+        toast.success("Shared successfully!");
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          navigator.clipboard.writeText(shareUrl);
+          toast.success("Link copied to clipboard!");
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-12">
       {/* Hero Section */}
-      <div className="relative h-96 bg-black">
+      <div className="relative h-80 md:h-96 bg-black">
         {vendor.image_url ? (
           <img 
             src={vendor.image_url} 
@@ -156,67 +178,71 @@ export default function VendorViewPage() {
         </Button>
 
         {/* Vendor Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-end justify-between">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <h1 className="text-5xl font-black text-white">{vendor.business_name}</h1>
-                  <Badge className={`${tier.color} border-2 text-lg px-3 py-1 font-bold`}>
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                  <h1 className="text-3xl md:text-5xl font-black text-white">{vendor.business_name}</h1>
+                  <Badge className={`${tier.color} border-2 text-sm md:text-lg px-2 md:px-3 py-1 font-bold`}>
                     {tier.icon} {tier.name}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-6 text-white">
+                <div className="flex flex-wrap items-center gap-3 md:gap-6 text-white text-sm md:text-base">
                   {vendor.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      <span className="text-lg font-medium">{vendor.location}</span>
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <MapPin className="w-4 h-4 md:w-5 md:h-5" />
+                      <span className="font-medium">{vendor.location}</span>
                     </div>
                   )}
                   {vendor.price_range && (
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-5 h-5" />
-                      <span className="text-lg font-bold">{vendor.price_range}</span>
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <DollarSign className="w-4 h-4 md:w-5 md:h-5" />
+                      <span className="font-bold">{vendor.price_range}</span>
                     </div>
                   )}
                   {averageRating && (
-                    <div className="flex items-center gap-2">
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="text-lg font-bold">{averageRating}</span>
-                      <span className="text-sm opacity-80">({reviews.length} reviews)</span>
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
+                      <span className="font-bold">{averageRating}</span>
+                      <span className="text-xs md:text-sm opacity-80">({reviews.length})</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5" />
-                    <span className="text-lg font-medium">{completedBookings} events completed</span>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <Award className="w-4 h-4 md:w-5 md:h-5" />
+                    <span className="font-medium">{completedBookings} events</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3">
                 <Button
                   onClick={handleSaveVendor}
                   variant={isSaved ? "default" : "outline"}
-                  className={`${isSaved ? 'bg-red-500 hover:bg-red-600' : 'bg-white hover:bg-gray-100'} h-14 px-6 font-bold`}
+                  size="sm"
+                  className={`${isSaved ? 'bg-red-500 hover:bg-red-600' : 'bg-white hover:bg-gray-100'} h-10 md:h-14 px-3 md:px-6 font-bold`}
                 >
-                  <Heart className={`w-5 h-5 mr-2 ${isSaved ? 'fill-white' : ''}`} />
-                  {isSaved ? "Saved" : "Save"}
+                  <Heart className={`w-4 h-4 md:w-5 md:h-5 md:mr-2 ${isSaved ? 'fill-white' : ''}`} />
+                  <span className="hidden md:inline">{isSaved ? "Saved" : "Save"}</span>
                 </Button>
                 <Button
                   onClick={handleMessageVendor}
                   variant="outline"
-                  className="bg-white hover:bg-gray-100 h-14 px-6 font-bold"
+                  size="sm"
+                  className="bg-white hover:bg-gray-100 h-10 md:h-14 px-3 md:px-6 font-bold"
                 >
-                  <MessageSquare className="w-5 h-5 mr-2" />
-                  Message
+                  <MessageSquare className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                  <span className="hidden md:inline">Message</span>
                 </Button>
                 <Button
                   onClick={handleBookVendor}
-                  className="bg-white text-black hover:bg-gray-200 h-14 px-8 font-bold text-lg"
+                  size="sm"
+                  className="bg-white text-black hover:bg-gray-200 h-10 md:h-14 px-4 md:px-8 font-bold"
                 >
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Book Now
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                  <span className="hidden md:inline">Book Now</span>
+                  <span className="md:hidden">Book</span>
                 </Button>
               </div>
             </div>
@@ -225,15 +251,15 @@ export default function VendorViewPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-8 mt-8">
-        <div className="grid md:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 mt-6 md:mt-8">
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {/* Main Content */}
-          <div className="md:col-span-2 space-y-8">
+          <div className="md:col-span-2 space-y-6 md:space-y-8">
             {/* About */}
             <Card className="border-2 border-black">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-black mb-4">About</h2>
-                <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">
+              <CardContent className="p-4 md:p-8">
+                <h2 className="text-xl md:text-2xl font-black mb-3 md:mb-4">About</h2>
+                <p className="text-gray-700 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
                   {vendor.description}
                 </p>
               </CardContent>
@@ -242,9 +268,9 @@ export default function VendorViewPage() {
             {/* Gallery */}
             {vendor.additional_images && vendor.additional_images.length > 0 && (
               <Card className="border-2 border-black">
-                <CardContent className="p-8">
-                  <h2 className="text-2xl font-black mb-4">Portfolio</h2>
-                  <div className="grid grid-cols-2 gap-4">
+                <CardContent className="p-4 md:p-8">
+                  <h2 className="text-xl md:text-2xl font-black mb-3 md:mb-4">Portfolio</h2>
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                     {vendor.additional_images.map((url, index) => (
                       <div key={index} className="aspect-video rounded-lg overflow-hidden">
                         {url.includes('video') || url.endsWith('.mp4') || url.endsWith('.mov') ? (
@@ -261,9 +287,9 @@ export default function VendorViewPage() {
 
             {/* Reviews */}
             <Card className="border-2 border-black">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-black">Reviews</h2>
+              <CardContent className="p-4 md:p-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 md:mb-6">
+                  <h2 className="text-xl md:text-2xl font-black">Reviews</h2>
                   {averageRating && (
                     <div className="flex items-center gap-2">
                       <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
@@ -282,11 +308,11 @@ export default function VendorViewPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Pricing */}
             <Card className="border-2 border-black">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-black mb-4">Pricing</h3>
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-lg md:text-xl font-black mb-3 md:mb-4">Pricing</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Starting at</span>
@@ -302,8 +328,8 @@ export default function VendorViewPage() {
 
             {/* Contact Info */}
             <Card className="border-2 border-black">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-black mb-4">Contact</h3>
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-lg md:text-xl font-black mb-3 md:mb-4">Contact</h3>
                 <div className="space-y-3">
                   {vendor.contact_email && (
                     <div className="text-sm">
@@ -328,8 +354,8 @@ export default function VendorViewPage() {
             {/* Social Links */}
             {(vendor.website || vendor.instagram || vendor.facebook || vendor.twitter || vendor.tiktok) && (
               <Card className="border-2 border-black">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-black mb-4">Connect</h3>
+                <CardContent className="p-4 md:p-6">
+                  <h3 className="text-lg md:text-xl font-black mb-3 md:mb-4">Connect</h3>
                   <div className="space-y-3">
                     {vendor.website && (
                       <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
@@ -366,18 +392,7 @@ export default function VendorViewPage() {
               </Card>
             )}
 
-            {/* Performance Badge */}
-            <Card className={`border-2 ${tier.color.includes('purple') ? 'border-purple-500 bg-purple-50' : tier.color.includes('yellow') ? 'border-yellow-500 bg-yellow-50' : tier.color.includes('orange') ? 'border-orange-500 bg-orange-50' : tier.color.includes('blue') ? 'border-blue-500 bg-blue-50' : 'border-green-500 bg-green-50'}`}>
-              <CardContent className="p-6 text-center">
-                <div className="text-6xl mb-2">{tier.icon}</div>
-                <h3 className="text-2xl font-black mb-1">{tier.name} Vendor</h3>
-                <p className="text-sm text-gray-600 mb-3">{completedBookings} successful events</p>
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="font-medium">Top-rated professional</span>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
         </div>
       </div>

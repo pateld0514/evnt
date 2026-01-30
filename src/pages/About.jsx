@@ -30,8 +30,8 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-black text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <div className="bg-black text-white py-12 md:py-16">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
           <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
               <span className="text-4xl font-black text-black">E</span>
@@ -44,10 +44,10 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-16">
         {/* How It Works */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-black text-black mb-8 text-center">How EVNT Works</h2>
+        <section className="mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-black text-black mb-6 md:mb-8 text-center">How EVNT Works</h2>
           
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <Card className="border-2 border-black">

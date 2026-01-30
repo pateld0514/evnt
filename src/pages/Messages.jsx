@@ -315,8 +315,8 @@ export default function MessagesPage() {
                           <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
                             {convo.otherPartyName}
                           </h3>
-                          <Badge variant="outline" className="text-xs flex-shrink-0">
-                            {isVendor ? 'Client' : 'Vendor'}
+                          <Badge variant="outline" className="text-xs flex-shrink-0 font-bold">
+                            {isVendor ? 'C' : 'V'}
                           </Badge>
                           </div>
                           {convo.unreadCount > 0 && (
@@ -359,15 +359,15 @@ export default function MessagesPage() {
                         }
                       } else {
                         // Navigate to vendor profile
-                        navigate(createPageUrl("VendorProfile") + `?id=${selectedConversation.vendorId}`);
+                        navigate(createPageUrl("VendorView") + `?id=${selectedConversation.vendorId}`);
                       }
                     }}
                     className="text-left hover:opacity-80 transition-opacity"
                   >
                     <div className="flex items-center gap-2">
                       <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
-                      <Badge variant="outline" className="text-xs border-white text-white bg-white/20">
-                        {isVendor ? 'Client' : 'Vendor'}
+                      <Badge variant="outline" className="text-xs border-white text-white bg-white/20 font-bold">
+                        {isVendor ? 'C' : 'V'}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>

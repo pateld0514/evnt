@@ -59,6 +59,17 @@ export default function BookingsPage() {
       setCurrentUser(user);
     };
     loadUser();
+
+    // Listen for payment trigger from negotiation
+    const handleOpenPayment = (event) => {
+      setNegotiationOpen(false);
+      setPaymentOpen(true);
+      if (event.detail) {
+        setSelectedBooking(event.detail);
+      }
+    };
+    window.addEventListener('open-payment', handleOpenPayment);
+    return () => window.removeEventListener('open-payment', handleOpenPayment);
   }, []);
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -452,7 +463,15 @@ export default function BookingsPage() {
                       <Button
                         variant="outline"
                         className="border-2 border-black hover:bg-black hover:text-white font-bold"
-                        onClick={() => handlePrintDocument('invoice')}
+                        onClick={() => {
+                          if (!currentVendor?.custom_invoice_template_url && !currentVendor?.use_custom_documents) {
+                            handlePrintDocument('invoice');
+                          } else if (!currentVendor?.custom_invoice_template_url) {
+                            toast.error("Invoice not available - vendor hasn't uploaded a custom invoice yet.");
+                          } else {
+                            window.open(currentVendor.custom_invoice_template_url, '_blank');
+                          }
+                        }}
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         View Invoice
@@ -460,7 +479,15 @@ export default function BookingsPage() {
                       <Button
                         variant="outline"
                         className="border-2 border-black hover:bg-black hover:text-white font-bold"
-                        onClick={() => handlePrintDocument('contract')}
+                        onClick={() => {
+                          if (!currentVendor?.custom_contract_template_url && !currentVendor?.use_custom_documents) {
+                            handlePrintDocument('contract');
+                          } else if (!currentVendor?.custom_contract_template_url) {
+                            toast.error("Contract not available - vendor hasn't uploaded a custom contract yet.");
+                          } else {
+                            window.open(currentVendor.custom_contract_template_url, '_blank');
+                          }
+                        }}
                       >
                         <Download className="w-4 h-4 mr-2" />
                         View Contract

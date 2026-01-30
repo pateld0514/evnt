@@ -160,17 +160,17 @@ export default function SwipeCard({ vendor, onSwipe }) {
             </motion.div>
           </div>
 
-          <div className="p-6 h-1/3 flex flex-col">
+          <div className="p-4 md:p-6 h-1/3 flex flex-col">
             <div className="flex-1">
-              <h2 className="text-2xl font-black text-black mb-2">
+              <h2 className="text-xl md:text-2xl font-black text-black mb-2">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-gray-600 mb-4 line-clamp-2">
+              <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 line-clamp-2">
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-2 md:mb-3">
                 {vendor.location && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
                     <MapPin className="w-3 h-3" />
@@ -207,16 +207,18 @@ export default function SwipeCard({ vendor, onSwipe }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mt-2">
               <Button
                 variant="outline"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold"
+                size="sm"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10"
                 onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
               <Button
-                className="bg-black text-white hover:bg-gray-800 font-bold"
+                size="sm"
+                className="bg-black text-white hover:bg-gray-800 font-bold h-10"
                 onClick={() => setBookingOpen(true)}
               >
                 <Calendar className="w-4 h-4 mr-1" />
@@ -401,13 +403,16 @@ export default function SwipeCard({ vendor, onSwipe }) {
                         text: `Check out ${vendor.business_name} on EVNT!`,
                         url: shareUrl
                       });
-                      toast.success("Shared!");
+                      toast.success("Shared successfully!");
                     } catch (error) {
-                      // User cancelled or error
+                      if (error.name !== 'AbortError') {
+                        navigator.clipboard.writeText(shareUrl);
+                        toast.success("Link copied to clipboard!");
+                      }
                     }
                   } else {
                     navigator.clipboard.writeText(shareUrl);
-                    toast.success("Link copied!");
+                    toast.success("Link copied to clipboard!");
                   }
                 }}
                 className="border-2 border-black hover:bg-black hover:text-white font-bold"
