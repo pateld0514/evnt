@@ -68,12 +68,32 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Platform fee is deducted from vendor payout, not charged separately to client
+    // Get vendor's Stripe account ID
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    if (vendors.length === 0) {
+      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+    }
+    
+    const vendor = vendors[0];
+    if (!vendor.stripe_account_id) {
+      return Response.json({ 
+        error: 'Vendor has not connected their payment account yet' 
+      }, { status: 400 });
+    }
 
-    // Create checkout session
+    // Calculate platform fee (amount to EVNT)
+    const platformFeeAmount = Math.round(booking.platform_fee_amount * 100); // Convert to cents
+
+    // Create checkout session with Stripe Connect
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
+      payment_intent_data: {
+        application_fee_amount: platformFeeAmount,
+        transfer_data: {
+          destination: vendor.stripe_account_id,
+        },
+      },
       success_url: `${req.headers.get('origin')}/Bookings?payment=success&booking=${bookingId}`,
       cancel_url: `${req.headers.get('origin')}/Bookings?payment=cancelled&booking=${bookingId}`,
       client_reference_id: bookingId,
