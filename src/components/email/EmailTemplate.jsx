@@ -45,12 +45,13 @@ export const EmailTemplate = {
       height: 48px;
       background: #ffffff;
       border-radius: 12px;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       font-size: 32px;
       font-weight: 900;
       color: #000000;
+      line-height: 1;
     }
     .logo-text {
       font-size: 40px;
