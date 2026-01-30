@@ -67,12 +67,16 @@ export default function AdminDashboardPage() {
       await base44.entities.User.update(userId, { approval_status: "approved" });
       
       const vendor = vendors.find(v => v.id === vendorId);
+      const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
       await base44.integrations.Core.SendEmail({
         to: vendor.contact_email,
         from_name: "EVNT Team",
         subject: "🎉 Your EVNT Vendor Account Has Been Approved!",
-        body: `
-<!DOCTYPE html>
+        body: EmailTemplate.vendorApproval(
+          vendorUser?.full_name || "there",
+          vendor.business_name
+        )
+      });
 <html>
 <head>
   <style>
@@ -130,6 +134,7 @@ export default function AdminDashboardPage() {
       await base44.entities.User.update(userId, { approval_status: "rejected" });
       
       const vendor = vendors.find(v => v.id === vendorId);
+      const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
       await base44.integrations.Core.SendEmail({
         to: vendor.contact_email,
         from_name: "EVNT Team",
