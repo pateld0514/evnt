@@ -77,46 +77,6 @@ export default function AdminDashboardPage() {
           vendor.business_name
         )
       });
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #fff; padding: 30px; text-center; }
-    .logo { font-size: 36px; font-weight: 900; }
-    .content { padding: 30px; background: #f9f9f9; }
-    .button { display: inline-block; padding: 15px 30px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">EVNT</div>
-      <p>Event Planning Made Simple</p>
-    </div>
-    <div class="content">
-      <h1>🎉 Congratulations, ${vendor.business_name}!</h1>
-      <p>We're thrilled to inform you that your vendor account has been <strong>approved</strong>!</p>
-      <p>You can now:</p>
-      <ul>
-        <li>Complete your vendor profile with photos and portfolio</li>
-        <li>Start receiving booking requests from clients</li>
-        <li>Message potential clients directly</li>
-        <li>Grow your event business</li>
-      </ul>
-      <p><strong>Next Step:</strong> Please log in to complete your full profile setup. Add photos, pricing packages, and showcase your best work!</p>
-      <p>Welcome to the EVNT family! We're excited to help you grow your business.</p>
-    </div>
-    <div class="footer">
-      <p>EVNT - Modern Event Planning Platform</p>
-      <p>Questions? Email us at support@evnt.com</p>
-    </div>
-  </div>
-</body>
-</html>
-        `
-      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-vendors']);
@@ -139,45 +99,11 @@ export default function AdminDashboardPage() {
         to: vendor.contact_email,
         from_name: "EVNT Team",
         subject: "Update on Your EVNT Vendor Application",
-        body: `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #fff; padding: 30px; text-center; }
-    .logo { font-size: 36px; font-weight: 900; }
-    .content { padding: 30px; background: #f9f9f9; }
-    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-    .reason-box { background: #fff; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">EVNT</div>
-      <p>Event Planning Made Simple</p>
-    </div>
-    <div class="content">
-      <h1>Update on Your Vendor Application</h1>
-      <p>Dear ${vendor.business_name},</p>
-      <p>Thank you for your interest in joining EVNT. After carefully reviewing your application, we're unable to approve your vendor account at this time.</p>
-      <div class="reason-box">
-        <strong>Reason:</strong><br/>
-        ${reason}
-      </div>
-      <p>If you have any questions or would like to discuss this decision, please don't hesitate to reach out to us.</p>
-      <p>We appreciate your interest in EVNT and wish you the best in your business endeavors.</p>
-    </div>
-    <div class="footer">
-      <p>EVNT - Modern Event Planning Platform</p>
-      <p>Questions? Email us at support@evnt.com</p>
-    </div>
-  </div>
-</body>
-</html>
-        `
+        body: EmailTemplate.vendorRejection(
+          vendorUser?.full_name || "there",
+          vendor.business_name,
+          reason
+        )
       });
     },
     onSuccess: () => {
