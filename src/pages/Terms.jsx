@@ -69,7 +69,7 @@ export default function TermsPage() {
                   <li>Clients may cancel bookings according to the vendor's policy</li>
                   <li>Refunds are processed according to the cancellation timeline</li>
                   <li>EVNT may charge a processing fee for cancelled bookings</li>
-                  <li>Disputes should be reported to support@evnt.com within 48 hours</li>
+                  <li>Disputes should be reported to info@joinevnt.com within 48 hours</li>
                 </ul>
               </div>
             </section>
@@ -144,9 +144,7 @@ export default function TermsPage() {
               <p className="text-gray-700 leading-relaxed">
                 For questions about these terms, contact us at:
                 <br />
-                <strong>Email:</strong> legal@evnt.com
-                <br />
-                <strong>Support:</strong> support@evnt.com
+                <strong>Email:</strong> info@joinevnt.com
               </p>
             </section>
 

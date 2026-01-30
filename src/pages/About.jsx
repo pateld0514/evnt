@@ -302,7 +302,7 @@ export default function AboutPage() {
                 All vendors are verified before joining the platform. We encourage honest reviews and transparent communication to build trust in our community.
               </p>
               <p className="text-sm text-gray-600">
-                Have questions? Contact us at <a href="mailto:support@evnt.app" className="font-bold underline">support@evnt.app</a>
+                Have questions? Contact us at <a href="mailto:info@joinevnt.com" className="font-bold underline">info@joinevnt.com</a>
               </p>
             </CardContent>
           </Card>
