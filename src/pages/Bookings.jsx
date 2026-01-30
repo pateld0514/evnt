@@ -200,7 +200,6 @@ export default function BookingsPage() {
     const vendor = vendors.find(v => v.id === booking.vendor_id);
     setCurrentVendor(vendor);
     setNegotiationOpen(false);
-    setPaymentOpen(false);
     setDetailsOpen(true);
   };
 
