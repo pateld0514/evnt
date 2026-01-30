@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
 import ProfessionalContract from "../components/documents/ProfessionalContract";
 import PaymentNegotiation from "../components/payment/PaymentNegotiation";
-import StripePayment from "../components/payment/StripePayment";
+
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { notifyBookingStatusChange, notifyVendorResponse } from "../components/notifications/NotificationSystem";
@@ -51,7 +51,7 @@ export default function BookingsPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [bookingToReview, setBookingToReview] = useState(null);
   const [negotiationOpen, setNegotiationOpen] = useState(false);
-  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -61,15 +61,34 @@ export default function BookingsPage() {
     loadUser();
 
     // Listen for payment trigger from negotiation
-    const handleOpenPayment = (event) => {
+    const handleOpenPayment = async (event) => {
       setNegotiationOpen(false);
-      setPaymentOpen(true);
       if (event.detail) {
         setSelectedBooking(event.detail);
+        // Trigger payment immediately
+        await handleStartPayment(event.detail);
       }
     };
     window.addEventListener('open-payment', handleOpenPayment);
     return () => window.removeEventListener('open-payment', handleOpenPayment);
+  }, []);
+
+  // Check for payment result in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const bookingId = urlParams.get('booking');
+    
+    if (paymentStatus === 'success' && bookingId) {
+      toast.success('Payment successful! Your booking is confirmed.');
+      // Clean URL
+      window.history.replaceState({}, '', createPageUrl("Bookings"));
+      queryClient.invalidateQueries(['bookings']);
+    } else if (paymentStatus === 'cancelled' && bookingId) {
+      toast.error('Payment cancelled. You can try again anytime.');
+      // Clean URL
+      window.history.replaceState({}, '', createPageUrl("Bookings"));
+    }
   }, []);
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -141,8 +160,25 @@ export default function BookingsPage() {
     setNegotiationOpen(true);
   };
 
-  const handleOpenPayment = () => {
-    setPaymentOpen(true);
+  const handleStartPayment = async (booking) => {
+    setIsProcessingPayment(true);
+    try {
+      const response = await base44.functions.invoke('createCheckout', { 
+        bookingId: booking.id 
+      });
+      
+      if (response.data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = response.data.url;
+      } else {
+        toast.error('Failed to initiate payment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Failed to start payment process. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleCancelBooking = (bookingId) => {
@@ -506,14 +542,6 @@ export default function BookingsPage() {
                       isVendor={isVendor}
                       onClose={() => setNegotiationOpen(false)}
                     />
-                  ) : paymentOpen ? (
-                    <StripePayment
-                      booking={selectedBooking}
-                      onSuccess={() => {
-                        setPaymentOpen(false);
-                        setDetailsOpen(false);
-                      }}
-                    />
                   ) : (
                     <div className="space-y-3">
                       {/* Vendor Actions */}
@@ -584,11 +612,21 @@ export default function BookingsPage() {
 
                       {!isVendor && selectedBooking.status === "payment_pending" && (
                         <Button
-                          onClick={handleOpenPayment}
+                          onClick={() => handleStartPayment(selectedBooking)}
+                          disabled={isProcessingPayment}
                           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
                         >
-                          <DollarSign className="w-4 h-4 mr-2" />
-                          Complete Payment
+                          {isProcessingPayment ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Complete Payment
+                            </>
+                          )}
                         </Button>
                       )}
 
