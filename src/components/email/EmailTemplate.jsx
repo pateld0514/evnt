@@ -331,7 +331,7 @@ export const EmailTemplate = {
   `, `New booking request from ${clientName} for ${eventType}`),
 
   // Booking Confirmation (to Client)
-  bookingConfirmation: (clientName, vendorName, eventType, eventDate, totalAmount) => EmailTemplate.wrap(`
+  bookingConfirmation: (clientName, vendorName, eventType, eventDate, location, guestCount, totalAmount) => EmailTemplate.wrap(`
     <div class="content">
       <h1><span class="emoji">✅</span> Booking Confirmed!</h1>
       <p>Hi ${clientName},</p>
@@ -342,6 +342,8 @@ export const EmailTemplate = {
         <p><strong>Vendor:</strong> ${vendorName}<br/>
         <strong>Event Type:</strong> ${eventType}<br/>
         <strong>Date:</strong> ${eventDate}<br/>
+        <strong>Location:</strong> ${location}<br/>
+        <strong>Guest Count:</strong> ${guestCount}<br/>
         <strong>Total Amount:</strong> $${totalAmount.toLocaleString()}</p>
       </div>
 
