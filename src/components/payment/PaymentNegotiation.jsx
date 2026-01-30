@@ -57,18 +57,30 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const totals = calculateTotals();
 
   const submitProposalMutation = useMutation({
-    mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
+    mutationFn: async (data) => {
+      const updatedBooking = await base44.entities.Booking.update(booking.id, data);
+      
+      // If client is accepting, immediately redirect to Stripe
+      if (!isVendor) {
+        const response = await base44.functions.invoke('createCheckout', { 
+          bookingId: booking.id 
+        });
+        
+        if (response.data.url) {
+          window.location.href = response.data.url;
+        }
+      }
+      
+      return updatedBooking;
+    },
     onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries(['bookings']);
-      toast.success(isVendor ? "Proposal sent!" : "Proposal accepted!");
       
-      if (!isVendor) {
-        // For clients accepting proposal, trigger payment
-        window.dispatchEvent(new CustomEvent('open-payment', { detail: updatedBooking }));
-      } else {
-        // For vendors, close and stay on page
+      if (isVendor) {
+        toast.success("Proposal sent!");
         onClose();
       }
+      // Client will be redirected to Stripe, so no toast needed
     },
   });
 
