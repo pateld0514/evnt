@@ -339,42 +339,44 @@ export default function MessagesPage() {
         <Card className="md:col-span-2 border-2 border-black flex flex-col">
           {selectedConversation ? (
             <>
-              <CardHeader className="bg-black text-white flex-row items-center gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-white hover:bg-gray-800 md:hidden"
-                  onClick={() => setSelectedConversation(null)}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <div className="flex-1">
-                  <button
-                    onClick={() => {
-                      if (isVendor) {
-                        // Show client profile/booking
-                        const clientBooking = bookings.find(b => b.client_email === selectedConversation.clientEmail);
-                        if (clientBooking) {
-                          navigate(createPageUrl("Bookings") + `?id=${clientBooking.id}`);
-                        }
-                      } else {
-                        // Navigate to vendor profile
-                        navigate(createPageUrl("VendorView") + `?id=${selectedConversation.vendorId}`);
-                      }
-                    }}
-                    className="text-left hover:opacity-80 transition-opacity"
+              <CardHeader className="bg-black text-white">
+                <div className="flex items-center gap-3">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white hover:bg-gray-800 md:hidden"
+                    onClick={() => setSelectedConversation(null)}
                   >
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
-                      <Badge variant="outline" className="text-xs border-white text-white bg-white/20 font-bold">
-                        {isVendor ? 'C' : 'V'}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
-                    {isVendor && (
-                      <p className="text-xs text-gray-400 mt-1">Click to view booking</p>
-                    )}
-                  </button>
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <div className="flex-1">
+                    <button
+                      onClick={() => {
+                        if (isVendor) {
+                          // Show client profile/booking
+                          const clientBooking = bookings.find(b => b.client_email === selectedConversation.clientEmail);
+                          if (clientBooking) {
+                            navigate(createPageUrl("Bookings") + `?id=${clientBooking.id}`);
+                          }
+                        } else {
+                          // Navigate to vendor profile
+                          navigate(createPageUrl("VendorView") + `?id=${selectedConversation.vendorId}`);
+                        }
+                      }}
+                      className="text-left hover:opacity-80 transition-opacity"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                        <Badge variant="outline" className="text-xs border-white text-white bg-white/20 font-bold">
+                          {isVendor ? 'C' : 'V'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
+                      {isVendor && (
+                        <p className="text-xs text-gray-400 mt-1">Click to view booking</p>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </CardHeader>
 
