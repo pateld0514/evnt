@@ -177,10 +177,10 @@ export default function SavedPage() {
         <div className="inline-flex items-center gap-2 mb-4">
           <Heart className="w-8 h-8 text-black" fill="black" />
         </div>
-        <h1 className="text-4xl font-black text-black mb-2">
+        <h1 className="text-3xl md:text-4xl font-black text-black mb-2">
           Your Favorites
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-base md:text-lg text-gray-600">
           {savedVendors.length} vendor{savedVendors.length !== 1 ? 's' : ''} saved
         </p>
       </div>

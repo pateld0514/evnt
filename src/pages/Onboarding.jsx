@@ -38,8 +38,8 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-black text-black mb-4">Welcome to EVNT</h1>
-          <p className="text-xl text-gray-600">Let's get you set up. How will you be using EVNT?</p>
+          <h1 className="text-4xl md:text-5xl font-black text-black mb-4">Welcome to EVNT</h1>
+          <p className="text-lg md:text-xl text-gray-600">Let's get you set up. How will you be using EVNT?</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

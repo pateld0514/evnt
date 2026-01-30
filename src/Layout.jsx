@@ -164,7 +164,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                 <span className="text-2xl font-black text-black">E</span>
               </div>
-              <span className="text-2xl font-black text-white tracking-tighter">
+              <span className="text-2xl font-black text-white tracking-tight">
                 EVNT
               </span>
             </Link>

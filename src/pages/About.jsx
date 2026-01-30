@@ -30,24 +30,24 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-black text-white py-12 md:py-16">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
+      <div className="bg-black text-white py-16 md:py-20">
+        <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
           <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
               <span className="text-4xl font-black text-black">E</span>
             </div>
           </div>
-          <h1 className="text-5xl font-black mb-4">About EVNT</h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-black mb-4">About EVNT</h1>
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
             The modern way to plan events. Swipe, connect, and book all your vendors in one place.
           </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-16">
+      <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
         {/* How It Works */}
-        <section className="mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-black text-black mb-6 md:mb-8 text-center">How EVNT Works</h2>
+        <section className="mb-16 md:mb-20">
+          <h2 className="text-3xl md:text-4xl font-black text-black mb-8 md:mb-10 text-center">How EVNT Works</h2>
           
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <Card className="border-2 border-black">
@@ -132,8 +132,8 @@ export default function AboutPage() {
         </section>
 
         {/* Payment & Fees */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-black text-black mb-8 text-center">Payment & Fees</h2>
+        <section className="mb-16 md:mb-20">
+          <h2 className="text-3xl md:text-4xl font-black text-black mb-8 md:mb-10 text-center">Payment & Fees</h2>
           
           <div className="space-y-6">
             <Card className="border-2 border-black">
@@ -212,8 +212,8 @@ export default function AboutPage() {
         </section>
 
         {/* How Payments Work */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-black text-black mb-8 text-center">How Payments Work</h2>
+        <section className="mb-16 md:mb-20">
+          <h2 className="text-3xl md:text-4xl font-black text-black mb-8 md:mb-10 text-center">How Payments Work</h2>
           
           <Card className="border-2 border-black">
             <CardContent className="p-6">
