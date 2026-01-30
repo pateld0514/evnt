@@ -12,6 +12,7 @@ import { Loader2, Upload, X, Globe, Instagram, Facebook, Twitter, Music2, ArrowL
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 import VendorDocumentUpload from "../components/vendor/VendorDocumentUpload";
+import StripeConnectButton from "../components/vendor/StripeConnectButton";
 
 export default function VendorProfilePage() {
   const navigate = useNavigate();
@@ -400,6 +401,13 @@ export default function VendorProfilePage() {
               </Button>
             </div>
           </form>
+
+          {/* Stripe Connect Section */}
+          {vendor && (
+            <div className="mt-8 pt-8 border-t-2 border-gray-200">
+              <StripeConnectButton vendorId={vendor.id} />
+            </div>
+          )}
 
           {/* Document Upload Section */}
           {vendor && <VendorDocumentUpload vendor={vendor} />}
