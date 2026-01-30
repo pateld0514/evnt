@@ -35,23 +35,25 @@ export const EmailTemplate = {
       text-align: center;
     }
     .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
+      display: inline-block;
+      text-align: center;
       margin-bottom: 16px;
+    }
+    .logo > * {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 6px;
     }
     .logo-icon {
       width: 48px;
       height: 48px;
       background: #ffffff;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: 32px;
       font-weight: 900;
       color: #000000;
-      line-height: 1;
+      line-height: 48px;
+      text-align: center;
     }
     .logo-text {
       font-size: 40px;
