@@ -114,8 +114,9 @@ export default function MessagesPage() {
         if (existingConvo) {
           setSelectedConversation(existingConvo);
         } else {
+          // Always use vendor-client format for consistency
           setSelectedConversation({
-            id: `${currentUser.email}-${vendorIdFromUrl}`,
+            id: `${vendorIdFromUrl}-${currentUser.email}`,
             vendorId: vendorIdFromUrl,
             vendorName: vendor.business_name,
             clientEmail: currentUser.email,
@@ -240,17 +241,18 @@ export default function MessagesPage() {
   };
 
   const handleStartConversation = (option) => {
-    const convId = isVendor 
-      ? `${vendorData.id}-${option.email}`
-      : `${currentUser.email}-${option.vendorId}`;
+    // Always use vendor-client format for consistency
+    const vendorId = isVendor ? vendorData.id : option.vendorId;
+    const clientEmail = isVendor ? option.email : currentUser.email;
+    const convId = `${vendorId}-${clientEmail}`;
     
     setSelectedConversation({
       id: convId,
-      vendorId: isVendor ? vendorData.id : option.vendorId,
+      vendorId: vendorId,
       vendorName: isVendor ? vendorData.business_name : option.vendorName,
-      clientEmail: isVendor ? option.email : currentUser.email,
+      clientEmail: clientEmail,
       clientName: isVendor ? option.name : currentUser.full_name,
-      otherPartyEmail: isVendor ? option.email : option.email,
+      otherPartyEmail: option.email,
       otherPartyName: option.name,
     });
     setComposeOpen(false);
