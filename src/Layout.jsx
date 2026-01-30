@@ -226,16 +226,16 @@ export default function Layout({ children, currentPageName }) {
 
               <Link 
                 to={createPageUrl("About")}
-                className={`text-white hover:text-gray-300 transition-colors ${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800`}
+                className={`text-white hover:text-gray-300 transition-colors ${isMobileView ? 'px-2' : 'hidden md:flex'} flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800`}
               >
                 <Info className="w-5 h-5" />
-                <span className="font-medium">About</span>
+                <span className={`font-medium ${isMobileView ? 'hidden' : ''}`}>About</span>
               </Link>
               <Link 
                 to={createPageUrl("Terms")}
-                className={`text-white hover:text-gray-300 transition-colors ${isMobileView ? 'hidden' : 'hidden md:flex'} items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800`}
+                className={`text-white hover:text-gray-300 transition-colors flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-800 text-sm font-medium`}
               >
-                <span className="font-medium text-sm">Terms</span>
+                Terms
               </Link>
               <Link 
                 to={createPageUrl("Profile")}
