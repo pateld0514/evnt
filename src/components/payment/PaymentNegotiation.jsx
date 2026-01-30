@@ -48,8 +48,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     const additionalTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
     const subtotal = price + additionalTotal;
     const platformFeeAmount = (subtotal * platformFeePercent) / 100;
-    const totalAmount = subtotal + platformFeeAmount;
-    const vendorPayout = price + additionalTotal;
+    const totalAmount = subtotal; // Client pays the agreed price
+    const vendorPayout = subtotal - platformFeeAmount; // Vendor gets agreed price minus platform fee
 
     return { price, additionalTotal, subtotal, platformFeeAmount, totalAmount, vendorPayout };
   };
@@ -215,15 +215,15 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Subtotal:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-blue-600">
-            <span>EVNT Platform Fee ({platformFeePercent}%):</span>
-            <span className="font-bold">${totals.platformFeeAmount.toFixed(2)}</span>
-          </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600 pt-2 border-t border-gray-300">
+          <div className="flex justify-between text-sm text-blue-600 pt-2 border-t border-gray-300">
+            <span>EVNT Platform Fee ({platformFeePercent}%):</span>
+            <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-gray-600">
             <span>Vendor Receives:</span>
             <span className="font-bold">${totals.vendorPayout.toFixed(2)}</span>
           </div>
@@ -233,8 +233,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? "The platform fee is automatically added to the total. You'll receive 100% of your agreed price plus any additional fees."
-              : "The platform fee covers payment processing and escrow services. Vendor receives 100% of their agreed service price."}
+              ? `The platform fee (${platformFeePercent}%) is deducted from your agreed price. Client pays the agreed price, and you receive the amount minus the platform fee.`
+              : `The ${platformFeePercent}% platform fee is deducted from the vendor's payout. You pay the agreed price, vendor receives the amount minus the platform fee.`}
           </p>
         </div>
 

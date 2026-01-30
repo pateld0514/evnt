@@ -68,18 +68,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Add platform fee as a line item
-    lineItems.push({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: 'Platform Service Fee',
-          description: `${booking.platform_fee_percent}% platform fee`,
-        },
-        unit_amount: Math.round(booking.platform_fee_amount * 100),
-      },
-      quantity: 1,
-    });
+    // Platform fee is deducted from vendor payout, not charged separately to client
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
