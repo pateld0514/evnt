@@ -49,13 +49,39 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Vendor.update(vendor_id, {
         stripe_account_id: accountId,
       });
+    } else {
+      // Verify existing account still exists
+      try {
+        await stripe.accounts.retrieve(accountId);
+      } catch (stripeError) {
+        // Account doesn't exist, create a new one
+        console.log('Invalid account, creating new:', stripeError.message);
+        const account = await stripe.accounts.create({
+          type: 'express',
+          email: vendor.contact_email,
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+          business_type: 'individual',
+          business_profile: {
+            name: vendor.business_name,
+          },
+        });
+
+        accountId = account.id;
+
+        await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+          stripe_account_id: accountId,
+        });
+      }
     }
 
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${req.headers.get('origin')}/vendor-profile?refresh=true`,
-      return_url: `${req.headers.get('origin')}/vendor-profile?success=true`,
+      refresh_url: `${req.headers.get('origin')}/VendorProfile?refresh=true`,
+      return_url: `${req.headers.get('origin')}/VendorProfile?success=true`,
       type: 'account_onboarding',
     });
 
