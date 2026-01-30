@@ -285,49 +285,6 @@ export default function AdminDashboardPage() {
               <CheckCircle className="w-4 h-4 mr-2" />
               Setup Admin Account
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-                >
-                  🚀 Clean for Launch
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Clean Database for Public Launch?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete:
-                    <ul className="list-disc list-inside mt-2 space-y-1">
-                      <li>All non-admin users</li>
-                      <li>All vendors (real and test)</li>
-                      <li>All messages and conversations</li>
-                      <li>All bookings and events</li>
-                      <li>All saved vendors, swipes, reviews</li>
-                    </ul>
-                    <p className="mt-3 font-bold text-red-600">This action cannot be undone. Only use this to prepare for public launch.</p>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={async () => {
-                      try {
-                        const result = await base44.functions.invoke('cleanupForLaunch');
-                        toast.success("Database cleaned successfully! " + JSON.stringify(result.data.deleted));
-                        setTimeout(() => window.location.reload(), 2000);
-                      } catch (error) {
-                        toast.error("Failed to clean database");
-                      }
-                    }}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Clean Database
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
             <Button 
               onClick={async () => {
                 setSendingNotification(true);
