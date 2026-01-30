@@ -5,11 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Loader2, Plus } from "lucide-react";
+import { Send, Loader2, Plus, Store, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { notifyNewMessage } from "../components/notifications/NotificationSystem";
 import {
   Dialog,
   DialogContent,
@@ -35,9 +34,10 @@ export default function MessagesPage() {
     const loadUser = async () => {
       const user = await base44.auth.me();
       setCurrentUser(user);
-      setIsVendor(user.user_type === "vendor");
+      const userIsVendor = user.user_type === "vendor" || user.demo_mode === "vendor";
+      setIsVendor(userIsVendor);
       
-      if (user.user_type === "vendor" && user.vendor_id) {
+      if (userIsVendor && user.vendor_id) {
         const vendorList = await base44.entities.Vendor.filter({ id: user.vendor_id });
         if (vendorList && vendorList.length > 0) {
           setVendorData(vendorList[0]);
@@ -47,36 +47,23 @@ export default function MessagesPage() {
     loadUser();
   }, []);
 
-  const { data: messages = [] } = useQuery({
+  const { data: allMessages = [] } = useQuery({
     queryKey: ['messages', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
-      // Get messages where user is sender OR recipient
-      const allMessages = await base44.entities.Message.list('-created_date');
-      return allMessages.filter(m => 
+      const messages = await base44.entities.Message.list('-created_date');
+      return messages.filter(m => 
         m.sender_email === currentUser.email || 
         m.recipient_email === currentUser.email
       );
     },
     enabled: !!currentUser,
-    initialData: [],
-    refetchInterval: 3000,
+    refetchInterval: 2000,
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
-    initialData: [],
-  });
-
-  const { data: savedVendors = [] } = useQuery({
-    queryKey: ['saved-vendors', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
-    },
-    initialData: [],
-    enabled: !!currentUser && !isVendor,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -90,92 +77,110 @@ export default function MessagesPage() {
       }
     },
     enabled: !!currentUser && (isVendor ? !!vendorData : true),
-    initialData: [],
   });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData) => {
-      const message = await base44.entities.Message.create(messageData);
-      await notifyNewMessage(message, messageData.conversation_id);
-      return message;
+      return await base44.entities.Message.create(messageData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['messages']);
       setMessageText("");
-      toast.success("Message sent!");
     },
   });
 
+  // Generate conversation ID consistently
+  const getConversationId = (vendorId, clientEmail) => {
+    return `${vendorId}__${clientEmail}`;
+  };
+
+  // Build conversations from messages
+  const conversations = React.useMemo(() => {
+    const conversationMap = new Map();
+
+    allMessages.forEach(msg => {
+      const convId = msg.conversation_id;
+      
+      if (!conversationMap.has(convId)) {
+        const parts = convId.split('__');
+        const vendorId = parts[0];
+        const clientEmail = parts[1];
+        const vendor = vendors.find(v => v.id === vendorId);
+        
+        const isFromMe = msg.sender_email === currentUser.email;
+        const otherPartyEmail = isFromMe ? msg.recipient_email : msg.sender_email;
+        const otherPartyName = isFromMe 
+          ? (isVendor ? msg.recipient_email.split('@')[0] : vendor?.business_name || 'Unknown')
+          : msg.sender_name;
+
+        conversationMap.set(convId, {
+          id: convId,
+          vendorId: vendorId,
+          vendorName: vendor?.business_name || 'Unknown Vendor',
+          clientEmail: clientEmail,
+          otherPartyEmail: otherPartyEmail,
+          otherPartyName: otherPartyName,
+          isVendorConvo: isVendor,
+          lastMessage: msg.message,
+          lastMessageTime: msg.created_date,
+          lastSender: msg.sender_name,
+          unreadCount: 0,
+        });
+      }
+    });
+
+    // Calculate unread counts
+    conversationMap.forEach((convo, convId) => {
+      const unread = allMessages.filter(m => 
+        m.conversation_id === convId && 
+        !m.read && 
+        m.recipient_email === currentUser.email
+      ).length;
+      convo.unreadCount = unread;
+    });
+
+    return Array.from(conversationMap.values()).sort((a, b) => 
+      new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
+    );
+  }, [allMessages, currentUser, vendors, isVendor]);
+
+  // Handle URL vendor parameter
   useEffect(() => {
     if (vendorIdFromUrl && vendors.length > 0 && currentUser) {
       const vendor = vendors.find(v => v.id === vendorIdFromUrl);
       if (vendor) {
-        const existingConvo = conversations.find(c => c.vendorId === vendorIdFromUrl);
+        const convId = getConversationId(vendorIdFromUrl, currentUser.email);
+        const existingConvo = conversations.find(c => c.id === convId);
+        
         if (existingConvo) {
           setSelectedConversation(existingConvo);
         } else {
-          // Always use vendor-client format for consistency
           setSelectedConversation({
-            id: `${vendorIdFromUrl}-${currentUser.email}`,
+            id: convId,
             vendorId: vendorIdFromUrl,
             vendorName: vendor.business_name,
             clientEmail: currentUser.email,
-            clientName: currentUser.full_name,
-            otherPartyEmail: vendor.contact_email,
+            otherPartyEmail: vendor.contact_email || vendor.created_by,
             otherPartyName: vendor.business_name,
+            isVendorConvo: false,
           });
         }
       }
     }
-  }, [vendorIdFromUrl, vendors, currentUser]);
+  }, [vendorIdFromUrl, vendors, currentUser, conversations]);
 
+  // Auto-scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, selectedConversation]);
+  }, [allMessages, selectedConversation]);
 
-  // Group messages by conversation and get latest message info
-  const conversations = messages.reduce((acc, msg) => {
-    const convId = msg.conversation_id;
-    if (!acc.find(c => c.id === convId)) {
-      const isFromMe = msg.sender_email === currentUser?.email;
-      const otherEmail = isFromMe ? msg.recipient_email : msg.sender_email;
-      const otherName = isFromMe ? 
-        (isVendor ? msg.sender_name : msg.vendor_name) : 
-        msg.sender_name;
-
-      // Count unread messages
-      const unreadCount = messages.filter(m => 
-        m.conversation_id === convId && 
-        !m.read && 
-        m.recipient_email === currentUser?.email
-      ).length;
-
-      acc.push({
-        id: convId,
-        vendorId: msg.vendor_id,
-        vendorName: msg.vendor_name,
-        clientEmail: isVendor ? otherEmail : msg.sender_email,
-        clientName: isVendor ? otherName : msg.sender_name,
-        otherPartyEmail: otherEmail,
-        otherPartyName: otherName,
-        lastMessage: msg.message,
-        lastMessageTime: msg.created_date,
-        lastSender: msg.sender_name,
-        unreadCount: unreadCount,
-      });
-    }
-    return acc;
-  }, []);
-
-  const currentMessages = messages.filter(
-    msg => msg.conversation_id === selectedConversation?.id
-  ).reverse();
-
-  // Mark messages as read when viewing conversation
+  // Mark messages as read
   useEffect(() => {
     if (selectedConversation && currentUser) {
-      const unreadMessages = currentMessages.filter(m => 
-        !m.read && m.recipient_email === currentUser.email
+      const unreadMessages = allMessages.filter(m => 
+        m.conversation_id === selectedConversation.id &&
+        !m.read && 
+        m.recipient_email === currentUser.email
       );
       
       unreadMessages.forEach(msg => {
@@ -183,80 +188,86 @@ export default function MessagesPage() {
       });
       
       if (unreadMessages.length > 0) {
-        queryClient.invalidateQueries(['messages']);
+        setTimeout(() => queryClient.invalidateQueries(['messages']), 500);
       }
     }
-  }, [selectedConversation, currentUser]);
+  }, [selectedConversation?.id, currentUser, allMessages]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedConversation || !currentUser) return;
 
-    sendMessageMutation.mutate({
+    const messageData = {
       conversation_id: selectedConversation.id,
       sender_email: currentUser.email,
       sender_name: currentUser.full_name,
       recipient_email: selectedConversation.otherPartyEmail,
       vendor_id: selectedConversation.vendorId,
       vendor_name: selectedConversation.vendorName,
-      message: messageText,
+      message: messageText.trim(),
       read: false,
-    });
+    };
+
+    sendMessageMutation.mutate(messageData);
   };
 
   const getComposeOptions = () => {
-    if (isVendor) {
-      // Vendors can message clients from bookings AND existing conversations
-      const existingClients = messages
-        .filter(m => m.sender_email !== currentUser.email)
-        .map(m => m.sender_email)
-        .filter((email, index, self) => self.indexOf(email) === index);
-      
-      const clientsFromBookings = bookings.map(b => b.client_email);
-      const allClientEmails = [...new Set([...existingClients, ...clientsFromBookings])];
-      
-      return allClientEmails
+    if (isVendor && vendorData) {
+      // Vendors can message clients from bookings
+      const clientEmails = [...new Set(bookings.map(b => b.client_email))];
+      return clientEmails
         .filter(email => !conversations.find(c => c.clientEmail === email))
         .map(email => {
           const booking = bookings.find(b => b.client_email === email);
-          const msg = messages.find(m => m.sender_email === email);
           return {
-            name: booking?.client_name || msg?.sender_name || email.split('@')[0],
+            name: booking?.client_name || email.split('@')[0],
             email: email,
-            vendorId: vendorData?.id,
-            vendorName: vendorData?.business_name,
+            type: 'client',
           };
         });
     } else {
-      // Clients can message ANY approved vendor
+      // Clients can message approved vendors
       return vendors
         .filter(v => v.approval_status === "approved")
         .filter(v => !conversations.find(c => c.vendorId === v.id))
         .map(v => ({
           name: v.business_name,
-          email: v.contact_email,
+          email: v.contact_email || v.created_by,
           vendorId: v.id,
-          vendorName: v.business_name,
+          type: 'vendor',
         }));
     }
   };
 
   const handleStartConversation = (option) => {
-    // Always use vendor-client format for consistency
-    const vendorId = isVendor ? vendorData.id : option.vendorId;
-    const clientEmail = isVendor ? option.email : currentUser.email;
-    const convId = `${vendorId}-${clientEmail}`;
-    
-    setSelectedConversation({
-      id: convId,
-      vendorId: vendorId,
-      vendorName: isVendor ? vendorData.business_name : option.vendorName,
-      clientEmail: clientEmail,
-      clientName: isVendor ? option.name : currentUser.full_name,
-      otherPartyEmail: option.email,
-      otherPartyName: option.name,
-    });
+    if (isVendor && vendorData) {
+      const convId = getConversationId(vendorData.id, option.email);
+      setSelectedConversation({
+        id: convId,
+        vendorId: vendorData.id,
+        vendorName: vendorData.business_name,
+        clientEmail: option.email,
+        otherPartyEmail: option.email,
+        otherPartyName: option.name,
+        isVendorConvo: true,
+      });
+    } else {
+      const convId = getConversationId(option.vendorId, currentUser.email);
+      setSelectedConversation({
+        id: convId,
+        vendorId: option.vendorId,
+        vendorName: option.name,
+        clientEmail: currentUser.email,
+        otherPartyEmail: option.email,
+        otherPartyName: option.name,
+        isVendorConvo: false,
+      });
+    }
     setComposeOpen(false);
   };
+
+  const currentMessages = allMessages
+    .filter(msg => msg.conversation_id === selectedConversation?.id)
+    .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
 
   if (!currentUser) {
     return (
@@ -292,11 +303,11 @@ export default function MessagesPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y-2 divide-gray-200">
+            <div className="divide-y-2 divide-gray-200 max-h-[calc(100vh-14rem)] overflow-y-auto">
               {conversations.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
                   <p className="font-medium">No messages yet</p>
-                  <p className="text-sm mt-2">Start connecting with vendors!</p>
+                  <p className="text-sm mt-2">Start connecting with {isVendor ? 'clients' : 'vendors'}!</p>
                 </div>
               ) : (
                 conversations.map((convo) => (
@@ -308,25 +319,29 @@ export default function MessagesPage() {
                     } ${convo.unreadCount > 0 ? "bg-blue-50" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                        {convo.otherPartyName[0]}
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ${
+                        isVendor ? 'bg-blue-600' : 'bg-purple-600'
+                      }`}>
+                        {isVendor ? <UserIcon className="w-6 h-6" /> : <Store className="w-6 h-6" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
-                            {convo.otherPartyName}
-                          </h3>
-                          <Badge variant="outline" className="text-xs flex-shrink-0 font-bold">
-                            {isVendor ? 'C' : 'V'}
-                          </Badge>
+                            <h3 className={`font-bold text-black truncate ${convo.unreadCount > 0 ? 'font-black' : ''}`}>
+                              {convo.otherPartyName}
+                            </h3>
+                            <Badge variant="outline" className={`text-xs flex-shrink-0 font-bold ${
+                              isVendor ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-purple-50 text-purple-700 border-purple-300'
+                            }`}>
+                              {isVendor ? 'Client' : 'Vendor'}
+                            </Badge>
                           </div>
                           {convo.unreadCount > 0 && (
                             <Badge className="bg-red-500 text-white ml-2 flex-shrink-0">{convo.unreadCount}</Badge>
                           )}
                         </div>
                         <p className={`text-sm text-gray-600 truncate ${convo.unreadCount > 0 ? 'font-bold' : ''}`}>
-                          {convo.lastSender}: {convo.lastMessage}
+                          {convo.lastMessage}
                         </p>
                       </div>
                     </div>
@@ -343,68 +358,54 @@ export default function MessagesPage() {
             <>
               <CardHeader className="bg-black text-white">
                 <div className="flex items-center gap-3">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-white hover:bg-gray-800 md:hidden"
-                    onClick={() => setSelectedConversation(null)}
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    isVendor ? 'bg-blue-600' : 'bg-purple-600'
+                  }`}>
+                    {isVendor ? <UserIcon className="w-5 h-5" /> : <Store className="w-5 h-5" />}
+                  </div>
                   <div className="flex-1">
-                    <button
-                      onClick={() => {
-                        if (isVendor) {
-                          // Show client profile/booking
-                          const clientBooking = bookings.find(b => b.client_email === selectedConversation.clientEmail);
-                          if (clientBooking) {
-                            navigate(createPageUrl("Bookings") + `?id=${clientBooking.id}`);
-                          }
-                        } else {
-                          // Navigate to vendor profile
-                          navigate(createPageUrl("VendorView") + `?id=${selectedConversation.vendorId}`);
-                        }
-                      }}
-                      className="text-left hover:opacity-80 transition-opacity"
-                    >
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
-                        <Badge variant="outline" className="text-xs border-white text-white bg-white/20 font-bold">
-                          {isVendor ? 'C' : 'V'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
-                      {isVendor && (
-                        <p className="text-xs text-gray-400 mt-1">Click to view booking</p>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="font-black">{selectedConversation.otherPartyName}</CardTitle>
+                      <Badge className={`text-xs font-bold ${
+                        isVendor ? 'bg-blue-500' : 'bg-purple-500'
+                      }`}>
+                        {isVendor ? 'Client' : 'Vendor'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-300">{selectedConversation.otherPartyEmail}</p>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-                {currentMessages.map((msg) => {
-                  const isMe = msg.sender_email === currentUser.email;
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                    >
+              <CardContent className="flex-1 overflow-y-auto p-4 space-y-3">
+                {currentMessages.length === 0 ? (
+                  <div className="text-center text-gray-500 mt-8">
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                ) : (
+                  currentMessages.map((msg) => {
+                    const isMe = msg.sender_email === currentUser.email;
+                    return (
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                          isMe
-                            ? "bg-black text-white"
-                            : "bg-gray-100 text-black border-2 border-gray-300"
-                        }`}
+                        key={msg.id}
+                        className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                       >
-                        {!isMe && (
-                          <p className="text-xs font-bold mb-1 opacity-70">{msg.sender_name}</p>
-                        )}
-                        <p className="font-medium">{msg.message}</p>
+                        <div
+                          className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                            isMe
+                              ? "bg-black text-white"
+                              : "bg-gray-100 text-black border-2 border-gray-300"
+                          }`}
+                        >
+                          {!isMe && (
+                            <p className="text-xs font-bold mb-1 opacity-70">{msg.sender_name}</p>
+                          )}
+                          <p className="font-medium break-words">{msg.message}</p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
                 <div ref={messagesEndRef} />
               </CardContent>
 
@@ -415,11 +416,11 @@ export default function MessagesPage() {
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Type a message..."
                     className="border-2 border-gray-300 focus:border-black"
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!messageText.trim()}
+                    disabled={!messageText.trim() || sendMessageMutation.isPending}
                     className="bg-black text-white hover:bg-gray-800 font-bold"
                   >
                     <Send className="w-5 h-5" />
@@ -451,14 +452,14 @@ export default function MessagesPage() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">New Message</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {getComposeOptions().length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p className="font-medium">No contacts available</p>
                 <p className="text-sm mt-2">
                   {isVendor 
                     ? "You'll see clients here when they book your services"
-                    : "Save vendors or make a booking to start messaging"}
+                    : "Browse vendors to start messaging"}
                 </p>
               </div>
             ) : (
@@ -469,8 +470,10 @@ export default function MessagesPage() {
                   className="w-full p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-black transition-all text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-white font-bold">
-                      {option.name[0]}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
+                      option.type === 'vendor' ? 'bg-purple-600' : 'bg-blue-600'
+                    }`}>
+                      {option.type === 'vendor' ? <Store className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-black">{option.name}</h3>

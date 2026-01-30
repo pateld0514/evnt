@@ -61,19 +61,49 @@ export default function Layout({ children, currentPageName }) {
 
   const isMobileView = viewMode === 'mobile';
 
+  // Fetch bookings to show action badges
+  const { data: userBookings = [] } = useQuery({
+    queryKey: ['user-bookings', currentUserEmail, userType],
+    queryFn: async () => {
+      if (!currentUserEmail) return [];
+      
+      if (userType === "vendor") {
+        const user = await base44.auth.me();
+        if (user.vendor_id) {
+          return await base44.entities.Booking.filter({ vendor_id: user.vendor_id });
+        }
+      } else if (userType === "client") {
+        return await base44.entities.Booking.filter({ client_email: currentUserEmail });
+      }
+      return [];
+    },
+    enabled: !!currentUserEmail && (userType === "vendor" || userType === "client"),
+    refetchInterval: 5000,
+  });
+
+  // Count bookings needing action
+  const bookingsNeedingAction = React.useMemo(() => {
+    if (userType === "vendor") {
+      return userBookings.filter(b => b.status === "pending" || b.status === "negotiating").length;
+    } else if (userType === "client") {
+      return userBookings.filter(b => b.status === "negotiating" || b.status === "payment_pending").length;
+    }
+    return 0;
+  }, [userBookings, userType]);
+
   const clientNavItems = [
     { name: "Home", path: createPageUrl("Home"), icon: Home },
     { name: "Events", path: createPageUrl("EventDashboard"), icon: Calendar },
     { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
-    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
-    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
+    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar, badge: bookingsNeedingAction },
+    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare, badge: unreadCount },
   ];
 
   const vendorNavItems = [
     { name: "Dashboard", path: createPageUrl("VendorDashboard"), icon: LayoutDashboard },
-    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar },
-    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare },
+    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar, badge: bookingsNeedingAction },
+    { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare, badge: unreadCount },
   ];
 
   const adminNavItems = [
@@ -145,7 +175,7 @@ export default function Layout({ children, currentPageName }) {
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
-                  const showBadge = item.name === "Messages" && unreadCount > 0;
+                  const showBadge = item.badge > 0;
                   return (
                     <Link
                       key={item.name}
@@ -160,7 +190,7 @@ export default function Layout({ children, currentPageName }) {
                       <span>{item.name}</span>
                       {showBadge && (
                         <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full">
-                          {unreadCount}
+                          {item.badge}
                         </Badge>
                       )}
                     </Link>
@@ -234,7 +264,7 @@ export default function Layout({ children, currentPageName }) {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
-                const showBadge = item.name === "Messages" && unreadCount > 0;
+                const showBadge = item.badge > 0;
                 return (
                   <Link
                     key={item.name}
@@ -249,7 +279,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="text-xs font-medium">{item.name}</span>
                     {showBadge && (
                       <Badge className="absolute top-0 right-0 bg-red-500 text-white h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full text-xs font-bold">
-                        {unreadCount}
+                        {item.badge}
                       </Badge>
                     )}
                   </Link>
