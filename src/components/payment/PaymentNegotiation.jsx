@@ -58,14 +58,16 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
   const submitProposalMutation = useMutation({
     mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
-    onSuccess: () => {
+    onSuccess: (updatedBooking) => {
       queryClient.invalidateQueries(['bookings']);
       toast.success(isVendor ? "Proposal sent!" : "Proposal accepted!");
-      onClose();
       
-      // Redirect vendor to bookings page after sending proposal
-      if (isVendor) {
-        window.location.href = createPageUrl("Bookings");
+      if (!isVendor) {
+        // For clients accepting proposal, trigger payment
+        window.dispatchEvent(new CustomEvent('open-payment', { detail: updatedBooking }));
+      } else {
+        // For vendors, close and stay on page
+        onClose();
       }
     },
   });
