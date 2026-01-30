@@ -223,27 +223,27 @@ export default function AdminDashboardPage() {
                 try {
                   await base44.integrations.Core.SendEmail({
                     to: "pateld0514@gmail.com",
-                    from_name: "EVNT Notifications",
-                    subject: "🎉 Example Notification - New Booking Request",
-                    body: EmailTemplate.newBookingRequest(
-                      "Demo Vendor",
-                      "Sarah Johnson",
-                      "Sweet 16 Party",
-                      "March 15, 2026",
-                      "Washington, DC",
-                      2500,
-                      "Looking for an amazing DJ for my daughter's Sweet 16! Need someone experienced with teen parties."
+                    from_name: "EVNT Team",
+                    subject: "✅ Your Booking with Elite Events DJ is Confirmed!",
+                    body: EmailTemplate.bookingConfirmation(
+                      "Demo User",
+                      "Elite Events DJ",
+                      "Wedding",
+                      "June 15, 2026",
+                      "The Grand Ballroom, New York",
+                      150,
+                      2500
                     )
                   });
-                  toast.success("Test notification sent to pateld0514@gmail.com!");
+                  toast.success("Test booking confirmation sent to pateld0514@gmail.com!");
                 } catch (error) {
-                  toast.error("Failed to send notification");
+                  toast.error("Failed to send email");
                 } finally {
                   setSendingNotification(false);
                 }
               }}
               variant="outline" 
-              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
+              className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold"
               disabled={sendingNotification}
             >
               {sendingNotification ? (
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <>
                   <Bell className="w-4 h-4 mr-2" />
-                  Test Notification
+                  Test Booking Email
                 </>
               )}
             </Button>
