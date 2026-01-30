@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     );
 
     await base44.asServiceRole.integrations.Core.SendEmail({
-      to: "info@joinevnt.com",
+      to: "pateld0514@gmail.com",
       from_name: "EVNT Team",
       subject: "✅ Your Booking with Elite Events DJ is Confirmed!",
       body: emailContent
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ 
       success: true,
-      message: 'Test email sent to info@joinevnt.com' 
+      message: 'Test email sent to pateld0514@gmail.com' 
     });
 
   } catch (error) {
