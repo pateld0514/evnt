@@ -90,12 +90,12 @@ export default function PortfolioManager({ vendorId }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-4 border-black shadow-lg">
+      <CardHeader className="bg-black text-white">
         <div className="flex items-center justify-between">
-          <CardTitle>Portfolio Showcases</CardTitle>
-          <Button onClick={() => setIsAdding(!isAdding)} variant="outline" size="sm">
-            <Plus className="w-4 h-4 mr-2" />
+          <CardTitle className="text-2xl md:text-3xl font-black">Portfolio Showcases</CardTitle>
+          <Button onClick={() => setIsAdding(!isAdding)} variant="ghost" className="text-white hover:bg-gray-800 font-bold">
+            <Plus className="w-5 h-5 mr-2" />
             Add Item
           </Button>
         </div>
@@ -179,14 +179,14 @@ export default function PortfolioManager({ vendorId }) {
         )}
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading portfolio...</div>
+          <div className="text-center py-10 text-gray-500 font-medium text-base">Loading portfolio...</div>
         ) : portfolioItems.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Image className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-16 text-gray-500">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-gray-300">
+              <Image className="w-10 h-10 text-gray-400" />
             </div>
-            <p>No portfolio items yet</p>
-            <p className="text-sm">Add your best work to showcase to clients</p>
+            <p className="text-xl font-black text-gray-700 mb-2">No portfolio items yet</p>
+            <p className="text-base">Add your best work to showcase to clients</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

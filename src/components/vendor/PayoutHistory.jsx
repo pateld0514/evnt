@@ -25,24 +25,24 @@ export default function PayoutHistory({ vendorId }) {
     .reduce((sum, p) => sum + (p.net_amount || 0), 0);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-4 border-black shadow-lg">
+      <CardHeader className="bg-black text-white">
         <div className="flex items-center justify-between">
-          <CardTitle>Payout History</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-black">Payout History</CardTitle>
           <div className="text-right">
-            <p className="text-sm text-gray-600">Total Earned</p>
-            <p className="text-2xl font-bold text-green-600">${totalEarned.toFixed(2)}</p>
+            <p className="text-sm text-gray-300 font-bold">Total Earned</p>
+            <p className="text-3xl font-black text-green-400">${totalEarned.toFixed(2)}</p>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading payouts...</div>
+          <div className="text-center py-10 text-gray-500 font-medium text-base">Loading payouts...</div>
         ) : payouts.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <DollarSign className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p>No payouts yet</p>
-            <p className="text-sm">Complete bookings to start earning</p>
+          <div className="text-center py-16 text-gray-500">
+            <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-6 border-4 border-gray-200 rounded-full p-3" />
+            <p className="text-xl font-black text-gray-700 mb-2">No payouts yet</p>
+            <p className="text-base">Complete bookings to start earning</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -51,46 +51,46 @@ export default function PayoutHistory({ vendorId }) {
               const Icon = config.icon;
               
               return (
-                <div key={payout.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
+                <div key={payout.id} className="border-2 border-gray-300 rounded-xl p-5 hover:border-black transition-colors">
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="font-semibold text-sm">
+                      <p className="font-black text-base">
                         Booking #{payout.booking_id.substring(0, 8)}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm text-gray-500 font-medium">
                         {format(new Date(payout.created_date), 'MMM d, yyyy')}
                       </p>
                     </div>
-                    <Badge className={config.color}>
-                      <Icon className="w-3 h-3 mr-1" />
+                    <Badge className={`${config.color} font-bold px-3 py-1`}>
+                      <Icon className="w-4 h-4 mr-1" />
                       {config.label}
                     </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div className="grid grid-cols-3 gap-3 text-base">
                     <div>
-                      <p className="text-gray-600 text-xs">Booking Total</p>
-                      <p className="font-semibold">${payout.gross_amount.toFixed(2)}</p>
+                      <p className="text-gray-600 text-sm font-bold mb-1">Booking Total</p>
+                      <p className="font-black text-lg">${payout.gross_amount.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600 text-xs">Platform Fee</p>
-                      <p className="font-semibold text-red-600">-${payout.platform_fee.toFixed(2)}</p>
+                      <p className="text-gray-600 text-sm font-bold mb-1">Platform Fee</p>
+                      <p className="font-black text-lg text-red-600">-${payout.platform_fee.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600 text-xs">Your Payout</p>
-                      <p className="font-semibold text-green-600">${payout.net_amount.toFixed(2)}</p>
+                      <p className="text-gray-600 text-sm font-bold mb-1">Your Payout</p>
+                      <p className="font-black text-lg text-green-600">${payout.net_amount.toFixed(2)}</p>
                     </div>
                   </div>
 
                   {payout.payout_date && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Paid on {format(new Date(payout.payout_date), 'MMM d, yyyy h:mm a')}
+                    <p className="text-sm text-gray-600 font-medium mt-3">
+                      ✓ Paid on {format(new Date(payout.payout_date), 'MMM d, yyyy h:mm a')}
                     </p>
                   )}
                   
                   {payout.failure_reason && (
-                    <p className="text-xs text-red-600 mt-2">
-                      Error: {payout.failure_reason}
+                    <p className="text-sm text-red-600 font-bold mt-3 bg-red-50 p-3 rounded-lg border-2 border-red-200">
+                      ⚠ Error: {payout.failure_reason}
                     </p>
                   )}
                 </div>
