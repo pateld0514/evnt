@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import VendorAnalytics from "../components/analytics/VendorAnalytics";
+import PortfolioManager from "../components/vendor/PortfolioManager";
+import PayoutHistory from "../components/vendor/PayoutHistory";
 
 export default function VendorDashboard() {
   const navigate = useNavigate();
@@ -383,6 +385,16 @@ Provide 4-5 specific, actionable insights in this JSON format:
             </div>
           </CardContent>
         </Card>
+        </div>
+
+        {/* Portfolio Section */}
+        <div className="mt-8">
+          <PortfolioManager vendorId={vendor?.id} />
+        </div>
+
+        {/* Payout History */}
+        <div className="mt-8">
+          <PayoutHistory vendorId={vendor?.id} />
         </div>
         </TabsContent>
 

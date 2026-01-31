@@ -5,9 +5,10 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, DollarSign, Globe, Instagram, Facebook, Twitter, Music2, Star, Award, MessageSquare, Calendar, Heart, TrendingUp } from "lucide-react";
+import { Loader2, MapPin, DollarSign, Globe, Instagram, Facebook, Twitter, Music2, Star, Award, MessageSquare, Calendar, Heart, TrendingUp, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import ReviewsList from "../components/vendor/ReviewsList";
+import { useQuery } from "@tanstack/react-query";
 
 export default function VendorViewPage() {
   const navigate = useNavigate();
@@ -20,6 +21,13 @@ export default function VendorViewPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
+
+  // Load portfolio items
+  const { data: portfolioItems = [] } = useQuery({
+    queryKey: ['portfolio', vendorId],
+    queryFn: () => base44.entities.PortfolioItem.filter({ vendor_id: vendorId }, 'display_order'),
+    enabled: !!vendorId
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -124,6 +132,13 @@ export default function VendorViewPage() {
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
+
+  // Calculate rating distribution
+  const ratingDistribution = [5, 4, 3, 2, 1].map(star => ({
+    stars: star,
+    count: reviews.filter(r => r.rating === star).length,
+    percentage: reviews.length > 0 ? (reviews.filter(r => r.rating === star).length / reviews.length) * 100 : 0
+  }));
 
   const tier = getTier(completedBookings);
 
@@ -265,8 +280,39 @@ export default function VendorViewPage() {
               </CardContent>
             </Card>
 
-            {/* Gallery */}
-            {vendor.additional_images && vendor.additional_images.length > 0 && (
+            {/* Portfolio Showcases */}
+            {portfolioItems.length > 0 && (
+              <Card className="border-2 border-black">
+                <CardContent className="p-4 md:p-8">
+                  <h2 className="text-xl md:text-2xl font-black mb-3 md:mb-4">Portfolio Showcases</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    {portfolioItems.map((item) => (
+                      <div key={item.id} className="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-black transition-colors">
+                        <div className="aspect-video bg-gray-100">
+                          {item.type === "image" ? (
+                            <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <video src={item.url} className="w-full h-full object-cover" controls />
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                          {item.event_type && (
+                            <p className="text-sm text-gray-500 mb-2">{item.event_type}</p>
+                          )}
+                          {item.description && (
+                            <p className="text-sm text-gray-700">{item.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Legacy Gallery (if no portfolio items but has old images) */}
+            {portfolioItems.length === 0 && vendor.additional_images && vendor.additional_images.length > 0 && (
               <Card className="border-2 border-black">
                 <CardContent className="p-4 md:p-8">
                   <h2 className="text-xl md:text-2xl font-black mb-3 md:mb-4">Portfolio</h2>
@@ -285,23 +331,53 @@ export default function VendorViewPage() {
               </Card>
             )}
 
-            {/* Reviews */}
+            {/* Client Reviews and Ratings */}
             <Card className="border-2 border-black">
               <CardContent className="p-4 md:p-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 md:mb-6">
-                  <h2 className="text-xl md:text-2xl font-black">Reviews</h2>
-                  {averageRating && (
-                    <div className="flex items-center gap-2">
-                      <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                      <span className="text-3xl font-black">{averageRating}</span>
-                      <span className="text-gray-500">/ 5.0</span>
-                    </div>
-                  )}
-                </div>
+                <h2 className="text-xl md:text-2xl font-black mb-6">Client Reviews & Ratings</h2>
+                
                 {reviews.length > 0 ? (
-                  <ReviewsList reviews={reviews} />
+                  <div>
+                    {/* Rating Summary */}
+                    <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 mb-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="text-center md:text-left">
+                          <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                            <Star className="w-12 h-12 fill-yellow-400 text-yellow-400" />
+                            <div>
+                              <p className="text-5xl font-black">{averageRating}</p>
+                              <p className="text-gray-600">out of 5</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-600 font-medium">{reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {ratingDistribution.map(({ stars, count, percentage }) => (
+                            <div key={stars} className="flex items-center gap-3">
+                              <span className="text-sm font-medium w-12">{stars} stars</span>
+                              <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-yellow-400 h-2 rounded-full transition-all"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-gray-600 w-8">{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reviews List */}
+                    <ReviewsList reviews={reviews} />
+                  </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review!</p>
+                  <div className="text-center py-12">
+                    <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg font-medium">No reviews yet</p>
+                    <p className="text-gray-400 text-sm">Be the first to review {vendor.business_name}!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
