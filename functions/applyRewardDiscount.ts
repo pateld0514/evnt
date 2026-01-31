@@ -25,16 +25,21 @@ Deno.serve(async (req) => {
     const platformFeePercent = feeSettings.length > 0 ? parseFloat(feeSettings[0].setting_value) : 3;
 
     if (user_type === 'client') {
-      // Check client tier
+      // Check client tier - discount applies to TOTAL booking price, not platform fee
       const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ 
         client_email: user_email 
       });
       
+      let tierDiscountAmount = 0;
       if (clientTiers.length > 0) {
-        const tierDiscount = clientTiers[0].discount_percent || 0;
-        if (tierDiscount > 0) {
-          totalDiscount += tierDiscount;
-          appliedDiscounts.push({ type: 'tier', amount: tierDiscount, description: `${clientTiers[0].tier_level} tier` });
+        const tierDiscountPercent = clientTiers[0].discount_percent || 0;
+        if (tierDiscountPercent > 0) {
+          tierDiscountAmount = (bookingData.agreed_price || 0) * (tierDiscountPercent / 100);
+          appliedDiscounts.push({ 
+            type: 'tier_price_discount', 
+            amount: tierDiscountAmount, 
+            description: `${clientTiers[0].tier_level} tier (${tierDiscountPercent}% off total)` 
+          });
         }
       }
 
@@ -97,16 +102,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Calculate final platform fee with discounts
+    // Calculate final platform fee with discounts (vendor discounts only)
     const finalFeePercent = Math.max(0, platformFeePercent - totalDiscount);
     const platformFeeAmount = (bookingData.agreed_price || 0) * (finalFeePercent / 100);
+
+    // Calculate total price reduction from client discounts
+    const totalPriceDiscount = appliedDiscounts
+      .filter(d => d.type === 'tier_price_discount' || d.type === 'credit')
+      .reduce((sum, d) => sum + d.amount, 0);
 
     return Response.json({ 
       success: true,
       original_fee_percent: platformFeePercent,
-      total_discount: totalDiscount,
+      vendor_fee_discount: totalDiscount,
       final_fee_percent: finalFeePercent,
       platform_fee_amount: platformFeeAmount,
+      client_price_discount: totalPriceDiscount,
       applied_discounts: appliedDiscounts
     });
 

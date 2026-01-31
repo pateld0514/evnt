@@ -7,6 +7,16 @@ Deno.serve(async (req) => {
     
     // Extract vendor_id from payload or event data
     const vendor_id = payload.vendor_id || payload.data?.vendor_id;
+    
+    // Only process if booking was just completed
+    if (payload.event?.type === 'update' && payload.data?.status === 'completed' && payload.old_data?.status !== 'completed') {
+      // Continue with tier update
+    } else if (!payload.event) {
+      // Direct call, process normally
+    } else {
+      // Not a completion event, skip
+      return Response.json({ success: true, message: 'Not a completion event, skipped' });
+    }
 
     if (!vendor_id) {
       return Response.json({ error: 'vendor_id is required' }, { status: 400 });

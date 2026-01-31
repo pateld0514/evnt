@@ -209,7 +209,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-gray-500" />
                       <h3 className="text-xl font-black">Starter</h3>
-                      <span className="text-sm text-gray-600">(0-5 bookings)</span>
+                      <span className="text-sm text-gray-600">(0-8 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Access to all vendors</li>
@@ -221,10 +221,10 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-blue-600" />
                       <h3 className="text-xl font-black">Regular</h3>
-                      <span className="text-sm text-gray-600">(6-20 bookings)</span>
+                      <span className="text-sm text-gray-600">(9-30 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>2% discount</strong> on platform fees</li>
+                      <li>• <strong>1% discount</strong> on total booking price</li>
                       <li>• Exclusive vendor recommendations</li>
                       <li>• Early access to new features</li>
                     </ul>
@@ -234,10 +234,10 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-purple-600" />
                       <h3 className="text-xl font-black">VIP</h3>
-                      <span className="text-sm text-gray-600">(21+ bookings)</span>
+                      <span className="text-sm text-gray-600">(31+ bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>4% discount</strong> on platform fees</li>
+                      <li>• <strong>3% discount</strong> on total booking price</li>
                       <li>• VIP badge on profile</li>
                       <li>• First pick on Gold vendors</li>
                       <li>• Special seasonal promotions</li>

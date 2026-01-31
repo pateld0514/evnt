@@ -7,6 +7,16 @@ Deno.serve(async (req) => {
     
     // Extract client_email from payload or event data
     const client_email = payload.client_email || payload.data?.client_email;
+    
+    // Only process if booking was just completed
+    if (payload.event?.type === 'update' && payload.data?.status === 'completed' && payload.old_data?.status !== 'completed') {
+      // Continue with tier update
+    } else if (!payload.event) {
+      // Direct call, process normally
+    } else {
+      // Not a completion event, skip
+      return Response.json({ success: true, message: 'Not a completion event, skipped' });
+    }
 
     if (!client_email) {
       return Response.json({ error: 'client_email is required' }, { status: 400 });
@@ -33,12 +43,12 @@ Deno.serve(async (req) => {
     let tierLevel = 'starter';
     let discount = 0;
 
-    if (totalBookings >= 21) {
+    if (totalBookings >= 31) {
       tierLevel = 'vip';
-      discount = 4; // 4% discount on platform fees
-    } else if (totalBookings >= 6) {
+      discount = 3; // 3% discount on total booking price
+    } else if (totalBookings >= 9) {
       tierLevel = 'regular';
-      discount = 2; // 2% discount on platform fees
+      discount = 1; // 1% discount on total booking price
     }
 
     // Check if tier record exists
