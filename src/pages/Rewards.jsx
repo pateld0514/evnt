@@ -135,7 +135,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Volume Discount</h4>
                       <p className="text-sm text-gray-600">
-                        +1% fee reduction for 5+ bookings per month
+                        1% discount for 5+ bookings per month (higher discount applies, not stacked)
                       </p>
                     </div>
                   </div>
@@ -283,7 +283,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Loyalty Savings</h4>
                       <p className="text-sm text-gray-600">
-                        Discounts stack with tier benefits
+                        Only the highest discount is applied (no stacking)
                       </p>
                     </div>
                   </div>
