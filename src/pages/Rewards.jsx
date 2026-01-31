@@ -92,7 +92,6 @@ export default function RewardsPage() {
                       <li>• <strong>0.5% fee reduction</strong> on all bookings</li>
                       <li>• <strong>+20% higher placement</strong> in search</li>
                       <li>• "Experienced Vendor" badge</li>
-                      <li>• Priority email support</li>
                     </ul>
                   </div>
 
@@ -107,7 +106,6 @@ export default function RewardsPage() {
                       <li>• <strong>+50% higher placement</strong> in search</li>
                       <li>• "Top Rated Vendor" badge</li>
                       <li>• Featured in recommended section</li>
-                      <li>• Dedicated account manager</li>
                     </ul>
                   </div>
                 </div>
@@ -216,7 +214,6 @@ export default function RewardsPage() {
                     <ul className="space-y-2 text-gray-700">
                       <li>• Access to all vendors</li>
                       <li>• Standard booking features</li>
-                      <li>• Email support</li>
                     </ul>
                   </div>
 
@@ -228,7 +225,6 @@ export default function RewardsPage() {
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>1% discount</strong> on platform fees</li>
-                      <li>• Priority email support</li>
                       <li>• Exclusive vendor recommendations</li>
                       <li>• Early access to new features</li>
                     </ul>
@@ -242,9 +238,8 @@ export default function RewardsPage() {
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>2% discount</strong> on platform fees</li>
-                      <li>• Dedicated account manager</li>
                       <li>• VIP badge on profile</li>
-                      <li>• First pick on premium vendors</li>
+                      <li>• First pick on Gold vendors</li>
                       <li>• Special seasonal promotions</li>
                     </ul>
                   </div>
