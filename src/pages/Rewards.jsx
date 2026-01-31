@@ -73,7 +73,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-gray-500" />
                       <h3 className="text-xl font-black">Bronze</h3>
-                      <span className="text-sm text-gray-600">(0-5 bookings)</span>
+                      <span className="text-sm text-gray-600">(0-25 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Standard profile visibility</li>
@@ -86,11 +86,11 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-blue-600" />
                       <h3 className="text-xl font-black">Silver</h3>
-                      <span className="text-sm text-gray-600">(6-15 bookings)</span>
+                      <span className="text-sm text-gray-600">(26-75 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>0.5% fee reduction</strong> on all bookings</li>
-                      <li>• <strong>+20% higher placement</strong> in search</li>
+                      <li>• <strong>1% fee reduction</strong> on all bookings</li>
+                      <li>• <strong>+30% higher placement</strong> in search & swipe</li>
                       <li>• "Experienced Vendor" badge</li>
                     </ul>
                   </div>
@@ -99,11 +99,11 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-yellow-600" />
                       <h3 className="text-xl font-black">Gold</h3>
-                      <span className="text-sm text-gray-600">(16+ bookings)</span>
+                      <span className="text-sm text-gray-600">(76+ bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>1.5% fee reduction</strong> on all bookings</li>
-                      <li>• <strong>+50% higher placement</strong> in search</li>
+                      <li>• <strong>2.5% fee reduction</strong> on all bookings</li>
+                      <li>• <strong>+75% higher placement</strong> in search & swipe</li>
                       <li>• "Top Rated Vendor" badge</li>
                       <li>• Featured in recommended section</li>
                     </ul>
@@ -133,7 +133,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Volume Discount</h4>
                       <p className="text-sm text-gray-600">
-                        1% discount for 5+ bookings per month (higher discount applies, not stacked)
+                        Additional 1.5% discount for 10+ bookings per month (stacks with tier discount)
                       </p>
                     </div>
                   </div>
@@ -143,7 +143,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Review Incentives</h4>
                       <p className="text-sm text-gray-600">
-                        4.5+ rating unlocks exclusive promotions
+                        4.5+ rating adds +25% boost to search & swipe placement
                       </p>
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Marketing Support</h4>
                       <p className="text-sm text-gray-600">
-                        Top performers featured on social media
+                        Top performers boosted in search and swipe tab
                       </p>
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-gray-500" />
                       <h3 className="text-xl font-black">Starter</h3>
-                      <span className="text-sm text-gray-600">(0-2 bookings)</span>
+                      <span className="text-sm text-gray-600">(0-5 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Access to all vendors</li>
@@ -221,10 +221,10 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-blue-600" />
                       <h3 className="text-xl font-black">Regular</h3>
-                      <span className="text-sm text-gray-600">(3-9 bookings)</span>
+                      <span className="text-sm text-gray-600">(6-20 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>1% discount</strong> on platform fees</li>
+                      <li>• <strong>2% discount</strong> on platform fees</li>
                       <li>• Exclusive vendor recommendations</li>
                       <li>• Early access to new features</li>
                     </ul>
@@ -234,10 +234,10 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-purple-600" />
                       <h3 className="text-xl font-black">VIP</h3>
-                      <span className="text-sm text-gray-600">(10+ bookings)</span>
+                      <span className="text-sm text-gray-600">(21+ bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
-                      <li>• <strong>2% discount</strong> on platform fees</li>
+                      <li>• <strong>4% discount</strong> on platform fees</li>
                       <li>• VIP badge on profile</li>
                       <li>• First pick on Gold vendors</li>
                       <li>• Special seasonal promotions</li>
