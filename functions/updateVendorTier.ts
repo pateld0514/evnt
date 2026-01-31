@@ -3,7 +3,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { vendor_id } = await req.json();
+    const payload = await req.json();
+    
+    // Extract vendor_id from payload or event data
+    const vendor_id = payload.vendor_id || payload.data?.vendor_id;
 
     if (!vendor_id) {
       return Response.json({ error: 'vendor_id is required' }, { status: 400 });

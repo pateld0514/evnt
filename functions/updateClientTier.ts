@@ -3,7 +3,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { client_email } = await req.json();
+    const payload = await req.json();
+    
+    // Extract client_email from payload or event data
+    const client_email = payload.client_email || payload.data?.client_email;
 
     if (!client_email) {
       return Response.json({ error: 'client_email is required' }, { status: 400 });

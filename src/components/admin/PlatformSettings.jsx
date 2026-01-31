@@ -78,8 +78,8 @@ export default function PlatformSettings() {
         <CardContent className="p-6 space-y-4">
           <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-900">
-              <strong>Note:</strong> The platform fee is automatically added to all bookings. 
-              Clients pay this fee on top of the agreed service price, and vendors receive 100% of their agreed amount.
+              <strong>Note:</strong> The platform fee is deducted from the booking total. 
+              This is the base rate - actual fees may be lower due to vendor/client tier discounts (min 5%).
             </p>
           </div>
 
@@ -109,7 +109,10 @@ export default function PlatformSettings() {
               </Button>
             </div>
             <p className="text-sm text-gray-600">
-              Current fee: {feePercent}% (e.g., on a $1,000 booking, client pays ${(1000 * parseFloat(feePercent || 0) / 100).toFixed(2)} platform fee)
+              Base fee: {feePercent}% (e.g., on $1,000 booking, EVNT receives ${(1000 * parseFloat(feePercent || 0) / 100).toFixed(2)}, vendor gets ${(1000 - (1000 * parseFloat(feePercent || 0) / 100)).toFixed(2)})
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Actual fees may be reduced by up to 3.5% based on tier discounts (vendor + client)
             </p>
           </div>
         </CardContent>
