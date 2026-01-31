@@ -5,30 +5,30 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 md:py-12 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
-        <Card className="border-2 border-black">
+        <Card className="border-4 border-black shadow-lg">
           <CardHeader className="bg-black text-white">
-            <CardTitle className="text-3xl font-black">Terms of Service</CardTitle>
-            <p className="text-gray-300 mt-2">Last Updated: January 28, 2026</p>
+            <CardTitle className="text-4xl md:text-5xl font-black">Terms of Service</CardTitle>
+            <p className="text-gray-300 mt-3 text-lg font-medium">Last Updated: January 28, 2026</p>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-8 md:p-12 space-y-8">
             <section>
-              <h2 className="text-2xl font-bold mb-3">1. Agreement to Terms</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl md:text-3xl font-black mb-4">1. Agreement to Terms</h2>
+              <p className="text-gray-700 text-base md:text-lg leading-relaxed">
                 By accessing and using EVNT ("the Platform"), you agree to be bound by these Terms of Service. 
                 If you do not agree to these terms, please do not use our services.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">2. Platform Description</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl md:text-3xl font-black mb-4">2. Platform Description</h2>
+              <p className="text-gray-700 text-base md:text-lg leading-relaxed">
                 EVNT is a marketplace connecting event service vendors with clients planning events. We facilitate 
                 connections and bookings but are not directly involved in the provision of services between vendors and clients.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">3. User Accounts</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">3. User Accounts</h2>
               <div className="space-y-3 text-gray-700">
                 <p className="font-semibold">Client Accounts:</p>
                 <ul className="list-disc pl-6 space-y-2">
@@ -150,8 +150,8 @@ export default function TermsPage() {
               </p>
             </section>
 
-            <div className="mt-8 p-4 bg-black text-white rounded-lg text-center">
-              <p className="font-bold">By using EVNT, you acknowledge that you have read, understood, and agree to these Terms of Service.</p>
+            <div className="mt-10 p-6 bg-black text-white rounded-xl text-center">
+              <p className="font-black text-lg md:text-xl">By using EVNT, you acknowledge that you have read, understood, and agree to these Terms of Service.</p>
             </div>
           </CardContent>
         </Card>

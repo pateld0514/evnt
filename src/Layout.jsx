@@ -138,7 +138,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-white">
       {/* Demo Mode Banner */}
       {demoMode && (
-        <div className="bg-yellow-400 text-black text-center py-2 px-4 font-bold text-sm">
+        <div className="bg-yellow-400 text-black text-center py-3 px-4 font-black text-base md:text-lg">
           🎭 DEMO MODE - All actions are simulated and won't affect real data
           <Button
             onClick={async () => {
@@ -152,7 +152,7 @@ export default function Layout({ children, currentPageName }) {
               window.location.href = createPageUrl("AdminDashboard");
             }}
             size="sm"
-            className="ml-4 bg-black text-yellow-400 hover:bg-gray-800 h-6 px-3 text-xs"
+            className="ml-4 bg-black text-yellow-400 hover:bg-gray-800 h-8 px-4 text-sm font-black"
           >
             Exit Demo Mode
           </Button>
@@ -165,10 +165,10 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to={createPageUrl("About")} className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-2xl font-black text-black">E</span>
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-3xl font-black text-black">E</span>
               </div>
-              <span className="text-2xl font-black text-white tracking-tight">
+              <span className="text-3xl font-black text-white tracking-tight">
                 EVNT
               </span>
             </Link>
@@ -191,7 +191,7 @@ export default function Layout({ children, currentPageName }) {
                       }`}
                     >
                       <Icon className={`w-5 h-5`} />
-                      <span>{item.name}</span>
+                      <span className="text-base">{item.name}</span>
                       {showBadge && (
                         <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full">
                           {item.badge}
@@ -233,11 +233,11 @@ export default function Layout({ children, currentPageName }) {
                 className={`text-white hover:text-gray-300 transition-colors ${isMobileView ? 'px-2' : 'hidden md:flex'} flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800`}
               >
                 <Info className="w-5 h-5" />
-                <span className={`font-medium ${isMobileView ? 'hidden' : ''}`}>About</span>
+                <span className={`font-bold text-base ${isMobileView ? 'hidden' : ''}`}>About</span>
               </Link>
               <Link 
                 to={createPageUrl("Terms")}
-                className={`text-white hover:text-gray-300 transition-colors flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-800 text-sm font-medium`}
+                className={`text-white hover:text-gray-300 transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-base font-bold`}
               >
                 Terms
               </Link>
@@ -246,7 +246,7 @@ export default function Layout({ children, currentPageName }) {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
               >
                 <User className="w-5 h-5" />
-                <span className={`font-medium ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
+                <span className={`font-bold text-base ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
               </Link>
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function Layout({ children, currentPageName }) {
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
-                    <span className="text-xs font-medium">{item.name}</span>
+                    <span className="text-xs font-bold">{item.name}</span>
                     {showBadge && (
                       <Badge className="absolute top-0 right-0 bg-red-500 text-white h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full text-xs font-bold">
                         {item.badge}
