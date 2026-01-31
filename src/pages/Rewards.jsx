@@ -123,7 +123,7 @@ export default function RewardsPage() {
                     <div>
                       <h4 className="font-bold mb-1">Referral Rewards</h4>
                       <p className="text-sm text-gray-600">
-                        $25 credit for every vendor/client you refer who books
+                        For every vendor you refer who completes their first booking, you both get 1 booking with 0% commission
                       </p>
                     </div>
                   </div>

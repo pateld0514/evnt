@@ -15,7 +15,7 @@ export default function ReferralCard({ userEmail, userType }) {
   const isVendor = userType === "vendor";
   
   const referralMessage = isVendor
-    ? `Hey! I'm using EVNT to grow my event business and thought you might like it too. Join as a vendor or client and help me boost my visibility on the platform! ${referralLink}`
+    ? `Hey! I'm using EVNT to grow my event business and thought you might like it too. Join as a vendor and when you complete your first booking, we both get 1 booking with 0% commission! ${referralLink}`
     : `Hey! I found this amazing platform for planning events - EVNT makes it super easy to find and book vendors. Join with my link and we both get $25 credit! ${referralLink}`;
   
   const handleCopy = () => {
@@ -54,7 +54,7 @@ export default function ReferralCard({ userEmail, userType }) {
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
           <p className="text-sm text-gray-700 font-medium">
             {isVendor 
-              ? "Invite other vendors or event planners to join EVNT. When they complete their first booking, you'll get higher placement in search results!"
+              ? "Invite other vendors to join EVNT. When they complete their first booking, you both get 1 booking with 0% commission!"
               : "Share EVNT with friends planning events. When they complete their first booking, you both earn $25 credit!"}
           </p>
         </div>
@@ -153,7 +153,7 @@ export default function ReferralCard({ userEmail, userType }) {
               <span className="font-bold text-black">3.</span>
               <span>
                 {isVendor 
-                  ? "You get higher placement in search results, they get rewarded too!"
+                  ? "You both get 1 booking with 0% commission!"
                   : "You both receive $25 credit automatically!"}
               </span>
             </li>
@@ -162,7 +162,7 @@ export default function ReferralCard({ userEmail, userType }) {
 
         <p className="text-xs text-gray-500 text-center">
           {isVendor 
-            ? "More referrals = better visibility and more bookings!"
+            ? "More referrals = more commission-free bookings!"
             : "Share as many times as you want - unlimited earning potential!"}
         </p>
       </CardContent>
