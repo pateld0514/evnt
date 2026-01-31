@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { User, Store, LogOut, Loader2, RefreshCw, Bell, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import ReferralCard from "../components/referral/ReferralCard";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -239,6 +240,12 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {user?.user_type && (
+        <div className="mb-6">
+          <ReferralCard userEmail={user.email} userType={user.user_type} />
+        </div>
+      )}
 
       <div className="space-y-3">
         {isAdmin && (
