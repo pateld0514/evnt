@@ -3,7 +3,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { referred_email, referred_type } = await req.json();
+    const payload = await req.json();
+    
+    // Extract from direct call or event
+    const referred_email = payload.referred_email || payload.data?.client_email;
+    const referred_type = payload.referred_type || (payload.data?.client_email ? 'client' : 'vendor');
+    
+    // Only process if booking was just completed
+    if (payload.event?.type === 'update' && payload.data?.status === 'completed' && payload.old_data?.status !== 'completed') {
+      // Continue with referral processing
+    } else if (!payload.event) {
+      // Direct call, process normally
+    } else {
+      // Not a completion event, skip
+      return Response.json({ success: true, message: 'Not a completion event, skipped' });
+    }
 
     if (!referred_email || !referred_type) {
       return Response.json({ error: 'referred_email and referred_type are required' }, { status: 400 });
