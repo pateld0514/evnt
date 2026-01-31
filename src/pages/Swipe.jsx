@@ -296,10 +296,10 @@ export default function SwipePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-black mb-2">
+        <h1 className="text-4xl md:text-5xl font-black text-black mb-3">
           Find Your Perfect Vendors
         </h1>
-        <p className="text-base md:text-lg text-gray-600">
+        <p className="text-lg md:text-xl text-gray-600 font-medium">
           Swipe right to save, left to pass
         </p>
       </div>
@@ -490,7 +490,7 @@ export default function SwipePage() {
         </div>
       )}
 
-      <div className="text-center mt-6 text-sm text-gray-500 font-medium">
+      <div className="text-center mt-6 text-base text-gray-600 font-bold">
         {filteredVendors.length > 0 && (
           <>
             {currentIndex + 1} / {filteredVendors.length} vendors

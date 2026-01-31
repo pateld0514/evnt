@@ -38,8 +38,8 @@ export async function sendNotification({ recipientEmail, type, title, message, l
     .logo-text { color: #000; font-size: 24px; font-weight: 900; }
     .brand { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
     .content { padding: 30px 20px; background: #fff; }
-    .title { font-size: 18px; font-weight: 700; margin: 0 0 15px 0; color: #000; }
-    .message { font-size: 15px; color: #333; margin: 0 0 20px 0; }
+    .title { font-size: 20px; font-weight: 900; margin: 0 0 15px 0; color: #000; }
+    .message { font-size: 16px; color: #333; margin: 0 0 20px 0; line-height: 1.6; }
     .footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
   </style>
 </head>

@@ -122,28 +122,28 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="event_type">Event Type *</Label>
+        <Label htmlFor="event_type" className="text-base font-bold">Event Type *</Label>
         <Input
           id="event_type"
           value={formData.event_type}
           onChange={(e) => setFormData(prev => ({ ...prev, event_type: e.target.value }))}
           required
-          className="border-2 border-gray-300 focus:border-black"
+          className="border-2 border-gray-300 focus:border-black h-12 text-base"
           placeholder="e.g. Wedding, Birthday, Sweet 16"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="event_date">Event Date *</Label>
+        <Label htmlFor="event_date" className="text-base font-bold">Event Date *</Label>
         <div className="relative">
-          <Calendar className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+          <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
           <Input
             id="event_date"
             type="date"
             value={formData.event_date}
             onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
             required
-            className="border-2 border-gray-300 focus:border-black pl-10"
+            className="border-2 border-gray-300 focus:border-black pl-11 h-12 text-base"
             min={new Date().toISOString().split('T')[0]}
           />
         </div>
@@ -151,30 +151,30 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="guest_count">Expected Guests</Label>
+          <Label htmlFor="guest_count" className="text-base font-bold">Expected Guests</Label>
           <div className="relative">
-            <Users className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Users className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
             <Input
               id="guest_count"
               type="number"
               value={formData.guest_count}
               onChange={(e) => setFormData(prev => ({ ...prev, guest_count: e.target.value }))}
-              className="border-2 border-gray-300 focus:border-black pl-10"
+              className="border-2 border-gray-300 focus:border-black pl-11 h-12 text-base"
               placeholder="50"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="budget">Budget ($)</Label>
+          <Label htmlFor="budget" className="text-base font-bold">Budget ($)</Label>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <DollarSign className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
             <Input
               id="budget"
               type="number"
               value={formData.budget}
               onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value }))}
-              className="border-2 border-gray-300 focus:border-black pl-10"
+              className="border-2 border-gray-300 focus:border-black pl-11 h-12 text-base"
               placeholder="1000"
             />
           </div>
@@ -182,42 +182,42 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       </div>
 
       <div className="space-y-2">
-        <Label>Event Location</Label>
+        <Label className="text-base font-bold">Event Location</Label>
         <CityAutocomplete
           value={formData.location}
           onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
-          className="border-2 border-gray-300"
+          className="border-2 border-gray-300 h-12 text-base"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes">Additional Details</Label>
+        <Label htmlFor="notes" className="text-base font-bold">Additional Details</Label>
         <Textarea
           id="notes"
           value={formData.notes}
           onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-          className="border-2 border-gray-300 focus:border-black h-32"
+          className="border-2 border-gray-300 focus:border-black h-32 text-base"
           placeholder="Any special requests or questions..."
         />
       </div>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-6">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="flex-1 border-2 border-black hover:bg-gray-100 font-bold"
+          className="flex-1 border-2 border-black hover:bg-gray-100 font-bold h-12 text-base"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={bookingMutation.isPending}
-          className="flex-1 bg-black text-white hover:bg-gray-800 font-bold"
+          className="flex-1 bg-black text-white hover:bg-gray-800 font-bold h-12 text-base"
         >
           {bookingMutation.isPending ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               Sending...
             </>
           ) : (

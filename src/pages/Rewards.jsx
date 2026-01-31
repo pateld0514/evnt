@@ -8,14 +8,14 @@ export default function RewardsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-black rounded-full mb-4">
-            <Trophy className="w-10 h-10 text-white" />
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-black rounded-full mb-6">
+            <Trophy className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-black mb-4">
+          <h1 className="text-5xl md:text-6xl font-black text-black mb-6 leading-tight">
             EVNT Rewards Program
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl md:text-2xl text-gray-600 font-medium max-w-3xl mx-auto">
             Everyone wins when you use EVNT - clients save more, vendors earn more
           </p>
         </div>

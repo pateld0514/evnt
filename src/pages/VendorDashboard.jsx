@@ -221,8 +221,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
       <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-black text-black mb-3">Vendor Dashboard</h1>
-        <p className="text-xl text-gray-600">Welcome back, {vendor.business_name}!</p>
+        <h1 className="text-4xl md:text-5xl font-black text-black mb-4">Vendor Dashboard</h1>
+        <p className="text-xl md:text-2xl text-gray-600 font-medium">Welcome back, {vendor.business_name}!</p>
       </div>
 
       <Tabs defaultValue="analytics" className="mb-8">

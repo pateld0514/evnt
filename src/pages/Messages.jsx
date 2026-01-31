@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Send, Loader2, Plus, Store, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -391,16 +392,19 @@ export default function MessagesPage() {
                         className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                       >
                         <div
-                          className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                            isMe
-                              ? "bg-black text-white"
-                              : "bg-gray-100 text-black border-2 border-gray-300"
-                          }`}
+                         className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                           isMe
+                             ? "bg-black text-white"
+                             : "bg-gray-100 text-black border-2 border-gray-300"
+                         }`}
                         >
-                          {!isMe && (
-                            <p className="text-xs font-bold mb-1 opacity-70">{msg.sender_name}</p>
-                          )}
-                          <p className="font-medium break-words">{msg.message}</p>
+                         {!isMe && (
+                           <p className="text-xs font-bold mb-1.5 opacity-70">{msg.sender_name}</p>
+                         )}
+                         <p className="text-base font-medium break-words leading-relaxed">{msg.message}</p>
+                         <p className={`text-xs mt-1.5 ${isMe ? 'text-gray-400' : 'text-gray-500'}`}>
+                           {format(new Date(msg.created_date), 'h:mm a')}
+                         </p>
                         </div>
                       </div>
                     );
@@ -415,13 +419,13 @@ export default function MessagesPage() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Type a message..."
-                    className="border-2 border-gray-300 focus:border-black"
+                    className="border-2 border-gray-300 focus:border-black text-base h-12"
                     onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!messageText.trim() || sendMessageMutation.isPending}
-                    className="bg-black text-white hover:bg-gray-800 font-bold"
+                    className="bg-black text-white hover:bg-gray-800 font-bold h-12 px-6"
                   >
                     <Send className="w-5 h-5" />
                   </Button>

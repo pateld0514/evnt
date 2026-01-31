@@ -162,67 +162,65 @@ export default function SwipeCard({ vendor, onSwipe }) {
 
           <div className="p-4 md:p-6 h-1/3 flex flex-col">
             <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-black text-black mb-2">
+              <h2 className="text-2xl md:text-3xl font-black text-black mb-3">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-4 line-clamp-2">
+              <p className="text-base md:text-lg text-gray-600 mb-4 line-clamp-2 leading-relaxed">
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-2 mb-2 md:mb-3">
+              <div className="flex flex-wrap gap-2 mb-3">
                 {vendor.location && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
-                    <MapPin className="w-3 h-3" />
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-sm font-bold py-1 px-2">
+                    <MapPin className="w-4 h-4" />
                     {vendor.location}
                   </Badge>
                 )}
                 {avgRating && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-sm font-bold py-1 px-2">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     {avgRating}
                   </Badge>
                 )}
                 {vendor.price_range && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
-                    <DollarSign className="w-3 h-3" />
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-sm font-bold py-1 px-2">
+                    <DollarSign className="w-4 h-4" />
                     {vendor.price_range}
                   </Badge>
                 )}
                 {vendor.starting_price && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-sm font-bold py-1 px-2">
                     From ${vendor.starting_price}
                   </Badge>
                 )}
-                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
-                  <Award className="w-3 h-3" />
+                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-sm font-bold py-1 px-2">
+                  <Award className="w-4 h-4" />
                   {completedBookings} events
                 </Badge>
                 {vendor.specialties && vendor.specialties.length > 0 && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300">
-                    <Sparkles className="w-3 h-3" />
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-sm font-bold py-1 px-2">
+                    <Sparkles className="w-4 h-4" />
                     {vendor.specialties[0]}
                   </Badge>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-2 gap-2 mt-3">
               <Button
                 variant="outline"
-                size="sm"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-12 text-base"
                 onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
               <Button
-                size="sm"
-                className="bg-black text-white hover:bg-gray-800 font-bold h-10"
+                className="bg-black text-white hover:bg-gray-800 font-bold h-12 text-base"
                 onClick={() => setBookingOpen(true)}
               >
-                <Calendar className="w-4 h-4 mr-1" />
-                Book
+                <Calendar className="w-5 h-5 mr-2" />
+                Book Now
               </Button>
             </div>
           </div>

@@ -174,16 +174,16 @@ export default function EventDashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-4xl font-black text-black mb-2">My Events</h1>
-          <p className="text-gray-600">Organize and track all your upcoming events</p>
+          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">My Events</h1>
+          <p className="text-lg md:text-xl text-gray-600 font-medium">Organize and track all your upcoming events</p>
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="bg-black text-white hover:bg-gray-800 font-bold"
+          className="bg-black text-white hover:bg-gray-800 font-bold h-12 px-6"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 mr-2" />
           Create Event
         </Button>
       </div>
