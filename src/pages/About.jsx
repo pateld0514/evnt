@@ -159,7 +159,7 @@ export default function AboutPage() {
                     </Badge>
                   </div>
                   <p className="text-gray-700">
-                    Pay the agreed price plus a {platformFee}% platform service fee. All payments processed securely through Stripe with buyer protection.
+                    Pay the agreed price to book your vendor. All payments processed securely through Stripe with buyer protection and escrow until service completion.
                   </p>
                 </div>
                 
@@ -186,9 +186,9 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <p className="font-bold mb-2">Commission-Based Model</p>
+                  <p className="font-bold mb-2">How Vendor Payments Work</p>
                   <p className="text-gray-700 mb-4">
-                    Vendors pay a small service fee only when they successfully book a client through EVNT.
+                    EVNT takes a {platformFee}% service fee from each completed booking. For example, if you agree to a $1,000 booking, the client pays $1,000, EVNT receives ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}%), and you receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} ({(100 - platformFee).toFixed(0)}%).
                   </p>
                 </div>
 
@@ -196,10 +196,10 @@ export default function AboutPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold">Platform Fee:</span>
-                      <Badge className="bg-black text-white">{platformFee}% per booking</Badge>
+                      <Badge className="bg-black text-white">{platformFee}% of booking total</Badge>
                     </div>
                     <p className="text-sm text-gray-600">
-                      Only charged when you accept and complete a booking
+                      Deducted from agreed price after service completion
                     </p>
                   </div>
 
@@ -258,7 +258,7 @@ export default function AboutPage() {
                     <h3 className="text-xl font-bold">Secure Payment via Stripe</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    Client pays the agreed price plus {platformFee}% platform fee through Stripe. Funds are held securely in escrow to protect both parties.
+                    Client pays the agreed total price through Stripe. Funds are held securely in escrow to protect both parties until service completion.
                   </p>
                 </div>
 
@@ -282,16 +282,16 @@ export default function AboutPage() {
                     <h3 className="text-xl font-bold">Get Paid</h3>
                   </div>
                   <p className="text-gray-600 ml-13">
-                    After the event, funds are released from escrow to your account within 24-48 hours (minus the {platformFee}% platform fee). Track all your earnings in your vendor dashboard.
+                    After the event, your payout ({(100 - platformFee).toFixed(0)}% of the agreed price) is released from escrow to your account within 24-48 hours. EVNT retains {platformFee}% as the platform service fee.
                   </p>
                 </div>
 
                 <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200 mt-6">
                   <p className="font-bold text-green-900 mb-2">💡 Key Benefits:</p>
                   <ul className="space-y-1 text-sm text-green-800">
-                    <li>• <strong>Vendors:</strong> Keep 100% of your agreed service price. The {platformFee}% platform fee is added to the client's total</li>
+                    <li>• <strong>Pricing:</strong> Client pays agreed amount. Vendor receives {(100 - platformFee).toFixed(0)}%. EVNT's {platformFee}% fee comes from the total</li>
                     <li>• <strong>Clients:</strong> Escrow protection until service is delivered</li>
-                    <li>• <strong>Both:</strong> Professional contracts, invoices, and dispute resolution</li>
+                    <li>• <strong>Vendors:</strong> No upfront costs, only pay when you book</li>
                     <li>• <strong>Security:</strong> Stripe-powered payments with fraud protection</li>
                   </ul>
                 </div>
