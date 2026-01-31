@@ -73,7 +73,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-gray-500" />
                       <h3 className="text-xl font-black">Bronze</h3>
-                      <span className="text-sm text-gray-600">(0-25 bookings)</span>
+                      <span className="text-sm text-gray-600">(0-30 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Standard profile visibility</li>
@@ -86,7 +86,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-blue-600" />
                       <h3 className="text-xl font-black">Silver</h3>
-                      <span className="text-sm text-gray-600">(26-75 bookings)</span>
+                      <span className="text-sm text-gray-600">(31-80 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>1% fee reduction</strong> on all bookings</li>
@@ -99,7 +99,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-yellow-600" />
                       <h3 className="text-xl font-black">Gold</h3>
-                      <span className="text-sm text-gray-600">(76+ bookings)</span>
+                      <span className="text-sm text-gray-600">(81+ bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>2.5% fee reduction</strong> on all bookings</li>
@@ -209,7 +209,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-gray-500" />
                       <h3 className="text-xl font-black">Starter</h3>
-                      <span className="text-sm text-gray-600">(0-8 bookings)</span>
+                      <span className="text-sm text-gray-600">(0-15 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Access to all vendors</li>
@@ -221,7 +221,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-blue-600" />
                       <h3 className="text-xl font-black">Regular</h3>
-                      <span className="text-sm text-gray-600">(9-30 bookings)</span>
+                      <span className="text-sm text-gray-600">(16-45 bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>1% discount</strong> on total booking price</li>
@@ -234,7 +234,7 @@ export default function RewardsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <Award className="w-8 h-8 text-purple-600" />
                       <h3 className="text-xl font-black">VIP</h3>
-                      <span className="text-sm text-gray-600">(31+ bookings)</span>
+                      <span className="text-sm text-gray-600">(46+ bookings)</span>
                     </div>
                     <ul className="space-y-2 text-gray-700">
                       <li>• <strong>3% discount</strong> on total booking price</li>

@@ -49,10 +49,10 @@ Deno.serve(async (req) => {
     let tierLevel = 'bronze';
     let feeDiscount = 0;
 
-    if (completedCount >= 76) {
+    if (completedCount >= 81) {
       tierLevel = 'gold';
       feeDiscount = 2.5; // 2.5% discount on fees
-    } else if (completedCount >= 26) {
+    } else if (completedCount >= 31) {
       tierLevel = 'silver';
       feeDiscount = 1.0; // 1.0% discount on fees
     }
