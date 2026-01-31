@@ -39,17 +39,18 @@ Deno.serve(async (req) => {
     let tierLevel = 'bronze';
     let feeDiscount = 0;
 
-    if (completedCount >= 16) {
+    if (completedCount >= 76) {
       tierLevel = 'gold';
-      feeDiscount = 1.5; // 1.5% discount on fees
-    } else if (completedCount >= 6) {
+      feeDiscount = 2.5; // 2.5% discount on fees
+    } else if (completedCount >= 26) {
       tierLevel = 'silver';
-      feeDiscount = 0.5; // 0.5% discount on fees
+      feeDiscount = 1.0; // 1.0% discount on fees
     }
 
-    // Additional discount for volume (5+ bookings this month) - but don't stack, only use higher
-    const volumeDiscount = bookingsThisMonth >= 5 ? 1 : 0;
-    feeDiscount = Math.max(feeDiscount, volumeDiscount); // Use the higher discount, not stacked
+    // Additional discount for volume (10+ bookings this month) - stacks with tier discount
+    if (bookingsThisMonth >= 10) {
+      feeDiscount += 1.5; // Additional 1.5% stacks with tier discount
+    }
 
     // Check if tier record exists
     const existingTiers = await base44.asServiceRole.entities.VendorTier.filter({ vendor_id });
