@@ -41,7 +41,6 @@ const eventTypes = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -60,10 +59,8 @@ export default function Home() {
           }
         }
       } catch (error) {
-        // User not authenticated, redirect to About page
-        navigate(createPageUrl("About"));
-      } finally {
-        setLoading(false);
+        // User not authenticated - stay on home page
+        setUser(null);
       }
     };
     
@@ -78,14 +75,6 @@ export default function Home() {
       navigate(createPageUrl("EventVendors") + `?event=${eventSlug}`);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-black" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white">
