@@ -63,11 +63,16 @@ export async function sendNotification({ recipientEmail, type, title, message, l
       });
     }
 
-    // SMS - Text message format (future implementation with Twilio/etc)
+    // Send SMS notification
     if ((notificationPref === "sms" || notificationPref === "both") && userPhone) {
-      // Placeholder for SMS sending via integration
-      // When implemented: await base44.integrations.SMS.Send({ to: userPhone, message: `EVNT: ${title} - ${message}` });
-      console.log(`SMS would be sent to ${userPhone}: EVNT - ${title}`);
+      try {
+        await base44.integrations.Core.SendSMS({
+          to: userPhone.startsWith('+') ? userPhone : `+1${userPhone.replace(/\D/g, '')}`,
+          message: `EVNT: ${title} - ${message.substring(0, 140)}`
+        });
+      } catch (error) {
+        console.error(`Failed to send SMS to ${userPhone}:`, error);
+      }
     }
 
   } catch (error) {

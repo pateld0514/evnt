@@ -234,8 +234,16 @@ export default function ProfilePage() {
                 <SelectItem value="both">Both Email & SMS</SelectItem>
               </SelectContent>
             </Select>
+            {!user?.phone && notificationPref !== "email" && (
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 mt-2">
+                <p className="text-sm text-yellow-800 font-bold">
+                  ⚠️ Please add your phone number to receive SMS notifications
+                </p>
+              </div>
+            )}
             <p className="text-sm text-gray-600">
               You'll receive updates about booking statuses, new messages, and vendor responses.
+              {user?.phone && ` SMS will be sent to ${user.phone}.`}
             </p>
           </div>
         </CardContent>
