@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Upload, CheckCircle, X } from "lucide-react";
+import { Loader2, Upload, CheckCircle, X, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 
@@ -36,6 +36,7 @@ export default function VendorRegistrationPage() {
   const [uploadingId, setUploadingId] = useState(false);
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingLicense, setUploadingLicense] = useState(false);
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
   const [referralCode, setReferralCode] = useState("");
@@ -47,6 +48,7 @@ export default function VendorRegistrationPage() {
     location: "",
     contact_email: "",
     id_verification_url: "",
+    business_license_url: "",
     willing_to_travel: false,
     travel_radius: "",
     years_in_business: "",
@@ -120,6 +122,27 @@ export default function VendorRegistrationPage() {
     }
   };
 
+  const handleLicenseUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10000000) {
+      toast.error("File size must be less than 10MB");
+      return;
+    }
+
+    setUploadingLicense(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, business_license_url: file_url }));
+      toast.success("Business license uploaded successfully");
+    } catch (error) {
+      toast.error("Failed to upload license");
+    } finally {
+      setUploadingLicense(false);
+    }
+  };
+
   const removeGalleryImage = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -140,7 +163,8 @@ export default function VendorRegistrationPage() {
     
     if (!formData.business_name || !formData.category || !formData.description || 
         !formData.phone || !formData.location || !formData.contact_email || 
-        !formData.id_verification_url || !formData.years_in_business || !formData.average_price ||
+        !formData.id_verification_url || !formData.business_license_url || 
+        !formData.years_in_business || !formData.average_price ||
         (formData.willing_to_travel && !formData.travel_radius) ||
         !formData.image_url || !formData.price_range || !formData.starting_price) {
       toast.error("Please fill in all required fields");
@@ -169,6 +193,7 @@ export default function VendorRegistrationPage() {
         location: formData.location,
         contact_email: formData.contact_email,
         id_verification_url: formData.id_verification_url,
+        business_license_url: formData.business_license_url,
         willing_to_travel: formData.willing_to_travel,
         travel_radius: formData.travel_radius ? parseInt(formData.travel_radius) : null,
         years_in_business: parseInt(formData.years_in_business),
@@ -467,6 +492,36 @@ export default function VendorRegistrationPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-lg font-bold">Business License *</Label>
+              <p className="text-sm text-gray-500">Upload your business license or registration certificate for compliance</p>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleLicenseUpload}
+                  className="hidden"
+                  id="license-upload"
+                />
+                <label htmlFor="license-upload" className="cursor-pointer">
+                  {uploadingLicense ? (
+                    <Loader2 className="w-12 h-12 animate-spin mx-auto text-gray-400" />
+                  ) : formData.business_license_url ? (
+                    <div className="text-green-600">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-2" />
+                      <p className="font-bold">License Uploaded Successfully</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                      <p className="font-bold text-gray-700">Click to upload business license</p>
+                      <p className="text-sm text-gray-500">Business License, Registration, or Operating Permit</p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
             {/* Profile Photo */}
             <div className="space-y-2">
               <Label className="text-lg font-bold">Profile Photo *</Label>
@@ -578,21 +633,38 @@ export default function VendorRegistrationPage() {
 
 
 
-            {/* Stripe Banking Info */}
-            <div className="space-y-2 bg-green-50 p-6 rounded-lg border-2 border-green-200">
-              <Label className="text-lg font-bold">Banking Information (Optional - Can Add Later)</Label>
-              <p className="text-sm text-gray-500 mb-2">
-                To receive payments, you'll need to connect your bank account via Stripe. You can set this up now or later in your dashboard.
-              </p>
-              <Input
-                value={formData.stripe_account_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, stripe_account_id: e.target.value }))}
-                placeholder="Stripe Connect Account ID (Optional)"
-                className="border-2 border-gray-300 h-12"
-              />
-              <p className="text-xs text-gray-500">
-                Note: Without banking information, you won't be able to accept bookings that require payment.
-              </p>
+            {/* Stripe Connect Integration */}
+            <div className="space-y-4 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-300">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <Label className="text-lg font-bold">Payment Account Setup</Label>
+                  <p className="text-sm text-gray-600">Secure payment processing powered by Stripe</p>
+                </div>
+              </div>
+              
+              <div className="bg-white border-2 border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700 mb-3">
+                  <strong>Skip for now and complete after approval.</strong> Once your vendor application is approved, you'll be able to connect your bank account through Stripe Connect in your dashboard to receive payments.
+                </p>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-600 font-medium">What Stripe will verify:</p>
+                  <ul className="text-xs text-gray-600 space-y-1 ml-4">
+                    <li>• Business information and EIN/SSN</li>
+                    <li>• Bank account details for payouts</li>
+                    <li>• Identity verification</li>
+                    <li>• Address confirmation</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3">
+                <p className="text-xs text-yellow-800">
+                  <strong>⚠️ Important:</strong> You must complete Stripe Connect setup before accepting paid bookings. Without it, you can still receive booking requests but won't be able to process payments.
+                </p>
+              </div>
             </div>
 
             {/* Website & Social Media */}
@@ -684,7 +756,7 @@ export default function VendorRegistrationPage() {
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId || uploadingMain || uploadingGallery}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingLicense}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
             </Button>

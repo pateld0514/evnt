@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
 
     // Create or retrieve Stripe Connect account
     let accountId = vendor.stripe_account_id;
+    let accountVerified = false;
 
     if (!accountId) {
       const account = await stripe.accounts.create({
@@ -40,7 +41,12 @@ Deno.serve(async (req) => {
         business_type: 'individual',
         business_profile: {
           name: vendor.business_name,
+          url: vendor.website || undefined,
         },
+        metadata: {
+          vendor_id: vendor_id,
+          business_name: vendor.business_name,
+        }
       });
 
       accountId = account.id;
@@ -48,11 +54,20 @@ Deno.serve(async (req) => {
       // Save account ID to vendor
       await base44.asServiceRole.entities.Vendor.update(vendor_id, {
         stripe_account_id: accountId,
+        stripe_account_verified: false,
       });
     } else {
-      // Verify existing account still exists
+      // Verify existing account still exists and check verification status
       try {
-        await stripe.accounts.retrieve(accountId);
+        const account = await stripe.accounts.retrieve(accountId);
+        accountVerified = account.charges_enabled && account.payouts_enabled;
+        
+        // Update verification status if changed
+        if (vendor.stripe_account_verified !== accountVerified) {
+          await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+            stripe_account_verified: accountVerified,
+          });
+        }
       } catch (stripeError) {
         // Account doesn't exist, create a new one
         console.log('Invalid account, creating new:', stripeError.message);
@@ -66,13 +81,19 @@ Deno.serve(async (req) => {
           business_type: 'individual',
           business_profile: {
             name: vendor.business_name,
+            url: vendor.website || undefined,
           },
+          metadata: {
+            vendor_id: vendor_id,
+            business_name: vendor.business_name,
+          }
         });
 
         accountId = account.id;
 
         await base44.asServiceRole.entities.Vendor.update(vendor_id, {
           stripe_account_id: accountId,
+          stripe_account_verified: false,
         });
       }
     }
