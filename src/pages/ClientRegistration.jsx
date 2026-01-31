@@ -21,6 +21,7 @@ const eventTypes = [
 export default function ClientRegistrationPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
   const [formData, setFormData] = useState({
     phone: "",
     location: "",
@@ -30,6 +31,14 @@ export default function ClientRegistrationPage() {
     event_planning_experience: "",
     preferred_contact: "email"
   });
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, []);
 
   const handleEventToggle = (event) => {
     setFormData(prev => ({
@@ -50,11 +59,30 @@ export default function ClientRegistrationPage() {
 
     setLoading(true);
     try {
+      const currentUser = await base44.auth.me();
+      
       await base44.auth.updateMe({
         ...formData,
         user_type: "client",
-        onboarding_complete: true
+        onboarding_complete: true,
+        referred_by: referralCode || null
       });
+
+      // Create referral reward if referred
+      if (referralCode) {
+        try {
+          await base44.entities.ReferralReward.create({
+            referrer_email: referralCode,
+            referrer_type: "unknown",
+            referred_email: currentUser.email,
+            referred_type: "client",
+            reward_amount: 25,
+            status: "pending"
+          });
+        } catch (error) {
+          console.error("Failed to create referral record:", error);
+        }
+      }
       
       toast.success("Profile created successfully! Welcome to EVNT!");
       navigate(createPageUrl("Home"));
@@ -181,6 +209,14 @@ export default function ClientRegistrationPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {referralCode && (
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                <p className="text-sm font-bold text-green-800">
+                  🎉 Referral Code Applied! You'll get $25 credit after your first booking.
+                </p>
+              </div>
+            )}
 
             <Button
               type="submit"

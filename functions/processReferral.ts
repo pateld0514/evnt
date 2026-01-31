@@ -9,8 +9,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'referred_email and referred_type are required' }, { status: 400 });
     }
 
-    // Check if this person was referred (look for referral code in User entity or query param)
-    // For now, we'll look for pending referrals matching this email
+    // Check if this person was referred
     const pendingReferrals = await base44.asServiceRole.entities.ReferralReward.filter({ 
       referred_email,
       status: 'pending'
@@ -22,13 +21,19 @@ Deno.serve(async (req) => {
 
     // Check if referred person completed first booking
     let hasCompletedRequirement = false;
+    let referredUserId = null;
 
     if (referred_type === 'vendor') {
-      const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
-        vendor_id: referred_email, // This would need vendor_id, adjust logic as needed
-        status: 'completed'
-      });
-      hasCompletedRequirement = completedBookings.length >= 1;
+      // Get user to find vendor_id
+      const users = await base44.asServiceRole.entities.User.filter({ email: referred_email });
+      if (users.length > 0 && users[0].vendor_id) {
+        const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
+          vendor_id: users[0].vendor_id,
+          status: 'completed'
+        });
+        hasCompletedRequirement = completedBookings.length >= 1;
+        referredUserId = users[0].vendor_id;
+      }
     } else if (referred_type === 'client') {
       const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
         client_email: referred_email,
@@ -45,14 +50,83 @@ Deno.serve(async (req) => {
           completion_date: new Date().toISOString()
         });
 
-        // Send notification to referrer
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: referral.referrer_email,
-          type: 'payment_received',
-          title: 'Referral Reward Earned!',
-          message: `Congratulations! You've earned a $${referral.reward_amount} credit for referring ${referred_email}.`,
-          read: false
+        // Get referrer info to determine their type
+        const referrerUsers = await base44.asServiceRole.entities.User.filter({ 
+          email: referral.referrer_email 
         });
+        const referrerType = referrerUsers.length > 0 ? referrerUsers[0].user_type : null;
+
+        // Update referrer user record with credit/voucher
+        if (referrerType === 'client') {
+          // Add $25 credit to client
+          const referrer = referrerUsers[0];
+          const currentCredit = referrer.referral_credit || 0;
+          await base44.asServiceRole.entities.User.update(referrer.id, {
+            referral_credit: currentCredit + 25
+          });
+
+          await base44.asServiceRole.entities.Notification.create({
+            recipient_email: referral.referrer_email,
+            type: 'payment_received',
+            title: 'Referral Reward Earned!',
+            message: `Congratulations! You've earned $25 credit for referring ${referred_email}. Use it on your next booking!`,
+            read: false
+          });
+        } else if (referrerType === 'vendor') {
+          // Track commission-free booking for vendor
+          const referrer = referrerUsers[0];
+          const currentFreebookings = referrer.commission_free_bookings || 0;
+          await base44.asServiceRole.entities.User.update(referrer.id, {
+            commission_free_bookings: currentFreebookings + 1
+          });
+
+          await base44.asServiceRole.entities.Notification.create({
+            recipient_email: referral.referrer_email,
+            type: 'payment_received',
+            title: 'Referral Reward Earned!',
+            message: `Congratulations! You've earned 1 commission-free booking for referring ${referred_email}!`,
+            read: false
+          });
+        }
+
+        // Reward the referred person too
+        if (referred_type === 'client') {
+          const referredUsers = await base44.asServiceRole.entities.User.filter({ 
+            email: referred_email 
+          });
+          if (referredUsers.length > 0) {
+            const currentCredit = referredUsers[0].referral_credit || 0;
+            await base44.asServiceRole.entities.User.update(referredUsers[0].id, {
+              referral_credit: currentCredit + 25
+            });
+
+            await base44.asServiceRole.entities.Notification.create({
+              recipient_email: referred_email,
+              type: 'payment_received',
+              title: 'Welcome Bonus!',
+              message: `Thanks for joining EVNT! You've earned $25 credit. Enjoy your first booking!`,
+              read: false
+            });
+          }
+        } else if (referred_type === 'vendor') {
+          const referredUsers = await base44.asServiceRole.entities.User.filter({ 
+            email: referred_email 
+          });
+          if (referredUsers.length > 0) {
+            const currentFreeBookings = referredUsers[0].commission_free_bookings || 0;
+            await base44.asServiceRole.entities.User.update(referredUsers[0].id, {
+              commission_free_bookings: currentFreeBookings + 1
+            });
+
+            await base44.asServiceRole.entities.Notification.create({
+              recipient_email: referred_email,
+              type: 'payment_received',
+              title: 'Welcome Bonus!',
+              message: `Thanks for joining EVNT! You've earned 1 commission-free booking!`,
+              read: false
+            });
+          }
+        }
       }
 
       return Response.json({ 

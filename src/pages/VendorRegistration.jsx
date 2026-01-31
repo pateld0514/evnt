@@ -38,6 +38,7 @@ export default function VendorRegistrationPage() {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [formData, setFormData] = useState({
     business_name: "",
     category: "",
@@ -126,7 +127,13 @@ export default function VendorRegistrationPage() {
     }));
   };
 
-
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,8 +195,25 @@ export default function VendorRegistrationPage() {
         location: formData.location,
         approval_status: "pending",
         stripe_account_id: formData.stripe_account_id || null,
-        onboarding_complete: true
+        onboarding_complete: true,
+        referred_by: referralCode || null
       });
+
+      // Create referral reward if referred
+      if (referralCode) {
+        try {
+          await base44.entities.ReferralReward.create({
+            referrer_email: referralCode,
+            referrer_type: "vendor",
+            referred_email: user.email,
+            referred_type: "vendor",
+            reward_amount: 0,
+            status: "pending"
+          });
+        } catch (error) {
+          console.error("Failed to create referral record:", error);
+        }
+      }
 
       await base44.integrations.Core.SendEmail({
         to: "pateld0514@gmail.com",
@@ -641,6 +665,14 @@ export default function VendorRegistrationPage() {
                 </div>
               </div>
             </div>
+
+            {referralCode && (
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                <p className="text-sm font-bold text-green-800">
+                  🎉 Referral Code Applied! You'll get 1 commission-free booking after completing your first paid booking.
+                </p>
+              </div>
+            )}
 
             <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
