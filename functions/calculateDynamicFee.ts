@@ -28,9 +28,9 @@ Deno.serve(async (req) => {
     const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ client_email });
     const clientDiscount = clientTiers.length > 0 ? clientTiers[0].discount_percent : 0;
 
-    // Calculate final fee percentage
-    const totalDiscount = vendorDiscount + clientDiscount;
-    const finalFeePercent = Math.max(baseFeePercent - totalDiscount, 5); // Minimum 5% fee
+    // Calculate final fee percentage - only apply the higher discount, don't stack
+    const higherDiscount = Math.max(vendorDiscount, clientDiscount);
+    const finalFeePercent = Math.max(baseFeePercent - higherDiscount, 0); // Minimum 0% fee
 
     // Calculate amounts
     const platformFeeAmount = (booking_amount * finalFeePercent) / 100;
