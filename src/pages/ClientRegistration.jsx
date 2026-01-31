@@ -65,7 +65,8 @@ export default function ClientRegistrationPage() {
         ...formData,
         user_type: "client",
         onboarding_complete: true,
-        referred_by: referralCode || null
+        referred_by: referralCode || null,
+        notification_preference: "both"
       });
 
       // Create referral reward if referred
