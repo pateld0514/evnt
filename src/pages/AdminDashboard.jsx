@@ -258,6 +258,37 @@ export default function AdminDashboardPage() {
                 </>
               )}
             </Button>
+            <Button 
+              onClick={async () => {
+                setSendingNotification(true);
+                try {
+                  await base44.integrations.Core.SendSMS({
+                    to: "+16094423524",
+                    message: "🎉 EVNT Test: Your booking with Elite Events DJ is confirmed for June 15, 2026 at The Grand Ballroom, New York. Total: $2,500"
+                  });
+                  toast.success("Test SMS sent to +16094423524!");
+                } catch (error) {
+                  toast.error("Failed to send SMS: " + error.message);
+                } finally {
+                  setSendingNotification(false);
+                }
+              }}
+              variant="outline" 
+              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
+              disabled={sendingNotification}
+            >
+              {sendingNotification ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4 mr-2" />
+                  Test SMS
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
