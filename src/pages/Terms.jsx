@@ -53,9 +53,11 @@ export default function TermsPage() {
               <div className="space-y-3 text-gray-700">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>All payments are processed securely through Stripe</li>
-                  <li>Platform fees are calculated as a percentage of the booking total</li>
+                  <li>Client pays the agreed total booking price</li>
+                  <li>EVNT retains a service fee percentage from each booking</li>
+                  <li>Vendor receives the remaining balance after EVNT's service fee is deducted</li>
                   <li>Payments are held in escrow until the event is completed</li>
-                  <li>Vendors receive payout within 24 hours of event completion</li>
+                  <li>Vendors receive payout within 24-48 hours of event completion</li>
                   <li>Refunds are subject to the cancellation policy agreed upon in the booking</li>
                 </ul>
               </div>
