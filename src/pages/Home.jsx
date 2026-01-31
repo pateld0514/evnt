@@ -60,8 +60,8 @@ export default function Home() {
           }
         }
       } catch (error) {
-        // User not authenticated, redirect to onboarding
-        navigate(createPageUrl("Onboarding"));
+        // User not authenticated, redirect to About page
+        navigate(createPageUrl("About"));
       } finally {
         setLoading(false);
       }
