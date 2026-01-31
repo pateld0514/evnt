@@ -19,6 +19,7 @@ import { createPageUrl } from "@/utils";
 import { notifyBookingStatusChange, notifyVendorResponse } from "../components/notifications/NotificationSystem";
 import BookingStatusTracker from "../components/booking/BookingStatusTracker";
 import EmptyState from "../components/common/EmptyState";
+import VendorDocumentUpload from "../components/vendor/VendorDocumentUpload";
 import {
   Dialog,
   DialogContent,
@@ -475,6 +476,15 @@ export default function BookingsPage() {
                   </div>
                 )}
 
+                {/* Vendor Document Upload Section */}
+                {isVendor && (selectedBooking.status === "confirmed" || selectedBooking.status === "in_progress" || selectedBooking.status === "completed") && (
+                  <VendorDocumentUpload 
+                    booking={selectedBooking} 
+                    vendorId={currentUser.vendor_id}
+                    onUploadComplete={() => queryClient.invalidateQueries(['bookings'])}
+                  />
+                )}
+
                 {/* Message Button */}
                 <div>
                   <Button
@@ -499,12 +509,11 @@ export default function BookingsPage() {
                         variant="outline"
                         className="border-2 border-black hover:bg-black hover:text-white font-bold"
                         onClick={() => {
-                          if (!currentVendor?.custom_invoice_template_url && !currentVendor?.use_custom_documents) {
-                            handlePrintDocument('invoice');
-                          } else if (!currentVendor?.custom_invoice_template_url) {
-                            toast.error("Invoice not available - vendor hasn't uploaded a custom invoice yet.");
+                          // Check booking-specific custom invoice first
+                          if (selectedBooking.vendor_custom_invoice_url) {
+                            window.open(selectedBooking.vendor_custom_invoice_url, '_blank');
                           } else {
-                            window.open(currentVendor.custom_invoice_template_url, '_blank');
+                            handlePrintDocument('invoice');
                           }
                         }}
                       >
@@ -515,12 +524,11 @@ export default function BookingsPage() {
                         variant="outline"
                         className="border-2 border-black hover:bg-black hover:text-white font-bold"
                         onClick={() => {
-                          if (!currentVendor?.custom_contract_template_url && !currentVendor?.use_custom_documents) {
-                            handlePrintDocument('contract');
-                          } else if (!currentVendor?.custom_contract_template_url) {
-                            toast.error("Contract not available - vendor hasn't uploaded a custom contract yet.");
+                          // Check booking-specific custom contract first
+                          if (selectedBooking.vendor_custom_contract_url) {
+                            window.open(selectedBooking.vendor_custom_contract_url, '_blank');
                           } else {
-                            window.open(currentVendor.custom_contract_template_url, '_blank');
+                            handlePrintDocument('contract');
                           }
                         }}
                       >

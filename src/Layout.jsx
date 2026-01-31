@@ -45,7 +45,9 @@ export default function Layout({ children, currentPageName }) {
           setOnboardingComplete(user.onboarding_complete || false);
         }
       } catch (error) {
-        console.error(error);
+        // User not authenticated - this is fine for public pages
+        setUserType(null);
+        setOnboardingComplete(false);
       }
     };
     loadUser();
@@ -126,9 +128,11 @@ export default function Layout({ children, currentPageName }) {
     checkDemoMode();
   }, [location]);
 
-  // Only allow About and Profile pages if onboarding not complete
-  const allowedPages = ["About", "Profile", "Onboarding", "ClientRegistration", "VendorRegistration", "VendorPending"];
-  const shouldHideNav = !onboardingComplete && !allowedPages.includes(currentPageName);
+  // Only allow About, Terms, and VendorRewards pages for unauthenticated users
+  const publicPages = ["About", "Terms", "VendorRewards"];
+  const authPages = ["Profile", "Onboarding", "ClientRegistration", "VendorRegistration", "VendorPending"];
+  const allowedPages = [...publicPages, ...authPages];
+  const shouldHideNav = !currentUserEmail || (!onboardingComplete && !allowedPages.includes(currentPageName));
 
   return (
     <div className="min-h-screen bg-white">

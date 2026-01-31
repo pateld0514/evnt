@@ -36,8 +36,6 @@ export default function VendorRegistrationPage() {
   const [uploadingId, setUploadingId] = useState(false);
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
-  const [uploadingContract, setUploadingContract] = useState(false);
-  const [uploadingInvoice, setUploadingInvoice] = useState(false);
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
   const [formData, setFormData] = useState({
@@ -62,8 +60,6 @@ export default function VendorRegistrationPage() {
     facebook: "",
     twitter: "",
     tiktok: "",
-    custom_contract_template_url: "",
-    custom_invoice_template_url: "",
     stripe_account_id: ""
   });
 
@@ -130,47 +126,7 @@ export default function VendorRegistrationPage() {
     }));
   };
 
-  const handleContractUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
-      return;
-    }
-
-    setUploadingContract(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, custom_contract_template_url: file_url }));
-      toast.success("Contract template uploaded");
-    } catch (error) {
-      toast.error("Failed to upload contract");
-    } finally {
-      setUploadingContract(false);
-    }
-  };
-
-  const handleInvoiceUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
-      return;
-    }
-
-    setUploadingInvoice(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, custom_invoice_template_url: file_url }));
-      toast.success("Invoice template uploaded");
-    } catch (error) {
-      toast.error("Failed to upload invoice");
-    } finally {
-      setUploadingInvoice(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -220,9 +176,6 @@ export default function VendorRegistrationPage() {
         facebook: formData.facebook || null,
         twitter: formData.twitter || null,
         tiktok: formData.tiktok || null,
-        custom_contract_template_url: formData.custom_contract_template_url || null,
-        custom_invoice_template_url: formData.custom_invoice_template_url || null,
-        use_custom_documents: !!(formData.custom_contract_template_url || formData.custom_invoice_template_url),
         stripe_account_id: formData.stripe_account_id || null,
         approval_status: "pending",
         profile_complete: true
@@ -599,71 +552,7 @@ export default function VendorRegistrationPage() {
               </div>
             </div>
 
-            {/* Custom Documents */}
-            <div className="space-y-4 bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
-              <div>
-                <Label className="text-lg font-bold">Custom Contract & Invoice Templates (Optional)</Label>
-                <p className="text-sm text-gray-500 mt-1">Upload your own branded templates. PDF format only, max 5MB each.</p>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-medium">Contract Template</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleContractUpload}
-                      className="hidden"
-                      id="contract-upload"
-                    />
-                    <label htmlFor="contract-upload" className="cursor-pointer">
-                      {uploadingContract ? (
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-                      ) : formData.custom_contract_template_url ? (
-                        <div className="text-green-600">
-                          <CheckCircle className="w-8 h-8 mx-auto mb-1" />
-                          <p className="text-sm font-bold">Contract Uploaded</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-1" />
-                          <p className="text-sm font-bold text-gray-700">Upload Contract</p>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="font-medium">Invoice Template</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleInvoiceUpload}
-                      className="hidden"
-                      id="invoice-upload"
-                    />
-                    <label htmlFor="invoice-upload" className="cursor-pointer">
-                      {uploadingInvoice ? (
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-                      ) : formData.custom_invoice_template_url ? (
-                        <div className="text-green-600">
-                          <CheckCircle className="w-8 h-8 mx-auto mb-1" />
-                          <p className="text-sm font-bold">Invoice Uploaded</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-1" />
-                          <p className="text-sm font-bold text-gray-700">Upload Invoice</p>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Stripe Banking Info */}
             <div className="space-y-2 bg-green-50 p-6 rounded-lg border-2 border-green-200">
@@ -763,7 +652,7 @@ export default function VendorRegistrationPage() {
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingContract || uploadingInvoice}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
             </Button>
