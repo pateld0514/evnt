@@ -41,6 +41,14 @@ export default function AboutPage() {
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
             The modern way to plan events. Swipe, connect, and book all your vendors in one place.
           </p>
+          <div className="mt-6">
+            <a 
+              href="/VendorRewards" 
+              className="inline-block bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors"
+            >
+              🏆 Vendor Rewards Program
+            </a>
+          </div>
         </div>
       </div>
 
@@ -281,7 +289,7 @@ export default function AboutPage() {
                 <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200 mt-6">
                   <p className="font-bold text-green-900 mb-2">💡 Key Benefits:</p>
                   <ul className="space-y-1 text-sm text-green-800">
-                    <li>• <strong>Vendors:</strong> You receive {(100 - platformFee).toFixed(0)}% of agreed price, no payment processing hassles</li>
+                    <li>• <strong>Vendors:</strong> Keep 100% of your agreed service price. The {platformFee}% platform fee is added to the client's total</li>
                     <li>• <strong>Clients:</strong> Escrow protection until service is delivered</li>
                     <li>• <strong>Both:</strong> Professional contracts, invoices, and dispute resolution</li>
                     <li>• <strong>Security:</strong> Stripe-powered payments with fraud protection</li>
