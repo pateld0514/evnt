@@ -47,10 +47,9 @@ Deno.serve(async (req) => {
       feeDiscount = 0.5; // 0.5% discount on fees
     }
 
-    // Additional discount for volume (5+ bookings this month)
-    if (bookingsThisMonth >= 5) {
-      feeDiscount += 1; // Additional 1% discount
-    }
+    // Additional discount for volume (5+ bookings this month) - but don't stack, only use higher
+    const volumeDiscount = bookingsThisMonth >= 5 ? 1 : 0;
+    feeDiscount = Math.max(feeDiscount, volumeDiscount); // Use the higher discount, not stacked
 
     // Check if tier record exists
     const existingTiers = await base44.asServiceRole.entities.VendorTier.filter({ vendor_id });

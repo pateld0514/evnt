@@ -16,6 +16,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const [serviceDescription, setServiceDescription] = useState(booking.service_description || "");
   const [additionalFees, setAdditionalFees] = useState(booking.additional_fees || []);
   const [platformFeePercent, setPlatformFeePercent] = useState(0);
+  const [totals, setTotals] = useState({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0 });
 
   const { data: platformSettings = [] } = useQuery({
     queryKey: ['platform-fee-setting'],
@@ -28,6 +29,15 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       setPlatformFeePercent(parseFloat(platformSettings[0].setting_value) || 0);
     }
   }, [platformSettings]);
+
+  // Recalculate totals whenever values change
+  useEffect(() => {
+    const recalc = async () => {
+      const newTotals = await calculateTotals();
+      setTotals(newTotals);
+    };
+    recalc();
+  }, [agreedPrice, additionalFees, platformFeePercent, booking.vendor_id, booking.client_email]);
 
   const addFee = () => {
     setAdditionalFees([...additionalFees, { name: "", amount: 0, description: "" }]);
@@ -43,18 +53,36 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     setAdditionalFees(updated);
   };
 
-  const calculateTotals = () => {
+  const calculateTotals = async () => {
     const price = parseFloat(agreedPrice) || 0;
     const additionalTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
     const subtotal = price + additionalTotal;
-    const platformFeeAmount = (subtotal * platformFeePercent) / 100;
+    
+    // Get dynamic fee calculation considering tier discounts
+    let finalFeePercent = platformFeePercent;
+    let platformFeeAmount = (subtotal * finalFeePercent) / 100;
+    
+    try {
+      // Call calculateDynamicFee to get the actual fee with discounts applied
+      const feeCalc = await base44.functions.invoke('calculateDynamicFee', {
+        vendor_id: booking.vendor_id,
+        client_email: booking.client_email,
+        booking_amount: subtotal
+      });
+      
+      if (feeCalc.data && feeCalc.data.final_fee_percent !== undefined) {
+        finalFeePercent = feeCalc.data.final_fee_percent;
+        platformFeeAmount = feeCalc.data.platform_fee_amount;
+      }
+    } catch (error) {
+      console.warn('Could not calculate dynamic fee, using base fee', error);
+    }
+    
     const totalAmount = subtotal; // Client pays the agreed price
-    const vendorPayout = subtotal - platformFeeAmount; // Vendor gets agreed price minus platform fee
+    const vendorPayout = Math.max(0, subtotal - platformFeeAmount); // Vendor gets agreed price minus platform fee, minimum 0
 
-    return { price, additionalTotal, subtotal, platformFeeAmount, totalAmount, vendorPayout };
+    return { price, additionalTotal, subtotal, platformFeeAmount, totalAmount, vendorPayout, finalFeePercent };
   };
-
-  const totals = calculateTotals();
 
   const submitProposalMutation = useMutation({
     mutationFn: async (data) => {
@@ -94,7 +122,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       agreed_price: parseFloat(agreedPrice),
       service_description: serviceDescription,
       additional_fees: additionalFees,
-      platform_fee_percent: platformFeePercent,
+      platform_fee_percent: totals.finalFeePercent || platformFeePercent,
       platform_fee_amount: totals.platformFeeAmount,
       vendor_payout: totals.vendorPayout,
       total_amount: totals.totalAmount,
@@ -232,7 +260,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-blue-600 pt-2 border-t border-gray-300">
-            <span>EVNT Platform Fee ({platformFeePercent}%):</span>
+            <span>EVNT Platform Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
             <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-600">
@@ -245,8 +273,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `The platform fee (${platformFeePercent}%) is deducted from your agreed price. Client pays the agreed price, and you receive the amount minus the platform fee.`
-              : `The ${platformFeePercent}% platform fee is deducted from the vendor's payout. You pay the agreed price, vendor receives the amount minus the platform fee.`}
+              ? `The platform fee (${(totals.finalFeePercent || platformFeePercent).toFixed(1)}%) is deducted from your agreed price. ${totals.finalFeePercent < platformFeePercent ? 'You are receiving a tier discount!' : ''} Client pays the agreed price, and you receive the amount minus the platform fee.`
+              : `The ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% platform fee is deducted from the vendor's payout. ${totals.finalFeePercent < platformFeePercent ? 'Tier discounts have been applied!' : ''} You pay the agreed price, vendor receives the amount minus the platform fee.`}
           </p>
         </div>
 
