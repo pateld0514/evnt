@@ -43,10 +43,10 @@ export default function AboutPage() {
           </p>
           <div className="mt-6">
             <a 
-              href="/VendorRewards" 
+              href="/Rewards" 
               className="inline-block bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors"
             >
-              🏆 Vendor Rewards Program
+              🏆 Rewards Program
             </a>
           </div>
         </div>
