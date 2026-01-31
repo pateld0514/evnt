@@ -15,7 +15,7 @@ export default function ReferralCard({ userEmail, userType }) {
   const isVendor = userType === "vendor";
   
   const referralMessage = isVendor
-    ? `Hey! I'm using EVNT to grow my event business and thought you might like it too. Join as a vendor and we both get $25 when you complete your first booking! ${referralLink}`
+    ? `Hey! I'm using EVNT to grow my event business and thought you might like it too. Join as a vendor or client and help me boost my visibility on the platform! ${referralLink}`
     : `Hey! I found this amazing platform for planning events - EVNT makes it super easy to find and book vendors. Join with my link and we both get $25 credit! ${referralLink}`;
   
   const handleCopy = () => {
@@ -46,7 +46,7 @@ export default function ReferralCard({ userEmail, userType }) {
       <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
         <CardTitle className="flex items-center gap-2 text-2xl font-black">
           <Gift className="w-6 h-6" />
-          Refer & Earn $25
+          {isVendor ? "Refer & Boost Your Visibility" : "Refer & Earn $25"}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
@@ -54,8 +54,8 @@ export default function ReferralCard({ userEmail, userType }) {
         <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
           <p className="text-sm text-gray-700 font-medium">
             {isVendor 
-              ? "Invite other vendors or event planners to join EVNT. When they complete their first booking, you both earn $25!"
-              : "Share EVNT with friends planning events or vendors you know. When they complete their first booking, you both earn $25!"}
+              ? "Invite other vendors or event planners to join EVNT. When they complete their first booking, you'll get higher placement in search results!"
+              : "Share EVNT with friends planning events. When they complete their first booking, you both earn $25 credit!"}
           </p>
         </div>
 
@@ -151,13 +151,19 @@ export default function ReferralCard({ userEmail, userType }) {
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-black">3.</span>
-              <span>You both receive $25 credit automatically!</span>
+              <span>
+                {isVendor 
+                  ? "You get higher placement in search results, they get rewarded too!"
+                  : "You both receive $25 credit automatically!"}
+              </span>
             </li>
           </ol>
         </div>
 
         <p className="text-xs text-gray-500 text-center">
-          Share as many times as you want - unlimited earning potential!
+          {isVendor 
+            ? "More referrals = better visibility and more bookings!"
+            : "Share as many times as you want - unlimited earning potential!"}
         </p>
       </CardContent>
     </Card>
