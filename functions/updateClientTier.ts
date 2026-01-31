@@ -33,12 +33,12 @@ Deno.serve(async (req) => {
     let tierLevel = 'starter';
     let discount = 0;
 
-    if (totalBookings >= 10) {
+    if (totalBookings >= 21) {
       tierLevel = 'vip';
-      discount = 2; // 2% discount on platform fees
-    } else if (totalBookings >= 3) {
+      discount = 4; // 4% discount on platform fees
+    } else if (totalBookings >= 6) {
       tierLevel = 'regular';
-      discount = 1; // 1% discount on platform fees
+      discount = 2; // 2% discount on platform fees
     }
 
     // Check if tier record exists
