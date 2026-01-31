@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
                     to: "+16094423524",
                     message: "🎉 EVNT Test: Your booking with Elite Events DJ is confirmed for June 15, 2026 at The Grand Ballroom, New York. Total: $2,500"
                   });
-                  toast.success("Test SMS sent to +16094423524!");
+                  toast.success("Test SMS sent to 609-442-3524!");
                 } catch (error) {
                   toast.error("Failed to send SMS: " + error.message);
                 } finally {
