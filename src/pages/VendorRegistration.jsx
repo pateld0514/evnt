@@ -221,8 +221,7 @@ export default function VendorRegistrationPage() {
         approval_status: "pending",
         stripe_account_id: formData.stripe_account_id || null,
         onboarding_complete: true,
-        referred_by: referralCode || null,
-        notification_preference: "both"
+        referred_by: referralCode || null
       });
 
       // Create referral reward if referred

@@ -6,8 +6,6 @@ export async function sendNotification({ recipientEmail, type, title, message, l
     if (!users || users.length === 0) return;
 
     const user = users[0];
-    const notificationPref = user.notification_preference || "email";
-    const userPhone = user.phone;
     
     // Create notification record
     await base44.entities.Notification.create({
@@ -16,17 +14,16 @@ export async function sendNotification({ recipientEmail, type, title, message, l
       title,
       message,
       link,
-      sent_via: notificationPref,
+      sent_via: "email",
       read: false
     });
 
-    // Send via email
-    if (notificationPref === "email" || notificationPref === "both") {
-      await base44.integrations.Core.SendEmail({
-        to: recipientEmail,
-        from_name: "EVNT",
-        subject: `EVNT - ${title}`,
-        body: `
+    // Send via email only
+    await base44.integrations.Core.SendEmail({
+      to: recipientEmail,
+      from_name: "EVNT",
+      subject: `EVNT - ${title}`,
+      body: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -59,21 +56,8 @@ export async function sendNotification({ recipientEmail, type, title, message, l
   </div>
 </body>
 </html>
-        `
-      });
-    }
-
-    // Send SMS notification
-    if ((notificationPref === "sms" || notificationPref === "both") && userPhone) {
-      try {
-        await base44.integrations.Core.SendSMS({
-          to: userPhone.startsWith('+') ? userPhone : `+1${userPhone.replace(/\D/g, '')}`,
-          message: `EVNT: ${title} - ${message.substring(0, 140)}`
-        });
-      } catch (error) {
-        console.error(`Failed to send SMS to ${userPhone}:`, error);
-      }
-    }
+      `
+    });
 
   } catch (error) {
     console.error("Failed to send notification:", error);

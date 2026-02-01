@@ -218,33 +218,19 @@ export default function ProfilePage() {
         <CardHeader className="bg-black text-white">
           <CardTitle className="flex items-center gap-2 font-black">
             <Bell className="w-6 h-6" />
-            Notification Preferences
+            Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
           <div className="space-y-2">
-            <Label>How would you like to receive notifications?</Label>
-            <Select value={notificationPref} onValueChange={handleNotificationChange}>
-              <SelectTrigger className="border-2 border-gray-300">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">Email Only</SelectItem>
-                <SelectItem value="sms">SMS Only</SelectItem>
-                <SelectItem value="both">Both Email & SMS</SelectItem>
-              </SelectContent>
-            </Select>
-            {!user?.phone && notificationPref !== "email" && (
-              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 mt-2">
-                <p className="text-sm text-yellow-800 font-bold">
-                  ⚠️ Please add your phone number to receive SMS notifications
-                </p>
-              </div>
-            )}
             <p className="text-sm text-gray-600">
-              You'll receive updates about booking statuses, new messages, and vendor responses.
-              {user?.phone && ` SMS will be sent to ${user.phone}.`}
+              You'll receive email notifications for booking statuses, new messages, and vendor responses.
             </p>
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800 font-medium">
+                📧 All notifications are sent to: <strong>{user?.email}</strong>
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
