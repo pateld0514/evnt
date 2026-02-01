@@ -54,6 +54,8 @@ export default function BookingsPage() {
   const [negotiationOpen, setNegotiationOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  const isVendor = currentUser?.user_type === "vendor" || currentUser?.demo_mode === "vendor";
+
   useEffect(() => {
     const loadUser = async () => {
       const user = await base44.auth.me();
@@ -235,8 +237,6 @@ export default function BookingsPage() {
       </div>
     );
   }
-
-  const isVendor = currentUser.user_type === "vendor" || currentUser.demo_mode === "vendor";
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
