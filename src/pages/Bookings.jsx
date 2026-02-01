@@ -129,6 +129,13 @@ export default function BookingsPage() {
     initialData: [],
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['all-users'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: isVendor,
+    initialData: [],
+  });
+
   const updateBookingMutation = useMutation({
     mutationFn: async ({ bookingId, data, oldStatus }) => {
       const updated = await base44.entities.Booking.update(bookingId, data);
