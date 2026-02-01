@@ -5,14 +5,20 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { userEmail } = await req.json();
+    const { user_email } = await req.json();
+    const userEmail = user_email || user.email;
     
     if (!userEmail) {
       return Response.json({ error: 'User email required' }, { status: 400 });
+    }
+
+    // Only allow users to delete their own account, unless they're admin
+    if (user.role !== 'admin' && user.email !== userEmail) {
+      return Response.json({ error: 'Unauthorized - Can only delete your own account' }, { status: 403 });
     }
 
     // Delete all user-related data using service role
