@@ -329,7 +329,10 @@ export default function ProfilePage() {
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleDeleteAccount}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDeleteAccount();
+                }}
                 className="bg-red-600 hover:bg-red-700"
                 disabled={deleteAccountMutation.isPending}
               >
