@@ -403,7 +403,20 @@ export default function BookingsPage() {
                     <p className="text-lg font-bold">
                       {isVendor ? selectedBooking.client_name : selectedBooking.vendor_name}
                     </p>
+                    {isVendor && selectedBooking.client_email && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        📧 {selectedBooking.client_email}
+                      </p>
+                    )}
                   </div>
+                  {isVendor && (
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium">Client Phone</p>
+                      <p className="text-lg font-bold">
+                        {allUsers.find(u => u.email === selectedBooking.client_email)?.phone || 'Not provided'}
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Event Type</p>
                     <p className="text-lg font-bold">{selectedBooking.event_type}</p>
