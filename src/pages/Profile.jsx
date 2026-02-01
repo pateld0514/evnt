@@ -89,17 +89,22 @@ export default function ProfilePage() {
       return response.data;
     },
     onSuccess: () => {
+      setShowDeleteConfirm(false);
       toast.success("Account deleted successfully");
-      base44.auth.logout();
+      setTimeout(() => {
+        base44.auth.logout();
+      }, 1000);
     },
     onError: (error) => {
-      toast.error("Failed to delete account");
+      console.error("Delete error:", error);
+      toast.error("Failed to delete account: " + (error.message || "Unknown error"));
       setDeleteStep(1);
       setShowDeleteConfirm(false);
     }
   });
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = (e) => {
+    if (e) e.preventDefault();
     if (deleteStep === 1) {
       setDeleteStep(2);
     } else {
@@ -328,12 +333,9 @@ export default function ProfilePage() {
               }}>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDeleteAccount();
-                }}
-                className="bg-red-600 hover:bg-red-700"
+              <Button
+                onClick={handleDeleteAccount}
+                className="bg-red-600 hover:bg-red-700 text-white"
                 disabled={deleteAccountMutation.isPending}
               >
                 {deleteAccountMutation.isPending ? (
@@ -346,7 +348,7 @@ export default function ProfilePage() {
                 ) : (
                   "Delete Forever"
                 )}
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
