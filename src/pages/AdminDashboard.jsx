@@ -221,12 +221,13 @@ export default function AdminDashboardPage() {
               onClick={async () => {
                 setSendingNotification(true);
                 try {
+                  // Send all email samples
                   await base44.integrations.Core.SendEmail({
                     to: "pateld0514@gmail.com",
                     from_name: "EVNT Team",
-                    subject: "✅ Your Booking with Elite Events DJ is Confirmed!",
+                    subject: "📧 Sample: Booking Confirmation",
                     body: EmailTemplate.bookingConfirmation(
-                      "Demo User",
+                      "John Smith",
                       "Elite Events DJ",
                       "Wedding",
                       "June 15, 2026",
@@ -235,9 +236,58 @@ export default function AdminDashboardPage() {
                       2500
                     )
                   });
-                  toast.success("Test booking confirmation sent to pateld0514@gmail.com!");
+
+                  await base44.integrations.Core.SendEmail({
+                    to: "pateld0514@gmail.com",
+                    from_name: "EVNT Team",
+                    subject: "📧 Sample: New Booking Request",
+                    body: EmailTemplate.newBookingRequest(
+                      "Elite Events DJ",
+                      "Sarah Johnson",
+                      "Wedding",
+                      "August 20, 2026",
+                      "Riverside Gardens, Boston",
+                      3000,
+                      "Looking for a DJ with experience in weddings. Need someone who can read the crowd and keep the energy high!"
+                    )
+                  });
+
+                  await base44.integrations.Core.SendEmail({
+                    to: "pateld0514@gmail.com",
+                    from_name: "EVNT Team",
+                    subject: "📧 Sample: Payment Received",
+                    body: EmailTemplate.paymentReceived(
+                      "Elite Events DJ",
+                      "Michael Chen",
+                      3500,
+                      "July 10, 2026"
+                    )
+                  });
+
+                  await base44.integrations.Core.SendEmail({
+                    to: "pateld0514@gmail.com",
+                    from_name: "EVNT Team",
+                    subject: "📧 Sample: Vendor Approval",
+                    body: EmailTemplate.vendorApproval(
+                      "Jessica",
+                      "Elegant Photography Studio"
+                    )
+                  });
+
+                  await base44.integrations.Core.SendEmail({
+                    to: "pateld0514@gmail.com",
+                    from_name: "EVNT Team",
+                    subject: "📧 Sample: Vendor Rejection",
+                    body: EmailTemplate.vendorRejection(
+                      "Mark",
+                      "Budget Events Co",
+                      "We require vendors to have valid business licenses and insurance. Please reapply once you have obtained these documents."
+                    )
+                  });
+
+                  toast.success("All 5 sample emails sent to pateld0514@gmail.com!");
                 } catch (error) {
-                  toast.error("Failed to send email");
+                  toast.error("Failed to send emails");
                 } finally {
                   setSendingNotification(false);
                 }
@@ -254,38 +304,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <>
                   <Bell className="w-4 h-4 mr-2" />
-                  Test Booking Email
-                </>
-              )}
-            </Button>
-            <Button 
-              onClick={async () => {
-                setSendingNotification(true);
-                try {
-                  await base44.integrations.Core.SendSMS({
-                    to: "+16094423524",
-                    message: "🎉 EVNT Test: Your booking with Elite Events DJ is confirmed for June 15, 2026 at The Grand Ballroom, New York. Total: $2,500"
-                  });
-                  toast.success("Test SMS sent to 609-442-3524!");
-                } catch (error) {
-                  toast.error("Failed to send SMS: " + error.message);
-                } finally {
-                  setSendingNotification(false);
-                }
-              }}
-              variant="outline" 
-              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
-              disabled={sendingNotification}
-            >
-              {sendingNotification ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Bell className="w-4 h-4 mr-2" />
-                  Test SMS
+                  Test All Emails
                 </>
               )}
             </Button>
