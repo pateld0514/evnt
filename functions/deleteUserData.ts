@@ -107,13 +107,71 @@ Deno.serve(async (req) => {
       deletedItems.events++;
     }
 
-    // If user is a vendor, delete their vendor profile
+    // If user is a vendor, delete vendor-related data
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ 
       contact_email: userEmail 
     });
+    
     for (const vendor of vendors) {
+      // Delete vendor bookings
+      const vendorBookings = await base44.asServiceRole.entities.Booking.filter({ 
+        vendor_id: vendor.id 
+      });
+      for (const booking of vendorBookings) {
+        await base44.asServiceRole.entities.Booking.delete(booking.id);
+        deletedItems.bookings++;
+      }
+
+      // Delete portfolio items
+      const portfolioItems = await base44.asServiceRole.entities.PortfolioItem.filter({ 
+        vendor_id: vendor.id 
+      });
+      for (const item of portfolioItems) {
+        await base44.asServiceRole.entities.PortfolioItem.delete(item.id);
+      }
+
+      // Delete vendor payouts
+      const payouts = await base44.asServiceRole.entities.VendorPayout.filter({ 
+        vendor_id: vendor.id 
+      });
+      for (const payout of payouts) {
+        await base44.asServiceRole.entities.VendorPayout.delete(payout.id);
+      }
+
+      // Delete vendor tier
+      const vendorTiers = await base44.asServiceRole.entities.VendorTier.filter({ 
+        vendor_id: vendor.id 
+      });
+      for (const tier of vendorTiers) {
+        await base44.asServiceRole.entities.VendorTier.delete(tier.id);
+      }
+
+      // Delete vendor profile
       await base44.asServiceRole.entities.Vendor.delete(vendor.id);
       deletedItems.vendor++;
+    }
+
+    // Delete client tier records
+    const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ 
+      client_email: userEmail 
+    });
+    for (const tier of clientTiers) {
+      await base44.asServiceRole.entities.ClientTier.delete(tier.id);
+    }
+
+    // Delete referral rewards (as referrer or referee)
+    const allReferrals = await base44.asServiceRole.entities.ReferralReward.list();
+    const userReferrals = allReferrals.filter(r => 
+      r.referrer_email === userEmail || r.referred_email === userEmail
+    );
+    for (const referral of userReferrals) {
+      await base44.asServiceRole.entities.ReferralReward.delete(referral.id);
+    }
+
+    // Finally, delete the User record itself
+    const users = await base44.asServiceRole.entities.User.filter({ email: userEmail });
+    for (const userRecord of users) {
+      await base44.asServiceRole.entities.User.delete(userRecord.id);
     }
 
     return Response.json({ 
