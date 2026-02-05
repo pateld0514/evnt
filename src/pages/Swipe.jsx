@@ -59,6 +59,12 @@ export default function SwipePage() {
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
+      // Check if already swiped to prevent double swipes
+      const alreadySwiped = swipedVendors.some((s) => s.vendor_id === vendorId);
+      if (alreadySwiped) {
+        throw new Error("Already swiped on this vendor");
+      }
+
       // Create swipe record
       await base44.entities.UserSwipe.create({
         vendor_id: vendorId,
