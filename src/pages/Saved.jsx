@@ -83,6 +83,8 @@ export default function SavedPage() {
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: allVendors = [] } = useQuery({
@@ -94,8 +96,7 @@ export default function SavedPage() {
   const deleteMutation = useMutation({
     mutationFn: (savedVendorId) => base44.entities.SavedVendor.delete(savedVendorId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['saved-vendors']);
-      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
       toast.success("Removed from favorites");
     },
   });
