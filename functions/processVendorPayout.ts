@@ -6,22 +6,35 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    // Authenticate first
+    const user = await base44.auth.me();
+    const isAdmin = user?.email === 'pateld0514@gmail.com' || user?.role === 'admin';
+    
     const payload = await req.json();
     
     const booking_id = payload.booking_id || payload.data?.id;
     const payment_status = payload.data?.payment_status;
     const booking_status = payload.data?.status;
     
-    // Check if this is a booking completion trigger
-    if (payload.event?.type === 'update') {
+    // Check if this is a booking completion trigger (from automation)
+    const isAutomationTrigger = payload.event?.type === 'update';
+    
+    if (isAutomationTrigger) {
       const wasJustCompleted = booking_status === 'completed' && payload.old_data?.status !== 'completed';
       const paymentInEscrow = payment_status === 'escrow';
       
       if (!wasJustCompleted || !paymentInEscrow) {
         return Response.json({ success: true, message: 'Not a payout trigger event' });
       }
-    } else if (!payload.booking_id) {
-      return Response.json({ error: 'booking_id required for direct calls' }, { status: 400 });
+    } else {
+      // Direct call - require admin auth
+      if (!isAdmin) {
+        return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
+      }
+      if (!payload.booking_id) {
+        return Response.json({ error: 'booking_id required' }, { status: 400 });
+      }
     }
 
     // Get booking details

@@ -8,23 +8,29 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || !user.vendor_id) {
-      return Response.json({ error: 'Unauthorized - Vendor only' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { vendor_id } = await req.json();
+    const payload = await req.json();
+    const vendor_id = payload?.vendor_id || user.vendor_id;
 
-    if (vendor_id !== user.vendor_id) {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!vendor_id) {
+      return Response.json({ error: 'Vendor ID required' }, { status: 400 });
     }
 
-    // Get vendor data
-    const vendors = await base44.entities.Vendor.filter({ id: vendor_id });
+    // Security: Verify user owns this vendor profile
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
     if (vendors.length === 0) {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
     const vendor = vendors[0];
+
+    // Security: Verify ownership
+    if (vendor.created_by !== user.email && user.email !== 'pateld0514@gmail.com') {
+      return Response.json({ error: 'Unauthorized - not your vendor profile' }, { status: 403 });
+    }
 
     // Create or retrieve Stripe Connect account
     let accountId = vendor.stripe_account_id;
