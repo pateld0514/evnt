@@ -24,7 +24,7 @@ export default function Layout({ children, currentPageName }) {
       return allMessages.filter(m => m.recipient_email === currentUserEmail);
     },
     enabled: !!currentUserEmail,
-    refetchInterval: 3000,
+    refetchInterval: 30000,
   });
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['user-bookings', currentUserEmail, userType],
     queryFn: async () => {
       if (!currentUserEmail) return [];
-      
+
       if (userType === "vendor") {
         const user = await base44.auth.me();
         if (user.vendor_id) {
@@ -80,7 +80,7 @@ export default function Layout({ children, currentPageName }) {
       return [];
     },
     enabled: !!currentUserEmail && (userType === "vendor" || userType === "client"),
-    refetchInterval: 5000,
+    refetchInterval: 30000,
   });
 
   // Count bookings needing action
