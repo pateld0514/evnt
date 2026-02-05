@@ -13,19 +13,22 @@ Deno.serve(async (req) => {
     }
 
     const payload = await req.json();
-    const vendor_id = payload?.vendor_id || user.vendor_id;
+    const vendor_id = payload?.vendor_id;
 
-    if (!vendor_id) {
-      return Response.json({ error: 'Vendor ID required' }, { status: 400 });
+    // Find vendor owned by this user
+    let vendors;
+    if (vendor_id) {
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
+    } else {
+      // No vendor_id provided, find vendor by created_by
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ created_by: user.email });
     }
-
-    // Security: Verify user owns this vendor profile
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
     if (vendors.length === 0) {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
     const vendor = vendors[0];
+    const actualVendorId = vendor.id;
 
     // Security: Verify ownership
     if (vendor.created_by !== user.email && user.email !== 'pateld0514@gmail.com') {
@@ -50,7 +53,7 @@ Deno.serve(async (req) => {
           url: vendor.website || undefined,
         },
         metadata: {
-          vendor_id: vendor_id,
+          vendor_id: actualVendorId,
           business_name: vendor.business_name,
         }
       });
@@ -58,7 +61,7 @@ Deno.serve(async (req) => {
       accountId = account.id;
 
       // Save account ID to vendor
-      await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+      await base44.asServiceRole.entities.Vendor.update(actualVendorId, {
         stripe_account_id: accountId,
         stripe_account_verified: false,
       });
@@ -70,7 +73,7 @@ Deno.serve(async (req) => {
         
         // Update verification status if changed
         if (vendor.stripe_account_verified !== accountVerified) {
-          await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+          await base44.asServiceRole.entities.Vendor.update(actualVendorId, {
             stripe_account_verified: accountVerified,
           });
         }
@@ -90,14 +93,14 @@ Deno.serve(async (req) => {
             url: vendor.website || undefined,
           },
           metadata: {
-            vendor_id: vendor_id,
+            vendor_id: actualVendorId,
             business_name: vendor.business_name,
           }
         });
 
         accountId = account.id;
 
-        await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+        await base44.asServiceRole.entities.Vendor.update(actualVendorId, {
           stripe_account_id: accountId,
           stripe_account_verified: false,
         });

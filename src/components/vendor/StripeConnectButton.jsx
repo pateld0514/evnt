@@ -39,16 +39,16 @@ export default function StripeConnectButton({ vendorId }) {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      const response = await base44.functions.invoke('createStripeConnectAccount', {
-        vendor_id: vendorId
-      });
+      const response = await base44.functions.invoke('createStripeConnectAccount', {});
       
-      if (response.data.url) {
+      if (response.data?.url) {
         window.location.href = response.data.url;
+      } else {
+        throw new Error('No redirect URL received');
       }
     } catch (error) {
       console.error('Failed to connect:', error);
-      toast.error('Failed to connect Stripe account. Please try again.');
+      toast.error(error.response?.data?.error || 'Failed to connect Stripe account. Please try again.');
       setConnecting(false);
     }
   };
