@@ -86,21 +86,29 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
   const submitProposalMutation = useMutation({
     mutationFn: async (data) => {
+      console.log('Submitting proposal for booking:', booking.id, 'Data:', data);
+      
       // Update booking first
-      await base44.entities.Booking.update(booking.id, data);
+      const updated = await base44.entities.Booking.update(booking.id, data);
+      console.log('Booking updated:', updated);
       
       // If client is accepting, redirect to Stripe Checkout
       if (!isVendor) {
+        console.log('Client accepting - creating checkout session...');
         const response = await base44.functions.invoke('createCheckout', { 
           bookingId: booking.id 
         });
+        console.log('Checkout response:', response);
         
         if (response.data?.url) {
+          console.log('Redirecting to Stripe:', response.data.url);
           window.location.href = response.data.url;
         } else {
-          throw new Error('No checkout URL received');
+          throw new Error('No checkout URL received from server');
         }
       }
+      
+      return updated;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
@@ -112,8 +120,9 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       // Client will be redirected to Stripe, so no toast/close needed
     },
     onError: (error) => {
-      console.error('Payment error:', error);
-      toast.error(error.response?.data?.error || error.message || 'Failed to process payment. Please try again.');
+      console.error('Payment mutation error:', error);
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to process payment. Please try again.';
+      toast.error(errorMsg, { duration: 6000 });
     },
   });
 

@@ -9,51 +9,70 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
+      console.error('User not authenticated');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('User authenticated:', user.email);
     const { bookingId } = await req.json();
+    console.log('Creating checkout for booking:', bookingId);
     
     if (!bookingId) {
       return Response.json({ error: 'Booking ID required' }, { status: 400 });
     }
 
     // Fetch booking details
-    const bookings = await base44.entities.Booking.filter({ id: bookingId });
+    const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
     const booking = bookings[0];
+    console.log('Booking found:', booking);
 
     if (!booking) {
+      console.error('Booking not found:', bookingId);
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
 
     // Verify user is the client
     if (booking.client_email !== user.email) {
+      console.error('User not authorized:', user.email, 'vs', booking.client_email);
       return Response.json({ error: 'Unauthorized to pay for this booking' }, { status: 403 });
     }
 
     // Verify booking status
     if (booking.status !== 'payment_pending') {
-      return Response.json({ error: 'Booking is not ready for payment' }, { status: 400 });
+      console.error('Invalid booking status:', booking.status);
+      return Response.json({ 
+        error: `Booking is not ready for payment. Current status: ${booking.status}` 
+      }, { status: 400 });
     }
 
     // Get vendor's Stripe account ID
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    console.log('Vendor lookup for:', booking.vendor_id, 'Found:', vendors.length);
+    
     if (vendors.length === 0) {
+      console.error('Vendor not found:', booking.vendor_id);
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
     
     const vendor = vendors[0];
+    console.log('Vendor Stripe status:', {
+      has_account: !!vendor.stripe_account_id,
+      verified: vendor.stripe_account_verified
+    });
+    
     if (!vendor.stripe_account_id || !vendor.stripe_account_verified) {
       return Response.json({ 
-        error: 'Vendor has not completed payment setup yet' 
+        error: 'Vendor has not completed payment setup yet. Please contact the vendor.' 
       }, { status: 400 });
     }
 
     // Calculate amounts in cents
     const totalAmount = Math.round((booking.total_amount || booking.agreed_price) * 100);
     const platformFeeAmount = Math.round(booking.platform_fee_amount * 100);
+    console.log('Payment amounts:', { totalAmount, platformFeeAmount });
 
     // Create Payment Intent with MANUAL CAPTURE for escrow
+    console.log('Creating Stripe Payment Intent...');
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
@@ -71,12 +90,15 @@ Deno.serve(async (req) => {
       },
       description: `${booking.vendor_name} - ${booking.event_type} on ${booking.event_date}`,
     });
+    console.log('Payment Intent created:', paymentIntent.id);
 
     // Get origin for success/cancel URLs
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
+    console.log('Using base URL for redirects:', baseUrl);
 
     // Create checkout session with payment intent
+    console.log('Creating Stripe Checkout Session...');
     const session = await stripe.checkout.sessions.create({
       payment_intent: paymentIntent.id, // Link existing payment intent
       mode: 'payment',
@@ -104,6 +126,7 @@ Deno.serve(async (req) => {
         payment_intent_id: paymentIntent.id,
       },
     });
+    console.log('Checkout Session created:', session.id, 'URL:', session.url);
 
     // Update booking with payment intent and session
     await base44.asServiceRole.entities.Booking.update(bookingId, {
@@ -111,7 +134,9 @@ Deno.serve(async (req) => {
       payment_status: 'processing',
       stripe_session_id: session.id,
     });
+    console.log('Booking updated with payment info');
 
+    console.log('Returning success response with URL:', session.url);
     return Response.json({ 
       sessionId: session.id,
       url: session.url,
@@ -120,8 +145,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Stripe checkout error:', error);
+    console.error('Error stack:', error.stack);
     return Response.json({ 
-      error: error.message || 'Failed to create checkout session' 
+      error: error.message || 'Failed to create checkout session',
+      details: error.type || 'unknown_error'
     }, { status: 500 });
   }
 });

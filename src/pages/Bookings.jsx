@@ -173,20 +173,23 @@ export default function BookingsPage() {
   const handleStartPayment = async (booking) => {
     setIsProcessingPayment(true);
     try {
+      console.log('Starting payment for booking:', booking.id);
       const response = await base44.functions.invoke('createCheckout', { 
         bookingId: booking.id 
       });
+      console.log('Payment response:', response);
       
-      if (response.data.url) {
+      if (response.data?.url) {
+        console.log('Redirecting to Stripe:', response.data.url);
         // Redirect to Stripe Checkout
         window.location.href = response.data.url;
       } else {
-        toast.error('Failed to initiate payment. Please try again.');
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Failed to start payment process. Please try again.');
-    } finally {
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to start payment. Please try again.';
+      toast.error(errorMsg, { duration: 6000 });
       setIsProcessingPayment(false);
     }
   };
