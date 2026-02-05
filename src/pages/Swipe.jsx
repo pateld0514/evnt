@@ -311,11 +311,21 @@ export default function SwipePage() {
     
     // Save to database
     swipeMutation.mutate({
-      vendorId: vendorToSwipe.id,
-      direction,
-      vendor: vendorToSwipe
-    });
-  };
+        vendorId: vendorToSwipe.id,
+        direction,
+        vendor: vendorToSwipe
+      }, {
+        onError: () => {
+          // Rollback optimistic update on error
+          setCurrentIndex(prev => prev - 1);
+          setLocalSwipedIds(prev => {
+            const updated = new Set(prev);
+            updated.delete(vendorToSwipe.id);
+            return updated;
+          });
+        }
+      });
+    };
 
   const handleUndo = async () => {
     if (swipeHistory.length === 0) return;
