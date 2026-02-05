@@ -253,6 +253,10 @@ Provide 4-5 specific, actionable insights in this JSON format:
         </TabsContent>
 
         <TabsContent value="overview" className="mt-6">
+        {/* Stripe Account Status */}
+        <div className="mb-8">
+          <StripeAccountStatus vendorId={vendor?.id} />
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="border-2 border-black cursor-pointer hover:shadow-xl transition-shadow" onClick={() => navigate(createPageUrl("Bookings"))}>
