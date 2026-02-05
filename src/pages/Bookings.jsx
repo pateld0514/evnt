@@ -173,15 +173,12 @@ export default function BookingsPage() {
   const handleStartPayment = async (booking) => {
     setIsProcessingPayment(true);
     try {
-      console.log('Starting payment for booking:', booking.id);
       const response = await base44.functions.invoke('createCheckout', { 
         bookingId: booking.id 
       });
-      console.log('Payment response:', response);
       
       if (response.data?.url) {
-        console.log('Redirecting to Stripe:', response.data.url);
-        // Redirect to Stripe Checkout
+        // Simple redirect to Stripe Checkout - no Stripe JS needed
         window.location.href = response.data.url;
       } else {
         throw new Error('No checkout URL received');
