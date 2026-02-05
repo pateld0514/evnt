@@ -88,20 +88,48 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       console.warn('Could not calculate dynamic fee, using base fee', error);
     }
     
-    // Calculate Maryland sales tax (6% based on event location)
-    const isMarylandEvent = booking.location?.toUpperCase().includes('MD') || 
-                            booking.location?.toLowerCase().includes('MARYLAND');
-    const marylandTax = isMarylandEvent ? agreedAmount * 0.06 : 0;
+    // Calculate sales tax based on event location
+    const location = (booking.location || '').toUpperCase();
+    let salesTaxRate = 0;
+    let taxLabel = '';
+    
+    if (location.includes('MD') || location.includes('MARYLAND')) {
+      salesTaxRate = 0.06;
+      taxLabel = 'Maryland Sales Tax (6%)';
+    } else if (location.includes('VA') || location.includes('VIRGINIA')) {
+      salesTaxRate = 0.053;
+      taxLabel = 'Virginia Sales Tax (5.3%)';
+    } else if (location.includes('DC') || location.includes('DISTRICT OF COLUMBIA') || location.includes('WASHINGTON')) {
+      salesTaxRate = 0.06;
+      taxLabel = 'DC Sales Tax (6%)';
+    } else if (location.includes('PA') || location.includes('PENNSYLVANIA')) {
+      salesTaxRate = 0.06;
+      taxLabel = 'Pennsylvania Sales Tax (6%)';
+    } else if (location.includes('NY') || location.includes('NEW YORK')) {
+      salesTaxRate = 0.04;
+      taxLabel = 'New York Sales Tax (4%)';
+    } else if (location.includes('CA') || location.includes('CALIFORNIA')) {
+      salesTaxRate = 0.0725;
+      taxLabel = 'California Sales Tax (7.25%)';
+    } else if (location.includes('TX') || location.includes('TEXAS')) {
+      salesTaxRate = 0.0625;
+      taxLabel = 'Texas Sales Tax (6.25%)';
+    } else if (location.includes('FL') || location.includes('FLORIDA')) {
+      salesTaxRate = 0.06;
+      taxLabel = 'Florida Sales Tax (6%)';
+    }
+    
+    const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
     
     // Calculate Stripe processing fees (2.9% + $0.30)
     const stripeFeePercent = 0.029;
     const stripeFeeFixed = 0.30;
-    const totalBeforeStripeFee = agreedAmount + marylandTax;
+    const totalBeforeStripeFee = agreedAmount + salesTax;
     const stripeFee = (totalBeforeStripeFee * stripeFeePercent) + stripeFeeFixed;
     
     // CRITICAL: EVNT fee comes FROM the agreed price
     const vendorPayout = agreedAmount - platformFeeAmount; // Vendor receives agreed price minus EVNT fee
-    const totalAmount = agreedAmount + marylandTax + stripeFee; // Client pays agreed price + tax + Stripe fee
+    const totalAmount = agreedAmount + salesTax + stripeFee; // Client pays agreed price + tax + Stripe fee
 
     return { 
       price, 
@@ -109,12 +137,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       subtotal: agreedAmount,
       baseEventAmount: agreedAmount,
       platformFeeAmount, 
-      marylandTax,
+      salesTax,
+      salesTaxRate,
+      taxLabel,
       stripeFee,
       totalAmount, 
       vendorPayout, 
-      finalFeePercent,
-      isMarylandEvent
+      finalFeePercent
     };
   };
 
@@ -327,10 +356,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Agreed Service Price:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
-          {totals.marylandTax > 0 && (
+          {totals.salesTax > 0 && (
             <div className="flex justify-between text-sm">
-              <span>Maryland Sales Tax (6%):</span>
-              <span className="font-bold">${totals.marylandTax.toFixed(2)}</span>
+              <span>{totals.taxLabel}:</span>
+              <span className="font-bold">${totals.salesTax.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
@@ -355,8 +384,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `Client pays agreed price${totals.marylandTax > 0 ? ' + 6% MD tax' : ''} + Stripe fee = $${totals.totalAmount.toFixed(2)}. EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay: $${totals.subtotal.toFixed(2)}${totals.marylandTax > 0 ? ' + $' + totals.marylandTax.toFixed(2) + ' MD tax' : ''} + $${(totals.stripeFee || 0).toFixed(2)} Stripe fee = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
+              ? `Client pays agreed price${totals.salesTax > 0 ? ' + tax' : ''} + Stripe fee = $${totals.totalAmount.toFixed(2)}. EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+              : `You pay: $${totals.subtotal.toFixed(2)}${totals.salesTax > 0 ? ' + $' + totals.salesTax.toFixed(2) + ' tax' : ''} + $${(totals.stripeFee || 0).toFixed(2)} Stripe fee = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
           </p>
         </div>
 
