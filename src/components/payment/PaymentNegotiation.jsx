@@ -88,10 +88,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       console.warn('Could not calculate dynamic fee, using base fee', error);
     }
     
-    // Calculate Maryland sales tax (6% for MD clients on agreed amount)
-    const isMarylandClient = booking.location?.toUpperCase().includes('MD') || 
-                            booking.location?.toLowerCase().includes('maryland');
-    const marylandTax = isMarylandClient ? agreedAmount * 0.06 : 0;
+    // Calculate Maryland sales tax (6% based on event location)
+    const isMarylandEvent = booking.location?.toUpperCase().includes('MD') || 
+                            booking.location?.toLowerCase().includes('MARYLAND');
+    const marylandTax = isMarylandEvent ? agreedAmount * 0.06 : 0;
     
     // CRITICAL: EVNT fee comes FROM the agreed price
     const vendorPayout = agreedAmount - platformFeeAmount; // Vendor receives agreed price minus EVNT fee
@@ -309,12 +309,12 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Service Price:</span>
             <span className="font-bold">${totals.price.toFixed(2)}</span>
           </div>
-          {totals.additionalTotal > 0 && (
-            <div className="flex justify-between text-sm">
-              <span>Additional Fees:</span>
-              <span className="font-bold">${totals.additionalTotal.toFixed(2)}</span>
+          {additionalFees.length > 0 && additionalFees.map((fee, idx) => (
+            <div key={idx} className="flex justify-between text-sm text-gray-600">
+              <span className="pl-4">+ {fee.name}:</span>
+              <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
             </div>
-          )}
+          ))}
           <div className="flex justify-between text-sm pt-2 border-t-2 border-gray-300">
             <span>Agreed Service Price:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
