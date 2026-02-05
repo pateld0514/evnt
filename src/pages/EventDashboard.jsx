@@ -73,9 +73,10 @@ export default function EventDashboardPage() {
   });
 
   const { data: bookings = [] } = useQuery({
-    queryKey: ['bookings'],
+    queryKey: ['bookings', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
+      // CRITICAL: Only fetch bookings where client_email matches authenticated user
       return await base44.entities.Booking.filter({ client_email: currentUser.email });
     },
     enabled: !!currentUser,

@@ -2,83 +2,100 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
+const MARYLAND_TAX_RATE = 0.06; // 6% Maryland sales & use tax
+const PLATFORM_FEE_PERCENT = 0.15; // 15% platform fee
 
 Deno.serve(async (req) => {
+  const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] === CHECKOUT REQUEST START ===`);
+  
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      console.error('User not authenticated');
+      console.error(`[${requestId}] UNAUTHORIZED: No authenticated user`);
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('User authenticated:', user.email);
+    console.log(`[${requestId}] User authenticated:`, user.email);
     const { bookingId } = await req.json();
-    console.log('Creating checkout for booking:', bookingId);
+    console.log(`[${requestId}] Booking ID:`, bookingId);
     
     if (!bookingId) {
+      console.error(`[${requestId}] VALIDATION ERROR: Missing booking ID`);
       return Response.json({ error: 'Booking ID required' }, { status: 400 });
     }
 
-    // Fetch booking details
+    // Fetch booking with ownership verification
     const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
     const booking = bookings[0];
-    console.log('Booking found:', booking);
 
     if (!booking) {
-      console.error('Booking not found:', bookingId);
+      console.error(`[${requestId}] NOT FOUND: Booking ${bookingId} does not exist`);
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Verify user is the client
+    // CRITICAL: Verify user owns this booking
     if (booking.client_email !== user.email) {
-      console.error('User not authorized:', user.email, 'vs', booking.client_email);
+      console.error(`[${requestId}] AUTHORIZATION FAILED: User ${user.email} attempted to pay for booking owned by ${booking.client_email}`);
       return Response.json({ error: 'Unauthorized to pay for this booking' }, { status: 403 });
     }
 
     // Verify booking status
     if (booking.status !== 'payment_pending') {
-      console.error('Invalid booking status:', booking.status);
+      console.error(`[${requestId}] INVALID STATE: Booking status is ${booking.status}, expected payment_pending`);
       return Response.json({ 
         error: `Booking is not ready for payment. Current status: ${booking.status}` 
       }, { status: 400 });
     }
 
-    // Get vendor's Stripe account ID
+    // Verify amounts are set
+    if (!booking.base_event_amount || !booking.platform_fee_amount || booking.total_amount_charged === undefined) {
+      console.error(`[${requestId}] INVALID DATA: Missing pricing fields`, {
+        base_event_amount: booking.base_event_amount,
+        platform_fee_amount: booking.platform_fee_amount,
+        total_amount_charged: booking.total_amount_charged
+      });
+      return Response.json({ 
+        error: 'Booking pricing not calculated. Please contact support.' 
+      }, { status: 400 });
+    }
+
+    // Get vendor's Stripe account
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
-    console.log('Vendor lookup for:', booking.vendor_id, 'Found:', vendors.length);
     
     if (vendors.length === 0) {
-      console.error('Vendor not found:', booking.vendor_id);
+      console.error(`[${requestId}] NOT FOUND: Vendor ${booking.vendor_id} does not exist`);
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
     
     const vendor = vendors[0];
-    console.log('Vendor Stripe status:', {
+    console.log(`[${requestId}] Vendor Stripe status:`, {
+      vendor_id: vendor.id,
       has_account: !!vendor.stripe_account_id,
       verified: vendor.stripe_account_verified
     });
     
     if (!vendor.stripe_account_id) {
-      console.error('Vendor missing Stripe account ID');
+      console.error(`[${requestId}] VENDOR ERROR: Missing Stripe account`);
       return Response.json({ 
         error: 'This vendor has not connected their Stripe account yet. Please contact them to complete payment setup.',
         vendor_not_connected: true
       }, { status: 400 });
     }
     
-    // Check actual Stripe account status
+    // Verify Stripe account status
     let stripeAccount;
     try {
       stripeAccount = await stripe.accounts.retrieve(vendor.stripe_account_id);
-      console.log('Stripe account status:', {
+      console.log(`[${requestId}] Stripe account retrieved:`, {
         charges_enabled: stripeAccount.charges_enabled,
         payouts_enabled: stripeAccount.payouts_enabled,
         details_submitted: stripeAccount.details_submitted
       });
     } catch (stripeError) {
-      console.error('Failed to retrieve Stripe account:', stripeError);
+      console.error(`[${requestId}] STRIPE ERROR: Failed to retrieve account`, stripeError);
       return Response.json({ 
         error: 'Unable to verify vendor payment setup. Please contact support.',
         stripe_error: true
@@ -86,8 +103,7 @@ Deno.serve(async (req) => {
     }
     
     if (!stripeAccount.charges_enabled || !stripeAccount.details_submitted) {
-      console.error('Vendor Stripe account not ready for charges');
-      // Update vendor record to reflect actual status
+      console.error(`[${requestId}] VENDOR ERROR: Stripe account not ready`);
       await base44.asServiceRole.entities.Vendor.update(booking.vendor_id, {
         stripe_account_verified: false
       });
@@ -98,25 +114,49 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
     
-    // Update vendor verification status if it's now ready
+    // Update vendor verification if needed
     if (!vendor.stripe_account_verified && stripeAccount.charges_enabled) {
       await base44.asServiceRole.entities.Vendor.update(booking.vendor_id, {
         stripe_account_verified: true
       });
     }
 
-    // Calculate amounts in cents
-    const totalAmount = Math.round((booking.total_amount || booking.agreed_price) * 100);
-    const platformFeeAmount = Math.round(booking.platform_fee_amount * 100);
-    console.log('Payment amounts (cents):', { totalAmount, platformFeeAmount });
+    // Calculate amounts in cents - must match booking record exactly
+    const baseAmountCents = Math.round(booking.base_event_amount * 100);
+    const platformFeeCents = Math.round(booking.platform_fee_amount * 100);
+    const taxCents = Math.round((booking.maryland_sales_tax_amount || 0) * 100);
+    const totalCents = Math.round(booking.total_amount_charged * 100);
 
-    // Get origin for success/cancel URLs
+    // Verification: ensure total matches sum
+    const calculatedTotal = baseAmountCents + platformFeeCents + taxCents;
+    if (Math.abs(totalCents - calculatedTotal) > 1) { // Allow 1 cent rounding difference
+      console.error(`[${requestId}] AMOUNT MISMATCH:`, {
+        expected_total: totalCents,
+        calculated_total: calculatedTotal,
+        base: baseAmountCents,
+        fee: platformFeeCents,
+        tax: taxCents
+      });
+      return Response.json({ 
+        error: 'Payment amount calculation error. Please contact support.' 
+      }, { status: 500 });
+    }
+
+    console.log(`[${requestId}] Payment breakdown (cents):`, {
+      base_event: baseAmountCents,
+      platform_fee: platformFeeCents,
+      md_tax: taxCents,
+      total: totalCents,
+      vendor_receives: baseAmountCents
+    });
+
+    // Get redirect URLs
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
-    console.log('Using base URL for redirects:', baseUrl);
+    console.log(`[${requestId}] Redirect base URL:`, baseUrl);
 
-    // Create Checkout Session - let Stripe create the PaymentIntent automatically
-    console.log('Creating Stripe Checkout Session with escrow...');
+    // Create Stripe Checkout Session with manual capture (escrow)
+    console.log(`[${requestId}] Creating Stripe Checkout Session...`);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -128,14 +168,14 @@ Deno.serve(async (req) => {
               name: `${booking.vendor_name} - ${booking.event_type}`,
               description: booking.service_description || `Event services for ${booking.event_date}`,
             },
-            unit_amount: totalAmount,
+            unit_amount: totalCents,
           },
           quantity: 1,
         }
       ],
       payment_intent_data: {
         capture_method: 'manual', // ESCROW: Holds funds until manual capture
-        application_fee_amount: platformFeeAmount,
+        application_fee_amount: platformFeeCents,
         transfer_data: {
           destination: vendor.stripe_account_id,
         },
@@ -145,6 +185,11 @@ Deno.serve(async (req) => {
           vendor_id: booking.vendor_id,
           event_type: booking.event_type,
           event_date: booking.event_date,
+          base_event_amount: booking.base_event_amount.toString(),
+          platform_fee_amount: booking.platform_fee_amount.toString(),
+          maryland_tax_amount: (booking.maryland_sales_tax_amount || 0).toString(),
+          total_amount: booking.total_amount_charged.toString(),
+          request_id: requestId
         },
       },
       success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,
@@ -152,21 +197,27 @@ Deno.serve(async (req) => {
       client_reference_id: bookingId,
       metadata: {
         booking_id: bookingId,
+        request_id: requestId
       },
     });
-    console.log('Checkout Session created:', session.id, 'URL:', session.url);
-
-    console.log('Returning checkout URL for redirect');
-    return Response.json({ 
+    
+    console.log(`[${requestId}] Checkout Session created:`, {
+      session_id: session.id,
       url: session.url
     });
+    console.log(`[${requestId}] === CHECKOUT REQUEST SUCCESS ===`);
+
+    return Response.json({ url: session.url });
 
   } catch (error) {
-    console.error('Stripe checkout error:', error);
-    console.error('Error stack:', error.stack);
+    console.error(`[${requestId}] === CHECKOUT REQUEST FAILED ===`);
+    console.error(`[${requestId}] Error:`, error.message);
+    console.error(`[${requestId}] Stack:`, error.stack);
+    
     return Response.json({ 
       error: error.message || 'Failed to create checkout session',
-      details: error.type || 'unknown_error'
+      details: error.type || 'unknown_error',
+      request_id: requestId
     }, { status: 500 });
   }
 });

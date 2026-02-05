@@ -50,6 +50,7 @@
 import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminSetup from './pages/AdminSetup';
+import AdminTransactions from './pages/AdminTransactions';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
 import EmailPreview from './pages/EmailPreview';
@@ -66,12 +67,11 @@ import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import Terms from './pages/Terms';
 import VendorDashboard from './pages/VendorDashboard';
+import VendorOnboarding from './pages/VendorOnboarding';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
 import VendorView from './pages/VendorView';
-import AdminTransactions from './pages/AdminTransactions';
-import VendorOnboarding from './pages/VendorOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +79,7 @@ export const PAGES = {
     "About": About,
     "AdminDashboard": AdminDashboard,
     "AdminSetup": AdminSetup,
+    "AdminTransactions": AdminTransactions,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
     "EmailPreview": EmailPreview,
@@ -95,12 +96,11 @@ export const PAGES = {
     "Swipe": Swipe,
     "Terms": Terms,
     "VendorDashboard": VendorDashboard,
+    "VendorOnboarding": VendorOnboarding,
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
     "VendorView": VendorView,
-    "AdminTransactions": AdminTransactions,
-    "VendorOnboarding": VendorOnboarding,
 }
 
 export const pagesConfig = {
