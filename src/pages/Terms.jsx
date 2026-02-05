@@ -49,29 +49,29 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">4. Payments and Fees</h2>
-              <div className="space-y-3 text-gray-700">
+              <h2 className="text-2xl md:text-3xl font-black mb-4">4. Payments and Fees</h2>
+              <div className="space-y-3 text-gray-700 text-base md:text-lg">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>All payments are processed securely through Stripe</li>
-                  <li>Client pays the agreed total booking price</li>
-                  <li>EVNT retains a service fee percentage from each booking</li>
-                  <li>Vendor receives the remaining balance after EVNT's service fee is deducted</li>
+                  <li>Clients pay the agreed service price plus applicable sales tax and Stripe processing fees (2.9% + $0.30)</li>
+                  <li>EVNT retains a platform service fee percentage from each booking, deducted from the vendor's portion</li>
+                  <li>Vendor receives the agreed price minus EVNT's service fee after event completion</li>
                   <li>Payments are held in escrow until the event is completed</li>
                   <li>Vendors receive payout within 24-48 hours of event completion</li>
-                  <li>Refunds are subject to the cancellation policy agreed upon in the booking</li>
+                  <li>State sales tax is calculated automatically based on event location</li>
                 </ul>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">5. Cancellations and Refunds</h2>
-              <div className="space-y-3 text-gray-700">
+              <h2 className="text-2xl md:text-3xl font-black mb-4">5. Cancellations and Refunds</h2>
+              <div className="space-y-3 text-gray-700 text-base md:text-lg">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Cancellation policies are set by individual vendors</li>
-                  <li>Clients may cancel bookings according to the vendor's policy</li>
-                  <li>Refunds are processed according to the cancellation timeline</li>
-                  <li>EVNT may charge a processing fee for cancelled bookings</li>
-                  <li>Disputes should be reported to info@joinevnt.com within 48 hours</li>
+                  <li>Clients may cancel bookings up to 7 days before the event date for free</li>
+                  <li>Cancellations within 7 days of the event are non-refundable unless the vendor agrees otherwise</li>
+                  <li>Refunds are processed to the original payment method within 5-10 business days</li>
+                  <li>Disputes should be reported to info@joinevnt.com within 24 hours after the event</li>
+                  <li>EVNT will mediate disputes between clients and vendors to reach a fair resolution</li>
                 </ul>
               </div>
             </section>
