@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2, Award } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2, Award, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -55,6 +55,7 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
   const [viewTracked, setViewTracked] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -167,20 +168,20 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
             </div>
 
             <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              style={{ opacity: useTransform(x, [0, 150], [0, 0.9]) }}
             >
-              <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
-                LIKE
+              <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg] shadow-xl">
+                LIKE ❤️
               </div>
             </motion.div>
             
             <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              style={{ opacity: useTransform(x, [-150, 0], [0.9, 0]) }}
             >
-              <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
-                PASS
+              <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg] shadow-xl">
+                PASS ✕
               </div>
             </motion.div>
           </div>
@@ -232,7 +233,7 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 flex-shrink-0" onPointerDown={(e) => e.stopPropagation()}>
+            <div className="grid grid-cols-3 gap-2 flex-shrink-0" onPointerDown={(e) => e.stopPropagation()}>
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-xs md:text-sm"
@@ -242,6 +243,17 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
                 }}
               >
                 View Profile
+              </Button>
+              <Button
+                variant="outline"
+                className={`border-2 font-bold h-10 text-xs md:text-sm ${isSaved ? 'border-red-500 bg-red-50 text-red-500' : 'border-black hover:bg-black hover:text-white'}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSwipe("right", 'heart-button');
+                  setIsSaved(true);
+                }}
+              >
+                <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-red-500' : ''}`} />
               </Button>
               <Button
                 className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-xs md:text-sm"
