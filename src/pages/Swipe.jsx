@@ -102,7 +102,18 @@ export default function SwipePage() {
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
 
   const swipeMutation = useMutation({
-    mutationFn: ({ vendorId, direction, vendor, swipeId }) => {
+    mutationFn: async ({ vendorId, direction, vendor, swipeId }) => {
+      // Check if this vendor has already been swiped (prevent duplicates)
+      const existing = await base44.entities.UserSwipe.filter({ 
+        vendor_id: vendorId, 
+        created_by: currentUser?.email 
+      });
+      
+      if (existing.length > 0) {
+        console.log('[MUTATION] Duplicate swipe prevented for vendor:', vendorId);
+        return existing[0];
+      }
+
       const swipePromise = base44.entities.UserSwipe.create({
         vendor_id: vendorId,
         direction,
