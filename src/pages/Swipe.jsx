@@ -466,6 +466,7 @@ export default function SwipePage() {
           <SwipeCard
             vendor={currentVendor}
             onSwipe={handleSwipe}
+            disabled={isSwipeInProgress}
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-4 border-dashed border-gray-300">
