@@ -105,10 +105,14 @@ Deno.serve(async (req) => {
     }
 
     // Create account link for onboarding
+    // Get the origin from referer or use a default
+    const referer = req.headers.get('referer') || req.headers.get('origin') || '';
+    const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
+    
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${req.headers.get('origin')}/VendorProfile?refresh=true`,
-      return_url: `${req.headers.get('origin')}/VendorProfile?success=true`,
+      refresh_url: `${baseUrl}/VendorDashboard?refresh=true`,
+      return_url: `${baseUrl}/VendorDashboard?success=true`,
       type: 'account_onboarding',
     });
 
