@@ -206,8 +206,6 @@ export default function SwipeCard({ vendor, onSwipe }) {
                 )}
               </div>
             </div>
-
-            </div>
             
             <div className="grid grid-cols-2 gap-2 mt-3 flex-shrink-0">
               <Button
