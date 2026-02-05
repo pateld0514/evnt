@@ -59,7 +59,7 @@ export default function MessagesPage() {
       );
     },
     enabled: !!currentUser,
-    refetchInterval: 2000,
+    refetchInterval: 30000,
   });
 
   const { data: vendors = [] } = useQuery({
