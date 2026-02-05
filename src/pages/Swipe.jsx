@@ -268,16 +268,29 @@ export default function SwipePage() {
     }
   };
 
-  const handleReset = () => {
-    setCurrentIndex(0);
-    setFilters({
-      category: "all",
-      priceRange: "all",
-      minPrice: "",
-      maxPrice: "",
-      location: "",
-      minRating: "all"
-    });
+  const handleReset = async () => {
+    try {
+      // Delete all user swipes to bring back all vendors
+      for (const swipe of swipedVendors) {
+        await base44.entities.UserSwipe.delete(swipe.id);
+      }
+      
+      setCurrentIndex(0);
+      setSwipeHistory([]);
+      setFilters({
+        category: "all",
+        priceRange: "all",
+        minPrice: "",
+        maxPrice: "",
+        location: "",
+        minRating: "all"
+      });
+      
+      queryClient.invalidateQueries(['user-swipes']);
+      toast.success("All vendors restored!");
+    } catch (error) {
+      toast.error("Failed to reset");
+    }
   };
 
   // Reset index when filters change
