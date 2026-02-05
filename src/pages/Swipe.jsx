@@ -35,6 +35,7 @@ export default function SwipePage() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeHistory, setSwipeHistory] = useState([]);
+  const swipeLockRef = React.useRef(false);
   const [filters, setFilters] = useState({
     category: "all",
     priceRange: "all",
@@ -141,12 +142,14 @@ export default function SwipePage() {
         queryClient.invalidateQueries(['saved-vendors']);
       }
       
-      // Re-enable after brief delay
+      // Unlock after delay
       setTimeout(() => {
+        swipeLockRef.current = false;
         setIsSwipeInProgress(false);
       }, 500);
     },
     onError: () => {
+      swipeLockRef.current = false;
       setIsSwipeInProgress(false);
     },
   });
@@ -243,15 +246,16 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor || isSwipeInProgress) {
-      console.log('Blocked swipe - already in progress');
+    // Check ref-based lock first (synchronous)
+    if (!currentVendor || swipeLockRef.current) {
       return;
     }
     
-    const vendorToSwipe = currentVendor;
-    
-    // Lock immediately before any async operations
+    // Lock immediately
+    swipeLockRef.current = true;
     setIsSwipeInProgress(true);
+    
+    const vendorToSwipe = currentVendor;
     
     // Move to next card immediately
     setCurrentIndex(prev => prev + 1);
