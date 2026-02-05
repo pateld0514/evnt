@@ -467,16 +467,39 @@ export default function BookingsPage() {
                       <p className="text-lg font-bold">${selectedBooking.budget}</p>
                     </div>
                   )}
-                  {selectedBooking.agreed_price && (
-                    <div>
-                      <p className="text-sm text-gray-500 font-medium">Agreed Price</p>
-                      <p className="text-lg font-bold text-green-700">${selectedBooking.agreed_price}</p>
-                    </div>
-                  )}
-                  {selectedBooking.total_amount && (
-                    <div>
-                      <p className="text-sm text-gray-500 font-medium">Total (with fees)</p>
-                      <p className="text-lg font-bold">${selectedBooking.total_amount}</p>
+                  {selectedBooking.base_event_amount && (
+                    <div className="col-span-2">
+                      <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+                        <p className="text-sm font-bold text-gray-700 mb-3">Cost Breakdown</p>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Base Event Amount:</span>
+                            <span className="font-bold">${selectedBooking.base_event_amount.toFixed(2)}</span>
+                          </div>
+                          {selectedBooking.platform_fee_amount > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">EVNT Platform Fee ({selectedBooking.platform_fee_percent}%):</span>
+                              <span className="font-bold">${selectedBooking.platform_fee_amount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {selectedBooking.maryland_sales_tax_amount > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Maryland Sales Tax (6%):</span>
+                              <span className="font-bold">${selectedBooking.maryland_sales_tax_amount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between pt-2 border-t-2 border-gray-300">
+                            <span className="text-gray-900 font-bold">Client Pays Total:</span>
+                            <span className="font-bold text-green-600 text-lg">${selectedBooking.total_amount_charged?.toFixed(2) || selectedBooking.total_amount?.toFixed(2)}</span>
+                          </div>
+                          {isVendor && selectedBooking.vendor_payout > 0 && (
+                            <div className="flex justify-between pt-2 border-t border-gray-300">
+                              <span className="text-gray-600">Vendor Receives:</span>
+                              <span className="font-bold text-blue-600">${selectedBooking.vendor_payout.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -621,7 +644,10 @@ export default function BookingsPage() {
                             Send Pricing Proposal
                           </Button>
                           <Button
-                            onClick={() => handleStatusUpdate(selectedBooking.id, "declined")}
+                            onClick={() => {
+                              handleStatusUpdate(selectedBooking.id, "declined");
+                              setDetailsOpen(false);
+                            }}
                             variant="outline"
                             className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
                           >
@@ -705,6 +731,7 @@ export default function BookingsPage() {
                                 toast.error("Bookings cannot be cancelled within 7 days of the event");
                               } else {
                                 handleCancelBooking(selectedBooking.id);
+                                setDetailsOpen(false);
                               }
                             }}
                             variant="outline"
