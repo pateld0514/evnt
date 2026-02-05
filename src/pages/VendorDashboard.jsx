@@ -11,6 +11,7 @@ import { createPageUrl } from "@/utils";
 import VendorAnalytics from "../components/analytics/VendorAnalytics";
 import PortfolioManager from "../components/vendor/PortfolioManager";
 import PayoutHistory from "../components/vendor/PayoutHistory";
+import StripeAccountStatus from "../components/vendor/StripeAccountStatus";
 
 export default function VendorDashboard() {
   const navigate = useNavigate();
