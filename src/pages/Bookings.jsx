@@ -534,8 +534,8 @@ export default function BookingsPage() {
                   </div>
                 )}
 
-                {/* Vendor Document Upload Section - Show during negotiation and confirmed states */}
-                {isVendor && (selectedBooking.status === "negotiating" || selectedBooking.status === "payment_pending" || selectedBooking.status === "confirmed" || selectedBooking.status === "in_progress" || selectedBooking.status === "completed") && (
+                {/* Vendor Document Upload Section */}
+                {isVendor && (selectedBooking.status === "confirmed" || selectedBooking.status === "in_progress" || selectedBooking.status === "completed") && (
                   <VendorDocumentUpload 
                     booking={selectedBooking} 
                     vendorId={currentUser.vendor_id}

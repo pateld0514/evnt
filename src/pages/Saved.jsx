@@ -60,10 +60,6 @@ export default function SavedPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
 
-  const getVendorDetails = (vendorId) => {
-    return allVendors.find(v => v.id === vendorId);
-  };
-
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
@@ -87,8 +83,6 @@ export default function SavedPage() {
     },
     enabled: !!currentUser,
     initialData: [],
-    staleTime: 0,
-    refetchOnMount: true,
   });
 
   const { data: allVendors = [] } = useQuery({
@@ -100,29 +94,20 @@ export default function SavedPage() {
   const deleteMutation = useMutation({
     mutationFn: (savedVendorId) => base44.entities.SavedVendor.delete(savedVendorId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
+      queryClient.invalidateQueries(['saved-vendors']);
+      queryClient.invalidateQueries(['user-swipes']);
       toast.success("Removed from favorites");
     },
   });
 
-  // Deduplicate saved vendors by vendor_id - keep first occurrence
-  const deduplicatedSaved = React.useMemo(() => {
-    const seen = new Set();
-    return savedVendors.filter(saved => {
-      if (seen.has(saved.vendor_id)) return false;
-      seen.add(saved.vendor_id);
-      return true;
-    });
-  }, [savedVendors]);
-
-  // Get unique categories from deduplicated saved vendors
+  // Get unique categories from saved vendors
   const availableCategories = React.useMemo(() => {
-    const categories = deduplicatedSaved.map(saved => saved.vendor_category).filter(Boolean);
+    const categories = savedVendors.map(saved => saved.vendor_category).filter(Boolean);
     const uniqueCategories = [...new Set(categories)];
     return uniqueCategories;
-  }, [deduplicatedSaved]);
+  }, [savedVendors]);
 
-  const filteredSaved = deduplicatedSaved.filter(saved => {
+  const filteredSaved = savedVendors.filter(saved => {
     const categoryMatch = selectedCategory === "all" || saved.vendor_category === selectedCategory;
     if (!categoryMatch) return false;
     
@@ -140,6 +125,10 @@ export default function SavedPage() {
     
     return true;
   });
+
+  const getVendorDetails = (vendorId) => {
+    return allVendors.find(v => v.id === vendorId);
+  };
 
   const handleMessage = (vendor) => {
     navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`);
@@ -193,11 +182,11 @@ export default function SavedPage() {
           Your Favorites
         </h1>
         <p className="text-lg md:text-xl text-gray-600 font-medium">
-          {deduplicatedSaved.length} vendor{deduplicatedSaved.length !== 1 ? 's' : ''} saved
+          {savedVendors.length} vendor{savedVendors.length !== 1 ? 's' : ''} saved
         </p>
       </div>
 
-      {deduplicatedSaved.length > 0 && (
+      {savedVendors.length > 0 && (
         <>
           <div className="mb-6 max-w-2xl mx-auto">
             <VendorSearch 

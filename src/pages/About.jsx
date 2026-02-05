@@ -188,7 +188,7 @@ export default function AboutPage() {
                 <div>
                   <p className="font-black mb-3 text-lg">How Vendor Payments Work</p>
                   <p className="text-gray-700 text-lg mb-4 leading-relaxed">
-                    EVNT takes a {platformFee}% service fee from each completed booking. For example, if you agree to a $1,000 service price, the client pays $1,000 + tax + Stripe fees, EVNT deducts ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}%), and you receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} ({(100 - platformFee).toFixed(0)}%).
+                    EVNT takes a {platformFee}% service fee from each completed booking. For example, if you agree to a $1,000 booking, the client pays $1,000, EVNT receives ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}%), and you receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} ({(100 - platformFee).toFixed(0)}%).
                   </p>
                 </div>
 
@@ -206,12 +206,11 @@ export default function AboutPage() {
                   <div className="border-t-2 border-gray-300 pt-4">
                     <p className="font-black mb-3 text-lg">✓ What Vendors Get:</p>
                     <ul className="space-y-2 text-base text-gray-700">
-                      <li className="font-medium">• Profile page with photo gallery and pricing</li>
-                      <li className="font-medium">• Exposure to event planners actively searching</li>
+                      <li className="font-medium">• Profile page with photos and pricing</li>
+                      <li className="font-medium">• Exposure to thousands of event planners</li>
                       <li className="font-medium">• Direct messaging with potential clients</li>
                       <li className="font-medium">• Booking request management dashboard</li>
-                      <li className="font-medium">• Secure payments via Stripe Connect</li>
-                      <li className="font-medium">• No upfront costs - only pay when you book</li>
+                      <li className="font-medium">• No upfront costs or monthly fees</li>
                     </ul>
                   </div>
                 </div>
@@ -290,10 +289,10 @@ export default function AboutPage() {
                 <div className="bg-green-50 rounded-xl p-6 border-2 border-green-300 mt-6">
                   <p className="font-black text-green-900 mb-3 text-lg">💡 Key Benefits:</p>
                   <ul className="space-y-2 text-base text-green-800">
-                    <li className="font-medium">• <strong>Clear Pricing:</strong> Client pays agreed service price + applicable tax + Stripe fee. Vendor receives {(100 - platformFee).toFixed(0)}% after EVNT's {platformFee}% platform fee</li>
-                    <li className="font-medium">• <strong>Client Protection:</strong> Funds held in escrow until service completion</li>
-                    <li className="font-medium">• <strong>Vendor Benefits:</strong> No upfront costs, get paid 24-48 hours after event</li>
-                    <li className="font-medium">• <strong>Security:</strong> All payments powered by Stripe with fraud protection</li>
+                    <li className="font-medium">• <strong>Pricing:</strong> Client pays agreed amount. Vendor receives {(100 - platformFee).toFixed(0)}%. EVNT's {platformFee}% fee comes from the total</li>
+                    <li className="font-medium">• <strong>Clients:</strong> Escrow protection until service is delivered</li>
+                    <li className="font-medium">• <strong>Vendors:</strong> No upfront costs, only pay when you book</li>
+                    <li className="font-medium">• <strong>Security:</strong> Stripe-powered payments with fraud protection</li>
                   </ul>
                 </div>
               </div>

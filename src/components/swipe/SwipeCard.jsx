@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2, Award, Heart } from "lucide-react";
+import { MapPin, DollarSign, Sparkles, Mail, Phone, Globe, Calendar, Star, MessageSquare, Instagram, Facebook, Twitter, Music2, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -48,13 +48,12 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }) {
+export default function SwipeCard({ vendor, onSwipe }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -107,27 +106,9 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  const handleDragStart = () => {
-    console.log('[CARD] DragStart', { vendorId: vendor.id });
-    setIsDragging(true);
-  };
-
   const handleDragEnd = (event, info) => {
-    setIsDragging(false);
-    
-    if (disabled) {
-      x.set(0);
-      return;
-    }
-    
-    const threshold = 100;
-    const velocity = info.velocity.x;
-    
-    if (Math.abs(info.offset.x) > threshold || Math.abs(velocity) > 500) {
-      const direction = info.offset.x > 0 ? "right" : "left";
-      onSwipe(direction, 'drag-gesture');
-    } else {
-      x.set(0);
+    if (Math.abs(info.offset.x) > 100) {
+      onSwipe(info.offset.x > 0 ? "right" : "left");
     }
   };
 
@@ -136,17 +117,13 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
       <motion.div
         className="absolute inset-0"
         style={{ x, rotate }}
-        drag={disabled ? false : "x"}
-        dragConstraints={{ left: -300, right: 300 }}
-        dragElastic={0.2}
-        onDragStart={handleDragStart}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
-        whileTap={disabled ? {} : { cursor: "grabbing" }}
-        animate={{ x: 0, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
+        whileTap={{ cursor: "grabbing" }}
       >
-        <Card className="h-full bg-white shadow-lg border-2 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
-          <div className="relative flex-shrink-0" style={{ height: '60%' }}>
+        <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
+          <div className="relative flex-shrink-0" style={{ height: '55%' }}>
             <img
               src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
               alt={vendor.business_name}
@@ -155,64 +132,97 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
-            <div className="absolute top-3 right-3 flex gap-1.5">
-              <Badge className="bg-white text-black text-xs px-2 py-0.5 font-bold border border-black">
+            <div className="absolute top-4 right-4 flex gap-2">
+              <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
                 {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
+              </Badge>
+              <Badge className={`${tier.color} border-2 text-sm px-3 py-1.5 font-bold`}>
+                {tier.icon} {tier.name}
               </Badge>
             </div>
 
             <motion.div
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ opacity: useTransform(x, [0, 200], [0, 1]) }}
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
             >
-              <div className="bg-green-500 text-white text-5xl font-black px-10 py-5 rounded-3xl border-4 border-white rotate-[-20deg] shadow-2xl">
-                LIKE ❤️
+              <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
+                LIKE
               </div>
             </motion.div>
             
             <motion.div
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ opacity: useTransform(x, [-200, 0], [1, 0]) }}
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
             >
-              <div className="bg-red-500 text-white text-5xl font-black px-10 py-5 rounded-3xl border-4 border-white rotate-[20deg] shadow-2xl">
-                PASS ✕
+              <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
+                PASS
               </div>
             </motion.div>
           </div>
 
-          <div className="flex flex-col" style={{ height: '40%', padding: '0.75rem' }}>
-            <div className="flex-1 overflow-hidden mb-2">
-              <h2 className="text-base font-black text-black mb-1 leading-tight">
+          <div className="flex flex-col" style={{ height: '45%', padding: '1rem' }}>
+            <div className="flex-1 overflow-hidden mb-3">
+              <h2 className="text-lg md:text-xl font-black text-black mb-1.5 leading-tight">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-xs text-gray-600 mb-1.5 line-clamp-1 leading-snug">
+              <p className="text-xs md:text-sm text-gray-600 mb-2 line-clamp-2 leading-snug">
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-0.5">
+              <div className="flex flex-wrap gap-1">
                 {vendor.location && (
-                   <Badge variant="outline" className="flex items-center gap-0.5 border border-gray-300 text-xs font-bold py-0.25 px-1">
-                     <MapPin className="w-2.5 h-2.5" />
-                     {vendor.location}
-                   </Badge>
-                 )}
-                 {avgRating && (
-                   <Badge variant="outline" className="flex items-center gap-0.5 border border-yellow-300 bg-yellow-50 text-xs font-bold py-0.25 px-1">
-                     <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                     {avgRating}
-                   </Badge>
-                 )}
-                 {vendor.price_range && (
-                   <Badge variant="outline" className="flex items-center gap-0.5 border border-gray-300 text-xs font-bold py-0.25 px-1">
-                     <DollarSign className="w-2.5 h-2.5" />
-                     {vendor.price_range}
-                   </Badge>
-                 )}
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                    <MapPin className="w-3 h-3" />
+                    {vendor.location}
+                  </Badge>
+                )}
+                {avgRating && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs font-bold py-0.5 px-1.5">
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    {avgRating}
+                  </Badge>
+                )}
+                {vendor.price_range && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                    <DollarSign className="w-3 h-3" />
+                    {vendor.price_range}
+                  </Badge>
+                )}
+                {vendor.starting_price && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                    From ${vendor.starting_price}
+                  </Badge>
+                )}
+                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                  <Award className="w-3 h-3" />
+                  {completedBookings} events
+                </Badge>
+                {vendor.specialties && vendor.specialties.length > 0 && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                    <Sparkles className="w-3 h-3" />
+                    {vendor.specialties[0]}
+                  </Badge>
+                )}
               </div>
             </div>
             
-
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-xs md:text-sm"
+                onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
+              >
+                View Profile
+              </Button>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-xs md:text-sm"
+                onClick={() => setBookingOpen(true)}
+              >
+                <Calendar className="w-3.5 h-3.5 mr-1" />
+                Book Now
+              </Button>
+            </div>
           </div>
         </Card>
       </motion.div>
