@@ -126,8 +126,20 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Stripe Connect error:', error);
+    
+    // Handle specific Stripe errors with helpful messages
+    let errorMessage = error.message || 'Failed to create Stripe Connect account';
+    
+    if (error.message?.includes('platform-profile')) {
+      errorMessage = 'Stripe Connect setup incomplete. The platform administrator needs to complete the platform profile setup at https://dashboard.stripe.com/settings/connect/platform-profile';
+    } else if (error.type === 'StripeInvalidRequestError') {
+      errorMessage = `Stripe configuration error: ${error.message}`;
+    }
+    
     return Response.json({ 
-      error: error.message || 'Failed to create Stripe Connect account' 
+      error: errorMessage,
+      stripe_error_type: error.type,
+      needs_platform_setup: error.message?.includes('platform-profile') || false
     }, { status: 500 });
   }
 });

@@ -42,13 +42,25 @@ export default function StripeConnectButton({ vendorId }) {
       const response = await base44.functions.invoke('createStripeConnectAccount', {});
       
       if (response.data?.url) {
+        // Successful - redirect to Stripe onboarding
         window.location.href = response.data.url;
       } else {
-        throw new Error('No redirect URL received');
+        throw new Error('No redirect URL received from Stripe');
       }
     } catch (error) {
-      console.error('Failed to connect:', error);
-      toast.error(error.response?.data?.error || 'Failed to connect Stripe account. Please try again.');
+      console.error('Stripe Connect error:', error);
+      
+      // Show detailed error message
+      const errorData = error.response?.data;
+      let errorMessage = 'Failed to connect Stripe account. Please try again.';
+      
+      if (errorData?.needs_platform_setup) {
+        errorMessage = 'Platform setup required. Please contact support - the administrator needs to complete Stripe Connect setup.';
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      }
+      
+      toast.error(errorMessage, { duration: 8000 });
       setConnecting(false);
     }
   };
