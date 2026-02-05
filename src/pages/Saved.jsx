@@ -105,13 +105,6 @@ export default function SavedPage() {
     },
   });
 
-  // Get unique categories from deduplicated saved vendors
-  const availableCategories = React.useMemo(() => {
-    const categories = deduplicatedSaved.map(saved => saved.vendor_category).filter(Boolean);
-    const uniqueCategories = [...new Set(categories)];
-    return uniqueCategories;
-  }, [deduplicatedSaved]);
-
   // Deduplicate saved vendors by vendor_id - keep first occurrence
   const deduplicatedSaved = React.useMemo(() => {
     const seen = new Set();
@@ -121,6 +114,13 @@ export default function SavedPage() {
       return true;
     });
   }, [savedVendors]);
+
+  // Get unique categories from deduplicated saved vendors
+  const availableCategories = React.useMemo(() => {
+    const categories = deduplicatedSaved.map(saved => saved.vendor_category).filter(Boolean);
+    const uniqueCategories = [...new Set(categories)];
+    return uniqueCategories;
+  }, [deduplicatedSaved]);
 
   const filteredSaved = deduplicatedSaved.filter(saved => {
     const categoryMatch = selectedCategory === "all" || saved.vendor_category === selectedCategory;
