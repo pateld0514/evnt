@@ -48,7 +48,7 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe }) {
+export default function SwipeCard({ vendor, onSwipe, disabled }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -106,34 +106,29 @@ export default function SwipeCard({ vendor, onSwipe }) {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  const [isDragging, setIsDragging] = useState(false);
-  const [hasSwiped, setHasSwiped] = useState(false);
-
   const handleDragEnd = (event, info) => {
-    setIsDragging(false);
+    if (disabled) {
+      x.set(0);
+      return;
+    }
+    
     const threshold = 150;
-    if (Math.abs(info.offset.x) > threshold && !hasSwiped) {
-      setHasSwiped(true);
+    if (Math.abs(info.offset.x) > threshold) {
       onSwipe(info.offset.x > 0 ? "right" : "left");
     } else {
       x.set(0);
     }
   };
 
-  useEffect(() => {
-    setHasSwiped(false);
-  }, [vendor.id]);
-
   return (
     <>
       <motion.div
         className="absolute inset-0"
         style={{ x, rotate }}
-        drag="x"
+        drag={disabled ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
-        onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
-        whileTap={{ cursor: "grabbing" }}
+        whileTap={disabled ? {} : { cursor: "grabbing" }}
         animate={{ x: 0, rotate: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >

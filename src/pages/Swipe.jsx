@@ -124,9 +124,7 @@ export default function SwipePage() {
       setIsSwipeInProgress(true);
     },
     onSuccess: (result, variables) => {
-      queryClient.invalidateQueries(['user-swipes']);
       if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
         toast.success("Added to your favorites! ❤️");
       }
       
@@ -141,7 +139,14 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      setTimeout(() => setIsSwipeInProgress(false), 300);
+      // Re-enable after animation completes
+      setTimeout(() => {
+        setIsSwipeInProgress(false);
+        queryClient.invalidateQueries(['user-swipes']);
+        if (variables.direction === "right") {
+          queryClient.invalidateQueries(['saved-vendors']);
+        }
+      }, 400);
     },
     onError: () => {
       setIsSwipeInProgress(false);
@@ -242,14 +247,18 @@ export default function SwipePage() {
   const handleSwipe = (direction) => {
     if (!currentVendor || isSwipeInProgress) return;
     
-    // Immediately increment to prevent double swipes
-    setCurrentIndex(prev => prev + 1);
+    setIsSwipeInProgress(true);
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,
       vendor: currentVendor
     });
+    
+    // Move to next card after a short delay
+    setTimeout(() => {
+      setCurrentIndex(prev => prev + 1);
+    }, 150);
   };
 
   const handleUndo = async () => {
