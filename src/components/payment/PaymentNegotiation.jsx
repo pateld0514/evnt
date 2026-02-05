@@ -93,9 +93,15 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
                             booking.location?.toLowerCase().includes('MARYLAND');
     const marylandTax = isMarylandEvent ? agreedAmount * 0.06 : 0;
     
+    // Calculate Stripe processing fees (2.9% + $0.30)
+    const stripeFeePercent = 0.029;
+    const stripeFeeFixed = 0.30;
+    const totalBeforeStripeFee = agreedAmount + marylandTax;
+    const stripeFee = (totalBeforeStripeFee * stripeFeePercent) + stripeFeeFixed;
+    
     // CRITICAL: EVNT fee comes FROM the agreed price
     const vendorPayout = agreedAmount - platformFeeAmount; // Vendor receives agreed price minus EVNT fee
-    const totalAmount = agreedAmount + marylandTax; // Client pays agreed price + tax only
+    const totalAmount = agreedAmount + marylandTax + stripeFee; // Client pays agreed price + tax + Stripe fee
 
     return { 
       price, 
@@ -104,9 +110,11 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       baseEventAmount: agreedAmount,
       platformFeeAmount, 
       marylandTax,
+      stripeFee,
       totalAmount, 
       vendorPayout, 
-      finalFeePercent 
+      finalFeePercent,
+      isMarylandEvent
     };
   };
 
@@ -325,6 +333,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               <span className="font-bold">${totals.marylandTax.toFixed(2)}</span>
             </div>
           )}
+          <div className="flex justify-between text-sm">
+            <span>Stripe Processing Fee (2.9% + $0.30):</span>
+            <span className="font-bold">${totals.stripeFee.toFixed(2)}</span>
+          </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
@@ -343,8 +355,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `Client pays agreed price${totals.marylandTax > 0 ? ' + 6% MD tax' : ''} = $${totals.totalAmount.toFixed(2)}. EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay: $${totals.subtotal.toFixed(2)}${totals.marylandTax > 0 ? ' + $' + totals.marylandTax.toFixed(2) + ' MD tax' : ''} = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
+              ? `Client pays agreed price${totals.marylandTax > 0 ? ' + 6% MD tax' : ''} + Stripe fee = $${totals.totalAmount.toFixed(2)}. EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+              : `You pay: $${totals.subtotal.toFixed(2)}${totals.marylandTax > 0 ? ' + $' + totals.marylandTax.toFixed(2) + ' MD tax' : ''} + $${totals.stripeFee.toFixed(2)} Stripe fee = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
           </p>
         </div>
 
