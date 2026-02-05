@@ -121,8 +121,20 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     },
     onError: (error) => {
       console.error('Payment mutation error:', error);
-      const errorMsg = error.response?.data?.error || error.message || 'Failed to process payment. Please try again.';
-      toast.error(errorMsg, { duration: 6000 });
+      const errorData = error.response?.data;
+      let errorMsg = error.message || 'Failed to process payment. Please try again.';
+      
+      if (errorData?.error) {
+        errorMsg = errorData.error;
+      }
+      
+      if (errorData?.vendor_not_connected) {
+        errorMsg = '⚠️ Vendor Payment Setup Required\n\nThis vendor has not yet connected their payment account. Please contact them to complete setup before proceeding.';
+      } else if (errorData?.vendor_setup_incomplete) {
+        errorMsg = '⚠️ Vendor Setup Incomplete\n\nThe vendor needs to complete their Stripe onboarding before you can pay. They have been notified.';
+      }
+      
+      toast.error(errorMsg, { duration: 8000 });
     },
   });
 

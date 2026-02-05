@@ -60,10 +60,49 @@ Deno.serve(async (req) => {
       verified: vendor.stripe_account_verified
     });
     
-    if (!vendor.stripe_account_id || !vendor.stripe_account_verified) {
+    if (!vendor.stripe_account_id) {
+      console.error('Vendor missing Stripe account ID');
       return Response.json({ 
-        error: 'Vendor has not completed payment setup yet. Please contact the vendor.' 
+        error: 'This vendor has not connected their Stripe account yet. Please contact them to complete payment setup.',
+        vendor_not_connected: true
       }, { status: 400 });
+    }
+    
+    // Check actual Stripe account status
+    let stripeAccount;
+    try {
+      stripeAccount = await stripe.accounts.retrieve(vendor.stripe_account_id);
+      console.log('Stripe account status:', {
+        charges_enabled: stripeAccount.charges_enabled,
+        payouts_enabled: stripeAccount.payouts_enabled,
+        details_submitted: stripeAccount.details_submitted
+      });
+    } catch (stripeError) {
+      console.error('Failed to retrieve Stripe account:', stripeError);
+      return Response.json({ 
+        error: 'Unable to verify vendor payment setup. Please contact support.',
+        stripe_error: true
+      }, { status: 400 });
+    }
+    
+    if (!stripeAccount.charges_enabled || !stripeAccount.details_submitted) {
+      console.error('Vendor Stripe account not ready for charges');
+      // Update vendor record to reflect actual status
+      await base44.asServiceRole.entities.Vendor.update(booking.vendor_id, {
+        stripe_account_verified: false
+      });
+      
+      return Response.json({ 
+        error: 'This vendor needs to complete their Stripe account setup before accepting payments. They will be notified.',
+        vendor_setup_incomplete: true
+      }, { status: 400 });
+    }
+    
+    // Update vendor verification status if it's now ready
+    if (!vendor.stripe_account_verified && stripeAccount.charges_enabled) {
+      await base44.asServiceRole.entities.Vendor.update(booking.vendor_id, {
+        stripe_account_verified: true
+      });
     }
 
     // Calculate amounts in cents

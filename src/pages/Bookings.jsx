@@ -188,8 +188,20 @@ export default function BookingsPage() {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      const errorMsg = error.response?.data?.error || error.message || 'Failed to start payment. Please try again.';
-      toast.error(errorMsg, { duration: 6000 });
+      const errorData = error.response?.data;
+      let errorMsg = error.message || 'Failed to start payment. Please try again.';
+      
+      if (errorData?.error) {
+        errorMsg = errorData.error;
+      }
+      
+      if (errorData?.vendor_not_connected) {
+        errorMsg = '⚠️ Vendor Payment Setup Required\n\nThis vendor has not yet connected their payment account. Please contact them before proceeding with payment.';
+      } else if (errorData?.vendor_setup_incomplete) {
+        errorMsg = '⚠️ Vendor Setup Incomplete\n\nThe vendor needs to complete their Stripe account onboarding. They have been notified to complete this step.';
+      }
+      
+      toast.error(errorMsg, { duration: 8000 });
       setIsProcessingPayment(false);
     }
   };

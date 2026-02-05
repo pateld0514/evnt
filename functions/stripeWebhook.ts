@@ -30,10 +30,30 @@ Deno.serve(async (req) => {
 
     // Handle the event
     switch (event.type) {
+      case 'checkout.session.completed': {
+        // Checkout session completed - payment authorized
+        const session = event.data.object;
+        const bookingId = session.metadata.booking_id || session.client_reference_id;
+        const paymentIntentId = session.payment_intent;
+
+        console.log('Checkout session completed:', { bookingId, paymentIntentId, session_id: session.id });
+
+        if (bookingId) {
+          await base44.asServiceRole.entities.Booking.update(bookingId, {
+            payment_status: 'processing',
+            payment_intent_id: paymentIntentId,
+            stripe_session_id: session.id,
+          });
+        }
+        break;
+      }
+
       case 'payment_intent.amount_capturable_updated': {
         // Payment authorized, funds in escrow
         const paymentIntent = event.data.object;
         const bookingId = paymentIntent.metadata.booking_id;
+
+        console.log('Payment authorized (escrow):', { bookingId, payment_intent: paymentIntent.id });
 
         if (bookingId) {
           await base44.asServiceRole.entities.Booking.update(bookingId, {
@@ -95,9 +115,25 @@ Deno.serve(async (req) => {
         const paymentIntent = event.data.object;
         const bookingId = paymentIntent.metadata.booking_id;
 
+        console.log('Payment succeeded:', { bookingId, payment_intent: paymentIntent.id });
+
         if (bookingId) {
           await base44.asServiceRole.entities.Booking.update(bookingId, {
             payment_status: 'paid',
+          });
+        }
+        break;
+      }
+
+      case 'payment_intent.processing': {
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.booking_id;
+
+        console.log('Payment processing:', { bookingId, payment_intent: paymentIntent.id });
+
+        if (bookingId) {
+          await base44.asServiceRole.entities.Booking.update(bookingId, {
+            payment_status: 'processing',
           });
         }
         break;
