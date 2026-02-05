@@ -65,12 +65,16 @@ export default function SwipePage() {
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['all-bookings'],
     queryFn: () => base44.entities.Booking.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -91,12 +95,16 @@ export default function SwipePage() {
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
@@ -163,9 +171,9 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
       if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
+        queryClient.invalidateQueries({ queryKey: ['saved-vendors'], exact: true });
       }
       
       // Unlock immediately (not after delay)
@@ -326,8 +334,8 @@ export default function SwipePage() {
       setCurrentIndex(prev => Math.max(0, prev - 1));
       setSwipeHistory(prev => prev.slice(0, -1));
       
-      queryClient.invalidateQueries(['user-swipes']);
-      queryClient.invalidateQueries(['saved-vendors']);
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors'], exact: true });
       
       toast.success("Undone!");
     } catch (error) {
@@ -353,7 +361,7 @@ export default function SwipePage() {
         minRating: "all"
       });
       
-      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
       toast.success("All vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
