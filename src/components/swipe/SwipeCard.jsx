@@ -122,8 +122,8 @@ export default function SwipeCard({ vendor, onSwipe }) {
         onDragEnd={handleDragEnd}
         whileTap={{ cursor: "grabbing" }}
       >
-        <Card className="h-full overflow-hidden bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing">
-          <div className="relative h-[55%]">
+        <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col">
+          <div className="relative flex-shrink-0" style={{ height: '50%' }}>
             <img
               src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
               alt={vendor.business_name}
@@ -160,17 +160,17 @@ export default function SwipeCard({ vendor, onSwipe }) {
             </motion.div>
           </div>
 
-          <div className="p-4 md:p-6 h-[45%] flex flex-col overflow-hidden">
-            <div className="flex-1 min-h-0">
+          <div className="p-4 flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-hidden">
               <h2 className="text-xl md:text-2xl font-black text-black mb-2">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-sm md:text-base text-gray-600 mb-3 line-clamp-2 leading-snug">
+              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="flex flex-wrap gap-1.5">
                 {vendor.location && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
                     <MapPin className="w-3 h-3" />
@@ -207,16 +207,18 @@ export default function SwipeCard({ vendor, onSwipe }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-auto pt-2 flex-shrink-0">
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 mt-3 flex-shrink-0">
               <Button
                 variant="outline"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-sm"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 text-sm"
                 onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
               <Button
-                className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-sm"
+                className="bg-black text-white hover:bg-gray-800 font-bold h-11 text-sm"
                 onClick={() => setBookingOpen(true)}
               >
                 <Calendar className="w-4 h-4 mr-1" />
