@@ -160,7 +160,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
             </motion.div>
           </div>
 
-          <div className="p-4 md:p-6 h-1/3 flex flex-col">
+          <div className="p-4 md:p-6 h-1/3 flex flex-col overflow-hidden">
             <div className="flex-1">
               <h2 className="text-2xl md:text-3xl font-black text-black mb-3">
                 {vendor.business_name}
@@ -207,19 +207,19 @@ export default function SwipeCard({ vendor, onSwipe }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
               <Button
                 variant="outline"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold h-12 text-base"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 text-sm md:text-base"
                 onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
               <Button
-                className="bg-black text-white hover:bg-gray-800 font-bold h-12 text-base"
+                className="bg-black text-white hover:bg-gray-800 font-bold h-11 text-sm md:text-base"
                 onClick={() => setBookingOpen(true)}
               >
-                <Calendar className="w-5 h-5 mr-2" />
+                <Calendar className="w-4 h-4 mr-1 md:mr-2" />
                 Book Now
               </Button>
             </div>

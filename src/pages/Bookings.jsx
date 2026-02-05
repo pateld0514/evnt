@@ -323,7 +323,10 @@ export default function BookingsPage() {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => navigate(createPageUrl("Messages") + `?vendor=${booking.vendor_id}`)}
+                        onClick={() => {
+                          const targetEmail = isVendor ? booking.client_email : booking.vendor_id;
+                          navigate(createPageUrl("Messages") + (isVendor ? `?client=${booking.client_email}` : `?vendor=${booking.vendor_id}`));
+                        }}
                         variant="outline"
                         className="border-2 border-black hover:bg-black hover:text-white font-bold"
                       >
@@ -521,7 +524,11 @@ export default function BookingsPage() {
                 <div>
                   <Button
                     onClick={() => {
-                      navigate(createPageUrl("Messages") + `?vendor=${selectedBooking.vendor_id}`);
+                      if (isVendor) {
+                        navigate(createPageUrl("Messages") + `?client=${selectedBooking.client_email}`);
+                      } else {
+                        navigate(createPageUrl("Messages") + `?vendor=${selectedBooking.vendor_id}`);
+                      }
                       setDetailsOpen(false);
                     }}
                     variant="outline"

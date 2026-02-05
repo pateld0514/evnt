@@ -12,6 +12,16 @@ import { createPageUrl } from "@/utils";
 
 export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const queryClient = useQueryClient();
+  
+  const updateBookingMutation = useMutation({
+    mutationFn: async ({ bookingId, data }) => {
+      return await base44.entities.Booking.update(bookingId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
+      toast.success("Proposal declined");
+    },
+  });
   const [agreedPrice, setAgreedPrice] = useState(booking.agreed_price || booking.budget || "");
   const [serviceDescription, setServiceDescription] = useState(booking.service_description || "");
   const [additionalFees, setAdditionalFees] = useState(booking.additional_fees || []);
@@ -305,21 +315,49 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="flex-1 border-2 border-gray-300"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={submitProposalMutation.isPending}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
-          >
-            {isVendor ? "Send Proposal" : "Accept & Continue to Payment"}
-          </Button>
+        <div className="space-y-3">
+          {!isVendor && booking.agreed_price && (
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => {
+                  updateBookingMutation.mutate({
+                    bookingId: booking.id,
+                    data: { status: "pending", agreed_price: null, vendor_response: "Client declined the proposal" },
+                    oldStatus: booking.status
+                  });
+                  onClose();
+                }}
+                variant="outline"
+                className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+              >
+                Decline Proposal
+              </Button>
+              <Button
+                onClick={() => setAgreedPrice("")}
+                variant="outline"
+                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
+              >
+                Counter Offer
+              </Button>
+            </div>
+          )}
+          
+          <div className="flex gap-3">
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="flex-1 border-2 border-gray-300"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={submitProposalMutation.isPending}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            >
+              {isVendor ? "Send Proposal" : "Accept & Continue to Payment"}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

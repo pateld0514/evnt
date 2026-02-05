@@ -409,8 +409,7 @@ export default function VendorProfilePage() {
             </div>
           )}
 
-          {/* Document Upload Section */}
-          {vendor && <VendorDocumentUpload vendor={vendor} />}
+
         </CardContent>
       </Card>
     </div>

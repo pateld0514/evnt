@@ -163,7 +163,7 @@ export default function VendorRegistrationPage() {
     
     if (!formData.business_name || !formData.category || !formData.description || 
         !formData.phone || !formData.location || !formData.contact_email || 
-        !formData.id_verification_url || !formData.business_license_url || 
+        !formData.id_verification_url || 
         !formData.years_in_business || !formData.average_price ||
         (formData.willing_to_travel && !formData.travel_radius) ||
         !formData.image_url || !formData.price_range || !formData.starting_price) {
@@ -493,8 +493,8 @@ export default function VendorRegistrationPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-lg font-bold">Business License *</Label>
-              <p className="text-sm text-gray-500">Upload your business license or registration certificate for compliance</p>
+              <Label className="text-lg font-bold">Business License (Optional)</Label>
+              <p className="text-sm text-gray-500">Upload your business license or registration certificate if available</p>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <input
                   type="file"
