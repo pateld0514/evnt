@@ -348,7 +348,9 @@ export default function SwipePage() {
       for (const swipe of swipedVendors) {
         await base44.entities.UserSwipe.delete(swipe.id);
       }
-      
+
+      queryClient.invalidateQueries({ queryKey: ['user-swipes', currentUser?.email] });
+
       setCurrentIndex(0);
       setSwipeHistory([]);
       setLocalSwipedIds(new Set());
@@ -360,7 +362,7 @@ export default function SwipePage() {
         location: "",
         minRating: "all"
       });
-      
+
       toast.success("All vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
