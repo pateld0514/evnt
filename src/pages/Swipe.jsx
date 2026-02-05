@@ -61,22 +61,6 @@ export default function SwipePage() {
     checkOnboarding();
   }, [navigate]);
 
-  const { data: vendors = [], isLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
-    initialData: [],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-  });
-
-  const { data: bookings = [] } = useQuery({
-    queryKey: ['all-bookings'],
-    queryFn: () => base44.entities.Booking.list(),
-    initialData: [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -87,6 +71,14 @@ export default function SwipePage() {
     loadUser();
   }, []);
 
+  const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => base44.entities.Vendor.list(),
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
   const { data: swipedVendors = [] } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: async () => {
@@ -95,33 +87,38 @@ export default function SwipePage() {
     },
     enabled: !!currentUser,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+  });
+
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['all-bookings'],
+    queryFn: () => base44.entities.Booking.list(),
+    initialData: [],
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
   });
+
+  const [localSwipedIds, setLocalSwipedIds] = useState(new Set());
 
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
   const lastSwipeTimeRef = React.useRef(0);
   const SWIPE_COOLDOWN_MS = 800; // Rate limit: min 800ms between swipes
 
   const swipeMutation = useMutation({
-    mutationFn: async ({ vendorId, direction, vendor, swipeId }) => {
-      // Check if this vendor has already been swiped (prevent duplicates)
-      const existing = await base44.entities.UserSwipe.filter({ 
-        vendor_id: vendorId, 
-        created_by: currentUser?.email 
-      });
-      
-      if (existing.length > 0) {
-        console.log('[MUTATION] Duplicate swipe prevented for vendor:', vendorId);
-        return existing[0];
+    mutationFn: async ({ vendorId, direction, vendor }) => {
+      // Prevent local duplicate swipes
+      if (localSwipedIds.has(vendorId)) {
+        console.log('[MUTATION] Duplicate swipe prevented locally:', vendorId);
+        return { id: vendorId };
       }
 
       const swipePromise = base44.entities.UserSwipe.create({
@@ -131,17 +128,6 @@ export default function SwipePage() {
       });
 
       if (direction === "right") {
-        // Check if already saved to prevent duplicate favorites
-        const existingSaved = await base44.entities.SavedVendor.filter({ 
-          vendor_id: vendorId,
-          created_by: currentUser?.email 
-        });
-        
-        if (existingSaved.length > 0) {
-          console.log('[MUTATION] Vendor already saved:', vendorId);
-          return Promise.all([swipePromise, existingSaved[0]]);
-        }
-
         const savePromise = base44.entities.SavedVendor.create({
           vendor_id: vendorId,
           vendor_name: vendor.business_name,
@@ -154,33 +140,32 @@ export default function SwipePage() {
       return swipePromise;
     },
     onSuccess: (result, variables) => {
-      console.log('[MUTATION] Success - Vendor:', variables.vendorId);
-      
-      if (variables.direction === "right") {
-        toast.success("Added to your favorites! ❤️");
-      }
-      
-      // Store in history for undo
-      const swipeId = Array.isArray(result) ? result[0].id : result.id;
-      const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
-      setSwipeHistory(prev => [...prev, { 
-        swipeId, 
-        savedId,
-        vendorId: variables.vendorId,
-        direction: variables.direction,
-        vendor: variables.vendor 
-      }]);
-      
-      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
-      if (variables.direction === "right") {
-        queryClient.invalidateQueries({ queryKey: ['saved-vendors'], exact: true });
-      }
-      
-      // Unlock immediately (not after delay)
-      console.log('[MUTATION] Unlocking immediately');
-      swipeLockRef.current = false;
-      setIsSwipeInProgress(false);
-    },
+        console.log('[MUTATION] Success - Vendor:', variables.vendorId);
+
+        // Track swiped vendor locally
+        setLocalSwipedIds(prev => new Set([...prev, variables.vendorId]));
+
+        if (variables.direction === "right") {
+          toast.success("Added to your favorites! ❤️");
+        }
+
+        // Store in history for undo
+        const swipeId = Array.isArray(result) ? result[0].id : result.id;
+        const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
+        setSwipeHistory(prev => [...prev, { 
+          swipeId, 
+          savedId,
+          vendorId: variables.vendorId,
+          direction: variables.direction,
+          vendor: variables.vendor 
+        }]);
+
+        // Don't refetch, just let UI update with local state
+        // Unlock immediately
+        console.log('[MUTATION] Unlocking immediately');
+        swipeLockRef.current = false;
+        setIsSwipeInProgress(false);
+      },
     onError: () => {
       swipeLockRef.current = false;
       setIsSwipeInProgress(false);
