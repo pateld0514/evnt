@@ -335,7 +335,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           )}
           <div className="flex justify-between text-sm">
             <span>Stripe Processing Fee (2.9% + $0.30):</span>
-            <span className="font-bold">${totals.stripeFee.toFixed(2)}</span>
+            <span className="font-bold">${(totals.stripeFee || 0).toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays Total:</span>
@@ -356,7 +356,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <p className="text-sm text-blue-900">
             {isVendor 
               ? `Client pays agreed price${totals.marylandTax > 0 ? ' + 6% MD tax' : ''} + Stripe fee = $${totals.totalAmount.toFixed(2)}. EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay: $${totals.subtotal.toFixed(2)}${totals.marylandTax > 0 ? ' + $' + totals.marylandTax.toFixed(2) + ' MD tax' : ''} + $${totals.stripeFee.toFixed(2)} Stripe fee = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
+              : `You pay: $${totals.subtotal.toFixed(2)}${totals.marylandTax > 0 ? ' + $' + totals.marylandTax.toFixed(2) + ' MD tax' : ''} + $${(totals.stripeFee || 0).toFixed(2)} Stripe fee = $${totals.totalAmount.toFixed(2)} total. Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee.`}
           </p>
         </div>
 
