@@ -100,6 +100,8 @@ export default function SwipePage() {
   });
 
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
+  const lastSwipeTimeRef = React.useRef(0);
+  const SWIPE_COOLDOWN_MS = 800; // Rate limit: min 800ms between swipes
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor, swipeId }) => {
@@ -121,6 +123,17 @@ export default function SwipePage() {
       });
 
       if (direction === "right") {
+        // Check if already saved to prevent duplicate favorites
+        const existingSaved = await base44.entities.SavedVendor.filter({ 
+          vendor_id: vendorId,
+          created_by: currentUser?.email 
+        });
+        
+        if (existingSaved.length > 0) {
+          console.log('[MUTATION] Vendor already saved:', vendorId);
+          return Promise.all([swipePromise, existingSaved[0]]);
+        }
+
         const savePromise = base44.entities.SavedVendor.create({
           vendor_id: vendorId,
           vendor_name: vendor.business_name,
@@ -271,16 +284,20 @@ export default function SwipePage() {
       return;
     }
     
+    // Rate limit check
+    const now = Date.now();
+    if (now - lastSwipeTimeRef.current < SWIPE_COOLDOWN_MS) {
+      console.log('[SWIPE] BLOCKED - Rate limited');
+      return;
+    }
+    lastSwipeTimeRef.current = now;
+    
     // Lock immediately with logging
     console.log('[SWIPE] LOCKING - Proceeding with swipe');
     swipeLockRef.current = true;
     setIsSwipeInProgress(true);
     
     const vendorToSwipe = currentVendor;
-    
-    // DON'T increment index - let remainingVendors array naturally update
-    // When the swipe is saved and query refetches, remainingVendors will exclude
-    // the swiped vendor, so the same index will show the next vendor
     
     // Perform mutation async
     console.log('[SWIPE] Calling mutation for vendor:', vendorToSwipe.id);
