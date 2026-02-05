@@ -231,20 +231,23 @@ export default function SwipePage() {
     const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
     const aLocationMatch = a.location?.toLowerCase() === userLocation;
     const bLocationMatch = b.location?.toLowerCase() === userLocation;
-    if (aLocationMatch && !bLocationMatch) return -1;
-    if (!aLocationMatch && bLocationMatch) return 1;
-    
+    if (aLocationMatch !== bLocationMatch) {
+      return aLocationMatch ? -1 : 1;
+    }
+
     // 3. Location contains user's city/state
     const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
     const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
-    if (aLocationPartial && !bLocationPartial) return -1;
-    if (!aLocationPartial && bLocationPartial) return 1;
+    if (aLocationPartial !== bLocationPartial) {
+      return aLocationPartial ? -1 : 1;
+    }
     
     // 4. Event type specialties match
     const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
     const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
-    if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
-    if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
+    if (aSpecialtiesMatch !== bSpecialtiesMatch) {
+      return aSpecialtiesMatch ? -1 : 1;
+    }
     
     // 5. Better rating (if reviews exist)
     const aReviews = reviews.filter(r => r.vendor_id === a.id);
@@ -358,10 +361,23 @@ export default function SwipePage() {
     setCurrentIndex(0);
   }, [filters]);
 
-  if (isLoading) {
+  if (vendorsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">
+            Find Your Perfect Vendors
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 font-medium">
+            Swipe right to save, left to pass
+          </p>
+        </div>
+        <div className="relative h-[600px] mb-8 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-black" />
+            <p className="text-gray-600 font-medium">Loading vendors...</p>
+          </div>
+        </div>
       </div>
     );
   }
