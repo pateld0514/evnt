@@ -320,7 +320,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
           {totals.marylandTax > 0 && (
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm">
               <span>Maryland Sales Tax (6%):</span>
               <span className="font-bold">${totals.marylandTax.toFixed(2)}</span>
             </div>
