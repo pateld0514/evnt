@@ -91,6 +91,18 @@ export default function SwipePage() {
     gcTime: 5 * 60 * 1000,
   });
 
+  const { data: savedVendors = [] } = useQuery({
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
+    },
+    enabled: !!currentUser,
+    initialData: [],
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
+
   const { data: bookings = [] } = useQuery({
     queryKey: ['all-bookings'],
     queryFn: () => base44.entities.Booking.list(),
@@ -128,13 +140,18 @@ export default function SwipePage() {
       });
 
       if (direction === "right") {
-        const savePromise = base44.entities.SavedVendor.create({
-          vendor_id: vendorId,
-          vendor_name: vendor.business_name,
-          vendor_category: vendor.category,
-          event_type: eventType
-        });
-        return Promise.all([swipePromise, savePromise]);
+        // Check if vendor is already saved to prevent duplicates
+        const alreadySaved = savedVendors.some(sv => sv.vendor_id === vendorId);
+        
+        if (!alreadySaved) {
+          const savePromise = base44.entities.SavedVendor.create({
+            vendor_id: vendorId,
+            vendor_name: vendor.business_name,
+            vendor_category: vendor.category,
+            event_type: eventType
+          });
+          return Promise.all([swipePromise, savePromise]);
+        }
       }
       
       return swipePromise;
