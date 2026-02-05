@@ -66,18 +66,18 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const calculateTotals = async () => {
     const price = parseFloat(agreedPrice) || 0;
     const additionalTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-    const subtotal = price + additionalTotal;
+    const baseEventAmount = price + additionalTotal;
     
     // Get dynamic fee calculation considering tier discounts
     let finalFeePercent = platformFeePercent;
-    let platformFeeAmount = (subtotal * finalFeePercent) / 100;
+    let platformFeeAmount = (baseEventAmount * finalFeePercent) / 100;
     
     try {
       // Call calculateDynamicFee to get the actual fee with discounts applied
       const feeCalc = await base44.functions.invoke('calculateDynamicFee', {
         vendor_id: booking.vendor_id,
         client_email: booking.client_email,
-        booking_amount: subtotal
+        booking_amount: baseEventAmount
       });
       
       if (feeCalc.data && feeCalc.data.final_fee_percent !== undefined) {
@@ -88,10 +88,25 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       console.warn('Could not calculate dynamic fee, using base fee', error);
     }
     
-    const totalAmount = subtotal; // Client pays the agreed price
-    const vendorPayout = Math.max(0, subtotal - platformFeeAmount); // Vendor gets agreed price minus platform fee, minimum 0
+    // Calculate Maryland sales tax (6% for MD clients)
+    const isMarylandClient = booking.location?.toUpperCase().includes('MD') || 
+                            booking.location?.toLowerCase().includes('maryland');
+    const marylandTax = isMarylandClient ? baseEventAmount * 0.06 : 0;
+    
+    const vendorPayout = baseEventAmount; // Vendor receives base event amount only
+    const totalAmount = baseEventAmount + platformFeeAmount + marylandTax; // Client pays all
 
-    return { price, additionalTotal, subtotal, platformFeeAmount, totalAmount, vendorPayout, finalFeePercent };
+    return { 
+      price, 
+      additionalTotal, 
+      subtotal: baseEventAmount,
+      baseEventAmount,
+      platformFeeAmount, 
+      marylandTax,
+      totalAmount, 
+      vendorPayout, 
+      finalFeePercent 
+    };
   };
 
   const submitProposalMutation = useMutation({
@@ -154,14 +169,24 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       return;
     }
 
+    // Determine client state for tax purposes
+    const clientState = booking.location?.toUpperCase().includes('MD') || 
+                       booking.location?.toLowerCase().includes('maryland') ? 'MD' : null;
+
     const data = {
-      agreed_price: parseFloat(agreedPrice),
+      base_event_amount: totals.baseEventAmount,
+      agreed_price: totals.baseEventAmount, // Keep for backward compat
       service_description: serviceDescription,
       additional_fees: additionalFees,
       platform_fee_percent: totals.finalFeePercent || platformFeePercent,
       platform_fee_amount: totals.platformFeeAmount,
+      maryland_sales_tax_percent: totals.marylandTax > 0 ? 6 : 0,
+      maryland_sales_tax_amount: totals.marylandTax,
       vendor_payout: totals.vendorPayout,
-      total_amount: totals.totalAmount,
+      total_amount_charged: totals.totalAmount,
+      total_amount: totals.totalAmount, // Keep for backward compat
+      client_state: clientState,
+      currency: 'USD',
       status: isVendor ? "negotiating" : "payment_pending"
     };
 
@@ -288,18 +313,24 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             </div>
           )}
           <div className="flex justify-between text-sm pt-2 border-t-2 border-gray-300">
-            <span>Subtotal:</span>
+            <span>Base Event Amount:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
+          <div className="flex justify-between text-sm text-blue-600">
+            <span>EVNT Platform Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
+            <span className="font-bold">${totals.platformFeeAmount.toFixed(2)}</span>
+          </div>
+          {totals.marylandTax > 0 && (
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Maryland Sales Tax (6%):</span>
+              <span className="font-bold">${totals.marylandTax.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
-            <span>Client Pays:</span>
+            <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-blue-600 pt-2 border-t border-gray-300">
-            <span>EVNT Platform Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
-            <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-gray-600 pt-2 border-t border-gray-300">
             <span>Vendor Receives:</span>
             <span className="font-bold">${totals.vendorPayout.toFixed(2)}</span>
           </div>
@@ -309,8 +340,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `The platform fee (${(totals.finalFeePercent || platformFeePercent).toFixed(1)}%) is deducted from your agreed price. ${totals.finalFeePercent < platformFeePercent ? 'You are receiving a tier discount!' : ''} Client pays the agreed price, and you receive the amount minus the platform fee.`
-              : `The ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% platform fee is deducted from the vendor's payout. ${totals.finalFeePercent < platformFeePercent ? 'Tier discounts have been applied!' : ''} You pay the agreed price, vendor receives the amount minus the platform fee.`}
+              ? `Client pays: Base event + ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee${totals.marylandTax > 0 ? ' + 6% MD tax' : ''}. You receive the base event amount ($${totals.vendorPayout.toFixed(2)}). ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+              : `You pay: Base event + ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee${totals.marylandTax > 0 ? ' + 6% Maryland sales tax' : ''} = $${totals.totalAmount.toFixed(2)}. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
           </p>
         </div>
 
