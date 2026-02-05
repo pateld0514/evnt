@@ -231,41 +231,7 @@ export default function SwipeCard({ vendor, onSwipe, disabled, savedVendorIds = 
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2 flex-shrink-0" onPointerDown={(e) => e.stopPropagation()}>
-              <Button
-                variant="outline"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-xs md:text-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(createPageUrl("VendorView") + `?id=${vendor.id}`);
-                }}
-              >
-                View Profile
-              </Button>
-              <Button
-                variant="outline"
-                className={`border-2 font-bold h-10 text-xs md:text-sm ${isSaved ? 'border-red-500 bg-red-50 text-red-500' : 'border-black hover:bg-black hover:text-white'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isSaved) {
-                    onSwipe("right", 'heart-button');
-                  }
-                }}
-                disabled={isSaved}
-              >
-                <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-red-500' : ''}`} />
-              </Button>
-              <Button
-                className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-xs md:text-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setBookingOpen(true);
-                }}
-              >
-                <Calendar className="w-3.5 h-3.5 mr-1" />
-                Book Now
-              </Button>
-            </div>
+
           </div>
         </Card>
       </motion.div>
