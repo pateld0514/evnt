@@ -166,24 +166,25 @@ export default function SwipePage() {
       return swipePromise;
     },
     onSuccess: (result, variables) => {
-        if (variables.direction === "right") {
-          toast.success("Added to your favorites! ❤️");
-        }
+          if (variables.direction === "right") {
+            toast.success("Added to your favorites! ❤️");
+          }
 
-        const swipeId = Array.isArray(result) ? result[0].id : result.id;
-        const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
-        setSwipeHistory(prev => [...prev, { 
-          swipeId, 
-          savedId,
-          vendorId: variables.vendorId,
-          direction: variables.direction,
-          vendor: variables.vendor 
-        }]);
+          const swipeId = Array.isArray(result) ? result[0].id : result.id;
+          const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
+          setSwipeHistory(prev => [...prev, { 
+            swipeId, 
+            savedId,
+            vendorId: variables.vendorId,
+            direction: variables.direction,
+            vendor: variables.vendor 
+          }]);
 
-        swipeLockRef.current = false;
-        setIsSwipeInProgress(false);
-        queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
-      },
+          swipeLockRef.current = false;
+          setIsSwipeInProgress(false);
+          queryClient.invalidateQueries({ queryKey: ['user-swipes', currentUser?.email] });
+          queryClient.invalidateQueries({ queryKey: ['saved-vendors', currentUser?.email] });
+        },
     onError: (error) => {
       // Remove from local tracking if error
       setLocalSwipedIds(prev => {
