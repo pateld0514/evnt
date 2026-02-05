@@ -114,23 +114,20 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
   };
 
   const handleDragEnd = (event, info) => {
-    console.log('[CARD] DragEnd triggered', { disabled, offsetX: info.offset.x, vendorId: vendor.id });
-    
     setIsDragging(false);
     
     if (disabled) {
-      console.log('[CARD] DragEnd BLOCKED - disabled');
       x.set(0);
       return;
     }
     
-    const threshold = 150;
-    if (Math.abs(info.offset.x) > threshold) {
+    const threshold = 100;
+    const velocity = info.velocity.x;
+    
+    if (Math.abs(info.offset.x) > threshold || Math.abs(velocity) > 500) {
       const direction = info.offset.x > 0 ? "right" : "left";
-      console.log('[CARD] DragEnd EXECUTING - Direction:', direction);
       onSwipe(direction, 'drag-gesture');
     } else {
-      console.log('[CARD] DragEnd - Below threshold, resetting');
       x.set(0);
     }
   };
@@ -140,13 +137,14 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
       <motion.div
         className="absolute inset-0"
         style={{ x, rotate }}
-        drag={disabled || isDragging ? false : "x"}
-        dragConstraints={{ left: 0, right: 0 }}
+        drag={disabled ? false : "x"}
+        dragConstraints={{ left: -300, right: 300 }}
+        dragElastic={0.2}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         whileTap={disabled ? {} : { cursor: "grabbing" }}
         animate={{ x: 0, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
       >
         <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
@@ -169,18 +167,18 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
 
             <motion.div
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ opacity: useTransform(x, [0, 150], [0, 0.9]) }}
+              style={{ opacity: useTransform(x, [0, 200], [0, 1]) }}
             >
-              <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg] shadow-xl">
+              <div className="bg-green-500 text-white text-5xl font-black px-10 py-5 rounded-3xl border-4 border-white rotate-[-20deg] shadow-2xl">
                 LIKE ❤️
               </div>
             </motion.div>
             
             <motion.div
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ opacity: useTransform(x, [-150, 0], [0.9, 0]) }}
+              style={{ opacity: useTransform(x, [-200, 0], [1, 0]) }}
             >
-              <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg] shadow-xl">
+              <div className="bg-red-500 text-white text-5xl font-black px-10 py-5 rounded-3xl border-4 border-white rotate-[20deg] shadow-2xl">
                 PASS ✕
               </div>
             </motion.div>
