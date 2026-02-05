@@ -121,9 +121,18 @@ export default function SwipePage() {
 
   const [localSwipedIds, setLocalSwipedIds] = useState(new Set());
 
+  // Track which vendors have been swiped (left or right) to exclude from display
+  const allSwipedVendorIds = React.useMemo(() => {
+    const ids = new Set();
+    swipedVendors.forEach(swipe => ids.add(swipe.vendor_id));
+    savedVendors.forEach(saved => ids.add(saved.vendor_id));
+    localSwipedIds.forEach(id => ids.add(id));
+    return ids;
+  }, [swipedVendors, savedVendors, localSwipedIds]);
+
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
   const lastSwipeTimeRef = React.useRef(0);
-  const SWIPE_COOLDOWN_MS = 800; // Rate limit: min 800ms between swipes
+  const SWIPE_COOLDOWN_MS = 400; // Rate limit: min 400ms between swipes
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -173,6 +182,7 @@ export default function SwipePage() {
 
         swipeLockRef.current = false;
         setIsSwipeInProgress(false);
+        queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
       },
     onError: (error) => {
       // Remove from local tracking if error
@@ -207,8 +217,8 @@ export default function SwipePage() {
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
     const profileComplete = vendor.profile_complete === true;
-    // Use local swipe tracking for immediate UI update
-    const hasLeftSwiped = localSwipedIds.has(vendor.id);
+    // Exclude all swiped vendors (both left and right)
+    const hasBeenSwiped = allSwipedVendorIds.has(vendor.id);
     const matchesCategory = filters.category === "all" || vendor.category === filters.category;
     const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
     
@@ -235,7 +245,7 @@ export default function SwipePage() {
       }
     }
     
-    return isApproved && profileComplete && !hasLeftSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+    return isApproved && profileComplete && !hasBeenSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
   }).sort((a, b) => {
     // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
     const tierA = getVendorTier(a.id);
@@ -295,7 +305,8 @@ export default function SwipePage() {
     
     const vendorToSwipe = currentVendor;
     
-    // Optimistic update: add to local swiped IDs immediately
+    // Optimistic update: move to next card immediately (smooth UI)
+    setCurrentIndex(prev => prev + 1);
     setLocalSwipedIds(prev => new Set([...prev, vendorToSwipe.id]));
     
     // Save to database
