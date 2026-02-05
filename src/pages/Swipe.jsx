@@ -158,7 +158,7 @@ export default function SwipePage() {
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
     const profileComplete = vendor.profile_complete === true;
-    const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id);
+    const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
     const matchesCategory = filters.category === "all" || vendor.category === filters.category;
     const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
     
