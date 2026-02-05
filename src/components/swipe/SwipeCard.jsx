@@ -106,14 +106,23 @@ export default function SwipeCard({ vendor, onSwipe }) {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasSwiped, setHasSwiped] = useState(false);
+
   const handleDragEnd = (event, info) => {
+    setIsDragging(false);
     const threshold = 150;
-    if (Math.abs(info.offset.x) > threshold) {
+    if (Math.abs(info.offset.x) > threshold && !hasSwiped) {
+      setHasSwiped(true);
       onSwipe(info.offset.x > 0 ? "right" : "left");
     } else {
       x.set(0);
     }
   };
+
+  useEffect(() => {
+    setHasSwiped(false);
+  }, [vendor.id]);
 
   return (
     <>
@@ -122,6 +131,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
         style={{ x, rotate }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
+        onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
         whileTap={{ cursor: "grabbing" }}
         animate={{ x: 0, rotate: 0 }}

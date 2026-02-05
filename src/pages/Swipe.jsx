@@ -98,6 +98,8 @@ export default function SwipePage() {
     initialData: [],
   });
 
+  const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
+
   const swipeMutation = useMutation({
     mutationFn: ({ vendorId, direction, vendor, swipeId }) => {
       const swipePromise = base44.entities.UserSwipe.create({
@@ -118,6 +120,9 @@ export default function SwipePage() {
       
       return swipePromise;
     },
+    onMutate: () => {
+      setIsSwipeInProgress(true);
+    },
     onSuccess: (result, variables) => {
       queryClient.invalidateQueries(['user-swipes']);
       if (variables.direction === "right") {
@@ -135,6 +140,11 @@ export default function SwipePage() {
         direction: variables.direction,
         vendor: variables.vendor 
       }]);
+      
+      setTimeout(() => setIsSwipeInProgress(false), 300);
+    },
+    onError: () => {
+      setIsSwipeInProgress(false);
     },
   });
 
@@ -230,15 +240,16 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor || swipeMutation.isPending) return;
+    if (!currentVendor || isSwipeInProgress) return;
+    
+    // Immediately increment to prevent double swipes
+    setCurrentIndex(prev => prev + 1);
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,
       vendor: currentVendor
     });
-
-    setCurrentIndex(prev => prev + 1);
   };
 
   const handleUndo = async () => {
@@ -489,7 +500,7 @@ export default function SwipePage() {
             variant="outline"
             className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50 transition-all disabled:opacity-50"
             onClick={() => handleSwipe("left")}
-            disabled={swipeMutation.isPending}
+            disabled={isSwipeInProgress}
           >
             <X className="w-8 h-8 text-black" />
           </Button>
@@ -498,7 +509,7 @@ export default function SwipePage() {
             size="lg"
             className="w-20 h-20 rounded-full bg-black hover:bg-gray-800 transition-all disabled:opacity-50"
             onClick={() => handleSwipe("right")}
-            disabled={swipeMutation.isPending}
+            disabled={isSwipeInProgress}
           >
             <Heart className="w-8 h-8 text-white" fill="white" />
           </Button>
@@ -506,9 +517,14 @@ export default function SwipePage() {
       )}
 
       <div className="text-center mt-6 text-base text-gray-600 font-bold">
-        {filteredVendors.length > 0 && (
+        {filteredVendors.length > 0 && currentIndex < filteredVendors.length && (
           <>
             {currentIndex + 1} / {filteredVendors.length} vendors
+          </>
+        )}
+        {currentIndex >= filteredVendors.length && filteredVendors.length > 0 && (
+          <>
+            {filteredVendors.length} / {filteredVendors.length} vendors
           </>
         )}
       </div>
