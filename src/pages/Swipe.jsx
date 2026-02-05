@@ -140,16 +140,10 @@ export default function SwipePage() {
       return swipePromise;
     },
     onSuccess: (result, variables) => {
-        console.log('[MUTATION] Success - Vendor:', variables.vendorId);
-
-        // Track swiped vendor locally
-        setLocalSwipedIds(prev => new Set([...prev, variables.vendorId]));
-
         if (variables.direction === "right") {
           toast.success("Added to your favorites! ❤️");
         }
 
-        // Store in history for undo
         const swipeId = Array.isArray(result) ? result[0].id : result.id;
         const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
         setSwipeHistory(prev => [...prev, { 
@@ -160,13 +154,17 @@ export default function SwipePage() {
           vendor: variables.vendor 
         }]);
 
-        // Don't refetch, just let UI update with local state
-        // Unlock immediately
-        console.log('[MUTATION] Unlocking immediately');
         swipeLockRef.current = false;
         setIsSwipeInProgress(false);
       },
-    onError: () => {
+    onError: (error) => {
+      // Remove from local tracking if error
+      setLocalSwipedIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(error.vendorId);
+        return updated;
+      });
+      toast.error("Something went wrong");
       swipeLockRef.current = false;
       setIsSwipeInProgress(false);
     },
@@ -192,7 +190,8 @@ export default function SwipePage() {
   const filteredVendors = vendors.filter(vendor => {
     const isApproved = vendor.approval_status === "approved";
     const profileComplete = vendor.profile_complete === true;
-    const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+    // Use local swipe tracking for immediate UI update
+    const hasLeftSwiped = localSwipedIds.has(vendor.id);
     const matchesCategory = filters.category === "all" || vendor.category === filters.category;
     const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
     
@@ -215,11 +214,11 @@ export default function SwipePage() {
         const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
         matchesRating = avgRating >= parseFloat(filters.minRating);
       } else {
-        matchesRating = false; // No reviews, exclude from rated filter
+        matchesRating = false;
       }
     }
     
-    return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+    return isApproved && profileComplete && !hasLeftSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
   }).sort((a, b) => {
     // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
     const tierA = getVendorTier(a.id);
@@ -267,36 +266,22 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction, source = 'unknown') => {
-    console.log(`[SWIPE] Triggered - Direction: ${direction}, Source: ${source}, Vendor: ${currentVendor?.id}, Time: ${Date.now()}`);
+    if (!currentVendor) return;
+    if (swipeLockRef.current) return;
     
-    // Check ref-based lock first (synchronous)
-    if (!currentVendor) {
-      console.log('[SWIPE] BLOCKED - No current vendor');
-      return;
-    }
-    
-    if (swipeLockRef.current) {
-      console.log('[SWIPE] BLOCKED - Lock is active');
-      return;
-    }
-    
-    // Rate limit check
     const now = Date.now();
-    if (now - lastSwipeTimeRef.current < SWIPE_COOLDOWN_MS) {
-      console.log('[SWIPE] BLOCKED - Rate limited');
-      return;
-    }
+    if (now - lastSwipeTimeRef.current < SWIPE_COOLDOWN_MS) return;
     lastSwipeTimeRef.current = now;
     
-    // Lock immediately with logging
-    console.log('[SWIPE] LOCKING - Proceeding with swipe');
     swipeLockRef.current = true;
     setIsSwipeInProgress(true);
     
     const vendorToSwipe = currentVendor;
     
-    // Perform mutation async
-    console.log('[SWIPE] Calling mutation for vendor:', vendorToSwipe.id);
+    // Optimistic update: add to local swiped IDs immediately
+    setLocalSwipedIds(prev => new Set([...prev, vendorToSwipe.id]));
+    
+    // Save to database
     swipeMutation.mutate({
       vendorId: vendorToSwipe.id,
       direction,
@@ -310,21 +295,20 @@ export default function SwipePage() {
     const lastSwipe = swipeHistory[swipeHistory.length - 1];
     
     try {
-      // Delete the swipe record
       await base44.entities.UserSwipe.delete(lastSwipe.swipeId);
       
-      // If it was a right swipe, delete the saved vendor too
       if (lastSwipe.savedId) {
         await base44.entities.SavedVendor.delete(lastSwipe.savedId);
       }
       
-      // Go back one card
-      setCurrentIndex(prev => Math.max(0, prev - 1));
+      // Remove from local tracking
+      setLocalSwipedIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(lastSwipe.vendorId);
+        return updated;
+      });
+      
       setSwipeHistory(prev => prev.slice(0, -1));
-      
-      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
-      queryClient.invalidateQueries({ queryKey: ['saved-vendors'], exact: true });
-      
       toast.success("Undone!");
     } catch (error) {
       toast.error("Failed to undo");
@@ -333,13 +317,13 @@ export default function SwipePage() {
 
   const handleReset = async () => {
     try {
-      // Delete all user swipes to bring back all vendors
       for (const swipe of swipedVendors) {
         await base44.entities.UserSwipe.delete(swipe.id);
       }
       
       setCurrentIndex(0);
       setSwipeHistory([]);
+      setLocalSwipedIds(new Set());
       setFilters({
         category: "all",
         priceRange: "all",
@@ -349,7 +333,6 @@ export default function SwipePage() {
         minRating: "all"
       });
       
-      queryClient.invalidateQueries({ queryKey: ['user-swipes'], exact: true });
       toast.success("All vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
