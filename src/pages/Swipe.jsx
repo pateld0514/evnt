@@ -139,14 +139,15 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // Re-enable after animation completes
+      queryClient.invalidateQueries(['user-swipes']);
+      if (variables.direction === "right") {
+        queryClient.invalidateQueries(['saved-vendors']);
+      }
+      
+      // Re-enable after brief delay
       setTimeout(() => {
         setIsSwipeInProgress(false);
-        queryClient.invalidateQueries(['user-swipes']);
-        if (variables.direction === "right") {
-          queryClient.invalidateQueries(['saved-vendors']);
-        }
-      }, 400);
+      }, 300);
     },
     onError: () => {
       setIsSwipeInProgress(false);
@@ -247,18 +248,17 @@ export default function SwipePage() {
   const handleSwipe = (direction) => {
     if (!currentVendor || isSwipeInProgress) return;
     
+    const vendorToSwipe = currentVendor;
+    const indexToIncrement = currentIndex;
+    
     setIsSwipeInProgress(true);
+    setCurrentIndex(prev => prev + 1);
     
     swipeMutation.mutate({
-      vendorId: currentVendor.id,
+      vendorId: vendorToSwipe.id,
       direction,
-      vendor: currentVendor
+      vendor: vendorToSwipe
     });
-    
-    // Move to next card after a short delay
-    setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-    }, 150);
   };
 
   const handleUndo = async () => {
@@ -464,6 +464,7 @@ export default function SwipePage() {
       <div className="relative h-[600px] mb-8">
         {currentVendor ? (
           <SwipeCard
+            key={currentVendor.id}
             vendor={currentVendor}
             onSwipe={handleSwipe}
             disabled={isSwipeInProgress}
