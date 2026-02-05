@@ -105,14 +105,24 @@ export default function SavedPage() {
     },
   });
 
-  // Get unique categories from saved vendors
+  // Get unique categories from deduplicated saved vendors
   const availableCategories = React.useMemo(() => {
-    const categories = savedVendors.map(saved => saved.vendor_category).filter(Boolean);
+    const categories = deduplicatedSaved.map(saved => saved.vendor_category).filter(Boolean);
     const uniqueCategories = [...new Set(categories)];
     return uniqueCategories;
+  }, [deduplicatedSaved]);
+
+  // Deduplicate saved vendors by vendor_id - keep first occurrence
+  const deduplicatedSaved = React.useMemo(() => {
+    const seen = new Set();
+    return savedVendors.filter(saved => {
+      if (seen.has(saved.vendor_id)) return false;
+      seen.add(saved.vendor_id);
+      return true;
+    });
   }, [savedVendors]);
 
-  const filteredSaved = savedVendors.filter(saved => {
+  const filteredSaved = deduplicatedSaved.filter(saved => {
     const categoryMatch = selectedCategory === "all" || saved.vendor_category === selectedCategory;
     if (!categoryMatch) return false;
     
@@ -183,11 +193,11 @@ export default function SavedPage() {
           Your Favorites
         </h1>
         <p className="text-lg md:text-xl text-gray-600 font-medium">
-          {savedVendors.length} vendor{savedVendors.length !== 1 ? 's' : ''} saved
+          {deduplicatedSaved.length} vendor{deduplicatedSaved.length !== 1 ? 's' : ''} saved
         </p>
       </div>
 
-      {savedVendors.length > 0 && (
+      {deduplicatedSaved.length > 0 && (
         <>
           <div className="mb-6 max-w-2xl mx-auto">
             <VendorSearch 
