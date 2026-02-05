@@ -72,12 +72,22 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       return;
     }
 
+    // Extract state from location
+    const extractStateCode = (location) => {
+      if (!location) return null;
+      const stateMatch = location.match(/,\s*([A-Z]{2})(?:\s|$)/);
+      return stateMatch ? stateMatch[1] : null;
+    };
+
+    const clientState = extractStateCode(formData.location);
+
     const bookingData = {
       event_id: formData.event_id || null,
       vendor_id: vendor.id,
       vendor_name: vendor.business_name,
       client_email: currentUser.email,
       client_name: currentUser.full_name,
+      client_state: clientState,
       event_type: formData.event_type,
       event_date: formData.event_date,
       guest_count: formData.guest_count ? parseInt(formData.guest_count) : undefined,
