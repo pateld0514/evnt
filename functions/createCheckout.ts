@@ -2,8 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
-const MARYLAND_TAX_RATE = 0.06; // 6% Maryland sales & use tax
-const PLATFORM_FEE_PERCENT = 0.15; // 15% platform fee
 
 Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
@@ -172,14 +170,16 @@ Deno.serve(async (req) => {
       }
     ];
     
-    // Add Maryland sales tax if applicable
+    // Add sales tax if applicable
     if (taxCents > 0) {
+      const taxPercent = booking.maryland_sales_tax_percent || 0;
+      const stateName = booking.client_state ? `${booking.client_state} ` : '';
       lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'Maryland Sales Tax',
-            description: '6% Maryland sales & use tax on service price',
+            name: `${stateName}Sales Tax`,
+            description: `${taxPercent.toFixed(1)}% sales tax on service price`,
           },
           unit_amount: taxCents,
         },

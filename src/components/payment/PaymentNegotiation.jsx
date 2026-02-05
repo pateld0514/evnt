@@ -143,18 +143,24 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       'DC': { rate: 0.0600, name: 'District of Columbia' }
     };
     
-    // Detect state from location
-    const location = (booking.location || '').toUpperCase();
+    // Detect state - prioritize client_state field, fall back to location parsing
+    let stateCode = booking.client_state;
+    
+    // If no client_state, try to extract from location
+    if (!stateCode && booking.location) {
+      const location = booking.location.toUpperCase();
+      const stateMatch = location.match(/,\s*([A-Z]{2})(?:\s|$)/);
+      stateCode = stateMatch ? stateMatch[1] : null;
+    }
+    
     let salesTaxRate = 0;
     let taxLabel = '';
     
-    // Try to match state abbreviation or full name
-    for (const [abbr, data] of Object.entries(stateTaxRates)) {
-      if (location.includes(abbr) || location.includes(data.name.toUpperCase())) {
-        salesTaxRate = data.rate;
-        taxLabel = `${data.name} Sales Tax (${(data.rate * 100).toFixed(1)}%)`;
-        break;
-      }
+    // Look up tax rate by state code
+    if (stateCode && stateTaxRates[stateCode]) {
+      const data = stateTaxRates[stateCode];
+      salesTaxRate = data.rate;
+      taxLabel = `${data.name} Sales Tax (${(data.rate * 100).toFixed(1)}%)`;
     }
     
     const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
@@ -247,9 +253,12 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       return;
     }
 
-    // Determine client state for tax purposes
-    const clientState = booking.location?.toUpperCase().includes('MD') || 
-                       booking.location?.toLowerCase().includes('maryland') ? 'MD' : null;
+    // Ensure client_state is set correctly from location if not already set
+    let clientState = booking.client_state;
+    if (!clientState && booking.location) {
+      const stateMatch = booking.location.match(/,\s*([A-Z]{2})(?:\s|$)/);
+      clientState = stateMatch ? stateMatch[1] : null;
+    }
 
     const data = {
       base_event_amount: totals.baseEventAmount,
@@ -258,8 +267,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       additional_fees: additionalFees,
       platform_fee_percent: totals.finalFeePercent || platformFeePercent,
       platform_fee_amount: totals.platformFeeAmount,
-      maryland_sales_tax_percent: totals.marylandTax > 0 ? 6 : 0,
-      maryland_sales_tax_amount: totals.marylandTax,
+      maryland_sales_tax_percent: totals.salesTaxRate * 100,
+      maryland_sales_tax_amount: totals.salesTax,
       vendor_payout: totals.vendorPayout,
       total_amount_charged: totals.totalAmount,
       total_amount: totals.totalAmount, // Keep for backward compat
