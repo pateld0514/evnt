@@ -107,8 +107,11 @@ export default function SwipeCard({ vendor, onSwipe }) {
     : null;
 
   const handleDragEnd = (event, info) => {
-    if (Math.abs(info.offset.x) > 100) {
+    const threshold = 150;
+    if (Math.abs(info.offset.x) > threshold) {
       onSwipe(info.offset.x > 0 ? "right" : "left");
+    } else {
+      x.set(0);
     }
   };
 
@@ -121,6 +124,8 @@ export default function SwipeCard({ vendor, onSwipe }) {
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
         whileTap={{ cursor: "grabbing" }}
+        animate={{ x: 0, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>

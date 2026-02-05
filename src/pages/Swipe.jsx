@@ -230,7 +230,7 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor) return;
+    if (!currentVendor || swipeMutation.isPending) return;
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
@@ -487,16 +487,18 @@ export default function SwipePage() {
           <Button
             size="lg"
             variant="outline"
-            className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50"
+            className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50 transition-all disabled:opacity-50"
             onClick={() => handleSwipe("left")}
+            disabled={swipeMutation.isPending}
           >
             <X className="w-8 h-8 text-black" />
           </Button>
 
           <Button
             size="lg"
-            className="w-20 h-20 rounded-full bg-black hover:bg-gray-800"
+            className="w-20 h-20 rounded-full bg-black hover:bg-gray-800 transition-all disabled:opacity-50"
             onClick={() => handleSwipe("right")}
+            disabled={swipeMutation.isPending}
           >
             <Heart className="w-8 h-8 text-white" fill="white" />
           </Button>
