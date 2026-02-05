@@ -127,14 +127,13 @@ Deno.serve(async (req) => {
     const taxCents = Math.round((booking.maryland_sales_tax_amount || 0) * 100);
     const totalCents = Math.round(booking.total_amount_charged * 100);
 
-    // Verification: ensure total matches sum
-    const calculatedTotal = baseAmountCents + platformFeeCents + taxCents;
+    // Verification: ensure total matches agreed price + tax (EVNT fee comes FROM agreed price)
+    const calculatedTotal = baseAmountCents + taxCents;
     if (Math.abs(totalCents - calculatedTotal) > 1) { // Allow 1 cent rounding difference
       console.error(`[${requestId}] AMOUNT MISMATCH:`, {
         expected_total: totalCents,
         calculated_total: calculatedTotal,
         base: baseAmountCents,
-        fee: platformFeeCents,
         tax: taxCents
       });
       return Response.json({ 
@@ -143,11 +142,11 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[${requestId}] Payment breakdown (cents):`, {
-      base_event: baseAmountCents,
+      agreed_price: baseAmountCents,
       platform_fee: platformFeeCents,
       md_tax: taxCents,
       total: totalCents,
-      vendor_receives: baseAmountCents
+      vendor_receives: baseAmountCents - platformFeeCents
     });
 
     // Get redirect URLs
@@ -165,20 +164,9 @@ Deno.serve(async (req) => {
           currency: 'usd',
           product_data: {
             name: `Event Services - ${booking.vendor_name}`,
-            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}`,
+            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}\n\nBreakdown:\nService Price: $${booking.base_event_amount.toFixed(2)}\nEVNT Fee (${booking.platform_fee_percent}%): -$${booking.platform_fee_amount.toFixed(2)}\nVendor Receives: $${booking.vendor_payout.toFixed(2)}`,
           },
           unit_amount: baseAmountCents,
-        },
-        quantity: 1,
-      },
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'EVNT Platform Fee',
-            description: `Service fee (${booking.platform_fee_percent}%)`,
-          },
-          unit_amount: platformFeeCents,
         },
         quantity: 1,
       }
@@ -191,7 +179,7 @@ Deno.serve(async (req) => {
           currency: 'usd',
           product_data: {
             name: 'Maryland Sales Tax',
-            description: '6% Maryland sales & use tax',
+            description: '6% Maryland sales & use tax on service price',
           },
           unit_amount: taxCents,
         },

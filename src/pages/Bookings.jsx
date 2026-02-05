@@ -470,18 +470,12 @@ export default function BookingsPage() {
                   {selectedBooking.base_event_amount && (
                     <div className="col-span-2">
                       <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-                        <p className="text-sm font-bold text-gray-700 mb-3">Cost Breakdown</p>
+                        <p className="text-sm font-bold text-gray-700 mb-3">Payment Breakdown</p>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Base Event Amount:</span>
+                            <span className="text-gray-600">Agreed Service Price:</span>
                             <span className="font-bold">${selectedBooking.base_event_amount.toFixed(2)}</span>
                           </div>
-                          {selectedBooking.platform_fee_amount > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">EVNT Platform Fee ({selectedBooking.platform_fee_percent}%):</span>
-                              <span className="font-bold">${selectedBooking.platform_fee_amount.toFixed(2)}</span>
-                            </div>
-                          )}
                           {selectedBooking.maryland_sales_tax_amount > 0 && (
                             <div className="flex justify-between">
                               <span className="text-gray-600">Maryland Sales Tax (6%):</span>
@@ -492,9 +486,15 @@ export default function BookingsPage() {
                             <span className="text-gray-900 font-bold">Client Pays Total:</span>
                             <span className="font-bold text-green-600 text-lg">${selectedBooking.total_amount_charged?.toFixed(2) || selectedBooking.total_amount?.toFixed(2)}</span>
                           </div>
-                          {isVendor && selectedBooking.vendor_payout > 0 && (
-                            <div className="flex justify-between pt-2 border-t border-gray-300">
-                              <span className="text-gray-600">Vendor Receives:</span>
+                          {selectedBooking.platform_fee_amount > 0 && (
+                            <div className="flex justify-between pt-2 border-t border-gray-300 text-blue-600">
+                              <span>EVNT Platform Fee ({selectedBooking.platform_fee_percent}%):</span>
+                              <span className="font-bold">-${selectedBooking.platform_fee_amount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {selectedBooking.vendor_payout > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{isVendor ? 'You Receive' : 'Vendor Receives'}:</span>
                               <span className="font-bold text-blue-600">${selectedBooking.vendor_payout.toFixed(2)}</span>
                             </div>
                           )}
