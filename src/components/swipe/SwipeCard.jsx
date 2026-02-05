@@ -145,8 +145,8 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
         animate={{ x: 0, rotate: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
       >
-        <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
-          <div className="relative flex-shrink-0" style={{ height: '55%' }}>
+        <Card className="h-full bg-white shadow-lg border-2 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
+          <div className="relative flex-shrink-0" style={{ height: '60%' }}>
             <img
               src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
               alt={vendor.business_name}
@@ -155,12 +155,9 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
-            <div className="absolute top-4 right-4 flex gap-2">
-              <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
+            <div className="absolute top-3 right-3 flex gap-1.5">
+              <Badge className="bg-white text-black text-xs px-2 py-0.5 font-bold border border-black">
                 {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
-              </Badge>
-              <Badge className={`${tier.color} border-2 text-sm px-3 py-1.5 font-bold`}>
-                {tier.icon} {tier.name}
               </Badge>
             </div>
 
@@ -183,50 +180,35 @@ export default function SwipeCard({ vendor, onSwipe, disabled, isSaved = false }
             </motion.div>
           </div>
 
-          <div className="flex flex-col" style={{ height: '45%', padding: '1rem' }}>
-            <div className="flex-1 overflow-hidden mb-3">
-              <h2 className="text-lg md:text-xl font-black text-black mb-1.5 leading-tight">
+          <div className="flex flex-col" style={{ height: '40%', padding: '0.75rem' }}>
+            <div className="flex-1 overflow-hidden mb-2">
+              <h2 className="text-base font-black text-black mb-1 leading-tight">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-xs md:text-sm text-gray-600 mb-2 line-clamp-2 leading-snug">
+              <p className="text-xs text-gray-600 mb-1.5 line-clamp-1 leading-snug">
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-0.5">
                 {vendor.location && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <MapPin className="w-3 h-3" />
-                    {vendor.location}
-                  </Badge>
-                )}
-                {avgRating && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs font-bold py-0.5 px-1.5">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    {avgRating}
-                  </Badge>
-                )}
-                {vendor.price_range && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <DollarSign className="w-3 h-3" />
-                    {vendor.price_range}
-                  </Badge>
-                )}
-                {vendor.starting_price && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    From ${vendor.starting_price}
-                  </Badge>
-                )}
-                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                  <Award className="w-3 h-3" />
-                  {completedBookings} events
-                </Badge>
-                {vendor.specialties && vendor.specialties.length > 0 && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <Sparkles className="w-3 h-3" />
-                    {vendor.specialties[0]}
-                  </Badge>
-                )}
+                   <Badge variant="outline" className="flex items-center gap-0.5 border border-gray-300 text-xs font-bold py-0.25 px-1">
+                     <MapPin className="w-2.5 h-2.5" />
+                     {vendor.location}
+                   </Badge>
+                 )}
+                 {avgRating && (
+                   <Badge variant="outline" className="flex items-center gap-0.5 border border-yellow-300 bg-yellow-50 text-xs font-bold py-0.25 px-1">
+                     <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                     {avgRating}
+                   </Badge>
+                 )}
+                 {vendor.price_range && (
+                   <Badge variant="outline" className="flex items-center gap-0.5 border border-gray-300 text-xs font-bold py-0.25 px-1">
+                     <DollarSign className="w-2.5 h-2.5" />
+                     {vendor.price_range}
+                   </Badge>
+                 )}
               </div>
             </div>
             
