@@ -120,9 +120,6 @@ export default function SwipePage() {
       
       return swipePromise;
     },
-    onMutate: () => {
-      setIsSwipeInProgress(true);
-    },
     onSuccess: (result, variables) => {
       if (variables.direction === "right") {
         toast.success("Added to your favorites! ❤️");
@@ -147,7 +144,7 @@ export default function SwipePage() {
       // Re-enable after brief delay
       setTimeout(() => {
         setIsSwipeInProgress(false);
-      }, 300);
+      }, 500);
     },
     onError: () => {
       setIsSwipeInProgress(false);
@@ -246,14 +243,20 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor || isSwipeInProgress) return;
+    if (!currentVendor || isSwipeInProgress) {
+      console.log('Blocked swipe - already in progress');
+      return;
+    }
     
     const vendorToSwipe = currentVendor;
-    const indexToIncrement = currentIndex;
     
+    // Lock immediately before any async operations
     setIsSwipeInProgress(true);
+    
+    // Move to next card immediately
     setCurrentIndex(prev => prev + 1);
     
+    // Perform mutation async
     swipeMutation.mutate({
       vendorId: vendorToSwipe.id,
       direction,

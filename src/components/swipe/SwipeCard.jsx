@@ -106,17 +106,14 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  const [hasSwipedThisCard, setHasSwipedThisCard] = useState(false);
-
   const handleDragEnd = (event, info) => {
-    if (disabled || hasSwipedThisCard) {
+    if (disabled) {
       x.set(0);
       return;
     }
     
     const threshold = 150;
     if (Math.abs(info.offset.x) > threshold) {
-      setHasSwipedThisCard(true);
       onSwipe(info.offset.x > 0 ? "right" : "left");
     } else {
       x.set(0);
