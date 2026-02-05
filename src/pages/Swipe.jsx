@@ -144,12 +144,10 @@ export default function SwipePage() {
         queryClient.invalidateQueries(['saved-vendors']);
       }
       
-      // Unlock after delay
-      setTimeout(() => {
-        console.log('[MUTATION] Unlocking after success');
-        swipeLockRef.current = false;
-        setIsSwipeInProgress(false);
-      }, 500);
+      // Unlock immediately (not after delay)
+      console.log('[MUTATION] Unlocking immediately');
+      swipeLockRef.current = false;
+      setIsSwipeInProgress(false);
     },
     onError: () => {
       swipeLockRef.current = false;
