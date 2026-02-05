@@ -530,12 +530,13 @@ export default function SwipePage() {
       {/* Swipe Card */}
       <div className="relative h-[600px] mb-8">
         {currentVendor ? (
-          <SwipeCard
-            key={currentVendor.id}
-            vendor={currentVendor}
-            onSwipe={handleSwipe}
-            disabled={isSwipeInProgress}
-          />
+            <SwipeCard
+              key={currentVendor.id}
+              vendor={currentVendor}
+              onSwipe={handleSwipe}
+              disabled={isSwipeInProgress}
+              savedVendorIds={savedVendors.map(s => s.vendor_id)}
+            />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-4 border-dashed border-gray-300">
             <div className="text-center px-8">
