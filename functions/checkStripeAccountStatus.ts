@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Stripe from 'npm:stripe';
+import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
@@ -8,14 +8,22 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || !user.vendor_id) {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get vendor data
-    const vendors = await base44.entities.Vendor.filter({ id: user.vendor_id });
+    // Get vendor data - find vendor owned by this user
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ 
+      created_by: user.email 
+    });
+    
     if (vendors.length === 0) {
-      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+      return Response.json({ 
+        connected: false,
+        charges_enabled: false,
+        details_submitted: false,
+        message: 'No vendor profile found'
+      });
     }
 
     const vendor = vendors[0];
@@ -28,9 +36,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check account status
+    // Check account status with Stripe
     try {
       const account = await stripe.accounts.retrieve(vendor.stripe_account_id);
+      
+      // Update verification status if changed
+      const accountVerified = account.charges_enabled && account.payouts_enabled;
+      if (vendor.stripe_account_verified !== accountVerified) {
+        await base44.asServiceRole.entities.Vendor.update(vendor.id, {
+          stripe_account_verified: accountVerified,
+        });
+      }
       
       return Response.json({ 
         connected: true,
@@ -39,10 +55,11 @@ Deno.serve(async (req) => {
         payouts_enabled: account.payouts_enabled,
       });
     } catch (stripeError) {
-      // Account doesn't exist, clear it
-      console.log('Invalid account, clearing:', stripeError.message);
-      await base44.asServiceRole.entities.Vendor.update(user.vendor_id, {
+      // Account doesn't exist anymore, clear it
+      console.log('Invalid Stripe account, clearing:', stripeError.message);
+      await base44.asServiceRole.entities.Vendor.update(vendor.id, {
         stripe_account_id: null,
+        stripe_account_verified: false,
       });
       
       return Response.json({ 
