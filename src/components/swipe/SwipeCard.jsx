@@ -48,14 +48,14 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, disabled }) {
+export default function SwipeCard({ vendor, onSwipe, disabled, savedVendorIds = [] }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const isSaved = savedVendorIds.includes(vendor.id);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -247,9 +247,11 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
                 className={`border-2 font-bold h-10 text-xs md:text-sm ${isSaved ? 'border-red-500 bg-red-50 text-red-500' : 'border-black hover:bg-black hover:text-white'}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSwipe("right", 'heart-button');
-                  setIsSaved(true);
+                  if (!isSaved) {
+                    onSwipe("right", 'heart-button');
+                  }
                 }}
+                disabled={isSaved}
               >
                 <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-red-500' : ''}`} />
               </Button>
