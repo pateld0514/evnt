@@ -268,13 +268,10 @@ export default function SwipePage() {
     setIsSwipeInProgress(true);
     
     const vendorToSwipe = currentVendor;
-    const oldIndex = currentIndex;
     
-    // Move to next card immediately
-    setCurrentIndex(prev => {
-      console.log(`[SWIPE] Index change: ${prev} -> ${prev + 1}`);
-      return prev + 1;
-    });
+    // DON'T increment index - let remainingVendors array naturally update
+    // When the swipe is saved and query refetches, remainingVendors will exclude
+    // the swiped vendor, so the same index will show the next vendor
     
     // Perform mutation async
     console.log('[SWIPE] Calling mutation for vendor:', vendorToSwipe.id);
