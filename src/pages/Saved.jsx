@@ -60,6 +60,10 @@ export default function SavedPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
 
+  const getVendorDetails = (vendorId) => {
+    return allVendors.find(v => v.id === vendorId);
+  };
+
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
@@ -126,10 +130,6 @@ export default function SavedPage() {
     
     return true;
   });
-
-  const getVendorDetails = (vendorId) => {
-    return allVendors.find(v => v.id === vendorId);
-  };
 
   const handleMessage = (vendor) => {
     navigate(createPageUrl("Messages") + `?vendor=${vendor.id}`);
