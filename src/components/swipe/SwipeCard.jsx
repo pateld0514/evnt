@@ -107,15 +107,21 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
     : null;
 
   const handleDragEnd = (event, info) => {
+    console.log('[CARD] DragEnd triggered', { disabled, offsetX: info.offset.x, vendorId: vendor.id });
+    
     if (disabled) {
+      console.log('[CARD] DragEnd BLOCKED - disabled');
       x.set(0);
       return;
     }
     
     const threshold = 150;
     if (Math.abs(info.offset.x) > threshold) {
-      onSwipe(info.offset.x > 0 ? "right" : "left");
+      const direction = info.offset.x > 0 ? "right" : "left";
+      console.log('[CARD] DragEnd EXECUTING - Direction:', direction);
+      onSwipe(direction, 'drag-gesture');
     } else {
+      console.log('[CARD] DragEnd - Below threshold, resetting');
       x.set(0);
     }
   };
@@ -128,6 +134,13 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
         drag={disabled ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
+        onPointerDown={(e) => {
+          // Prevent drag if clicking on buttons
+          if (e.target.closest('button')) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
         whileTap={disabled ? {} : { cursor: "grabbing" }}
         animate={{ x: 0, rotate: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}

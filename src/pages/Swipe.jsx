@@ -122,6 +122,8 @@ export default function SwipePage() {
       return swipePromise;
     },
     onSuccess: (result, variables) => {
+      console.log('[MUTATION] Success - Vendor:', variables.vendorId);
+      
       if (variables.direction === "right") {
         toast.success("Added to your favorites! ❤️");
       }
@@ -144,6 +146,7 @@ export default function SwipePage() {
       
       // Unlock after delay
       setTimeout(() => {
+        console.log('[MUTATION] Unlocking after success');
         swipeLockRef.current = false;
         setIsSwipeInProgress(false);
       }, 500);
@@ -245,22 +248,36 @@ export default function SwipePage() {
 
   const currentVendor = filteredVendors[currentIndex];
 
-  const handleSwipe = (direction) => {
+  const handleSwipe = (direction, source = 'unknown') => {
+    console.log(`[SWIPE] Triggered - Direction: ${direction}, Source: ${source}, Vendor: ${currentVendor?.id}, Time: ${Date.now()}`);
+    
     // Check ref-based lock first (synchronous)
-    if (!currentVendor || swipeLockRef.current) {
+    if (!currentVendor) {
+      console.log('[SWIPE] BLOCKED - No current vendor');
       return;
     }
     
-    // Lock immediately
+    if (swipeLockRef.current) {
+      console.log('[SWIPE] BLOCKED - Lock is active');
+      return;
+    }
+    
+    // Lock immediately with logging
+    console.log('[SWIPE] LOCKING - Proceeding with swipe');
     swipeLockRef.current = true;
     setIsSwipeInProgress(true);
     
     const vendorToSwipe = currentVendor;
+    const oldIndex = currentIndex;
     
     // Move to next card immediately
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex(prev => {
+      console.log(`[SWIPE] Index change: ${prev} -> ${prev + 1}`);
+      return prev + 1;
+    });
     
     // Perform mutation async
+    console.log('[SWIPE] Calling mutation for vendor:', vendorToSwipe.id);
     swipeMutation.mutate({
       vendorId: vendorToSwipe.id,
       direction,
@@ -517,7 +534,11 @@ export default function SwipePage() {
             size="lg"
             variant="outline"
             className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50 transition-all disabled:opacity-50"
-            onClick={() => handleSwipe("left")}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSwipe("left", 'button-click-reject');
+            }}
             disabled={isSwipeInProgress}
           >
             <X className="w-8 h-8 text-black" />
@@ -526,7 +547,11 @@ export default function SwipePage() {
           <Button
             size="lg"
             className="w-20 h-20 rounded-full bg-black hover:bg-gray-800 transition-all disabled:opacity-50"
-            onClick={() => handleSwipe("right")}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSwipe("right", 'button-click-like');
+            }}
             disabled={isSwipeInProgress}
           >
             <Heart className="w-8 h-8 text-white" fill="white" />
