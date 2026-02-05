@@ -157,22 +157,52 @@ Deno.serve(async (req) => {
 
     // Create Stripe Checkout Session with manual capture (escrow)
     console.log(`[${requestId}] Creating Stripe Checkout Session...`);
+    
+    // Build line items with detailed breakdown
+    const lineItems = [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Event Services - ${booking.vendor_name}`,
+            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}`,
+          },
+          unit_amount: baseAmountCents,
+        },
+        quantity: 1,
+      },
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'EVNT Platform Fee',
+            description: `Service fee (${booking.platform_fee_percent}%)`,
+          },
+          unit_amount: platformFeeCents,
+        },
+        quantity: 1,
+      }
+    ];
+    
+    // Add Maryland sales tax if applicable
+    if (taxCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Maryland Sales Tax',
+            description: '6% Maryland sales & use tax',
+          },
+          unit_amount: taxCents,
+        },
+        quantity: 1,
+      });
+    }
+    
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${booking.vendor_name} - ${booking.event_type}`,
-              description: booking.service_description || `Event services for ${booking.event_date}`,
-            },
-            unit_amount: totalCents,
-          },
-          quantity: 1,
-        }
-      ],
+      line_items: lineItems,
       payment_intent_data: {
         capture_method: 'manual', // ESCROW: Holds funds until manual capture
         application_fee_amount: platformFeeCents,

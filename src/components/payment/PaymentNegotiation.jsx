@@ -127,6 +127,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         
         if (response.data?.url) {
           console.log('Redirecting to Stripe:', response.data.url);
+          // Close dialog before redirect
+          if (onClose) onClose();
           window.location.href = response.data.url;
         } else {
           throw new Error('No checkout URL received from server');
@@ -140,9 +142,9 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       
       if (isVendor) {
         toast.success("Proposal sent!");
-        onClose();
+        if (onClose) onClose();
       }
-      // Client will be redirected to Stripe, so no toast/close needed
+      // Client redirect handled in mutationFn
     },
     onError: (error) => {
       console.error('Payment mutation error:', error);
