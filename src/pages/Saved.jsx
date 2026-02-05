@@ -95,6 +95,7 @@ export default function SavedPage() {
     mutationFn: (savedVendorId) => base44.entities.SavedVendor.delete(savedVendorId),
     onSuccess: () => {
       queryClient.invalidateQueries(['saved-vendors']);
+      queryClient.invalidateQueries(['user-swipes']);
       toast.success("Removed from favorites");
     },
   });
