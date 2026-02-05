@@ -578,6 +578,26 @@ export default function BookingsPage() {
                   </div>
                 )}
 
+                {/* Rebook Action */}
+                {!isVendor && selectedBooking.status === "completed" && (
+                  <div className="border-t-2 border-gray-200 pt-6">
+                    <Button
+                      onClick={() => {
+                        const vendor = vendors.find(v => v.id === selectedBooking.vendor_id);
+                        if (vendor) {
+                          setDetailsOpen(false);
+                          navigate(createPageUrl("Swipe") + `?vendor=${vendor.id}&rebook=true`);
+                        }
+                      }}
+                      variant="outline"
+                      className="w-full border-2 border-green-600 text-green-600 hover:bg-green-50 font-bold mb-4"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Rebook This Vendor
+                    </Button>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="border-t-2 border-gray-200 pt-6">
                   <h3 className="font-bold text-lg mb-4">Actions</h3>
@@ -677,14 +697,26 @@ export default function BookingsPage() {
                       )}
 
                       {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "negotiating") && (
-                        <Button
-                          onClick={() => handleCancelBooking(selectedBooking.id)}
-                          variant="outline"
-                          className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Cancel Booking
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => {
+                              const daysUntilEvent = Math.ceil((new Date(selectedBooking.event_date) - new Date()) / (1000 * 60 * 60 * 24));
+                              if (daysUntilEvent < 7) {
+                                toast.error("Bookings cannot be cancelled within 7 days of the event");
+                              } else {
+                                handleCancelBooking(selectedBooking.id);
+                              }
+                            }}
+                            variant="outline"
+                            className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Cancel Booking
+                          </Button>
+                          <p className="text-xs text-gray-500 text-center">
+                            Free cancellation up to 7 days before event
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
