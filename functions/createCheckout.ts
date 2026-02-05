@@ -72,11 +72,13 @@ Deno.serve(async (req) => {
       description: `${booking.vendor_name} - ${booking.event_type} on ${booking.event_date}`,
     });
 
-    // Create checkout session
+    // Get origin for success/cancel URLs
+    const referer = req.headers.get('referer') || req.headers.get('origin') || '';
+    const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
+
+    // Create checkout session with payment intent
     const session = await stripe.checkout.sessions.create({
-      payment_intent_options: {
-        capture_method: 'manual', // Ensure manual capture
-      },
+      payment_intent: paymentIntent.id, // Link existing payment intent
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
@@ -92,8 +94,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         }
       ],
-      success_url: `${req.headers.get('origin')}/Bookings?payment=success&booking=${bookingId}`,
-      cancel_url: `${req.headers.get('origin')}/Bookings?payment=cancelled&booking=${bookingId}`,
+      success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,
+      cancel_url: `${baseUrl}/Bookings?payment=cancelled&booking=${bookingId}`,
       client_reference_id: bookingId,
       metadata: {
         booking_id: bookingId,
@@ -103,8 +105,8 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Update booking with payment intent (not session)
-    await base44.entities.Booking.update(bookingId, {
+    // Update booking with payment intent and session
+    await base44.asServiceRole.entities.Booking.update(bookingId, {
       payment_intent_id: paymentIntent.id,
       payment_status: 'processing',
       stripe_session_id: session.id,
