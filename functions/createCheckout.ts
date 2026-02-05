@@ -108,38 +108,16 @@ Deno.serve(async (req) => {
     // Calculate amounts in cents
     const totalAmount = Math.round((booking.total_amount || booking.agreed_price) * 100);
     const platformFeeAmount = Math.round(booking.platform_fee_amount * 100);
-    console.log('Payment amounts:', { totalAmount, platformFeeAmount });
-
-    // Create Payment Intent with MANUAL CAPTURE for escrow
-    console.log('Creating Stripe Payment Intent...');
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmount,
-      currency: 'usd',
-      capture_method: 'manual', // CRITICAL: This holds funds in escrow
-      application_fee_amount: platformFeeAmount,
-      transfer_data: {
-        destination: vendor.stripe_account_id,
-      },
-      metadata: {
-        booking_id: bookingId,
-        client_email: booking.client_email,
-        vendor_id: booking.vendor_id,
-        event_type: booking.event_type,
-        event_date: booking.event_date,
-      },
-      description: `${booking.vendor_name} - ${booking.event_type} on ${booking.event_date}`,
-    });
-    console.log('Payment Intent created:', paymentIntent.id);
+    console.log('Payment amounts (cents):', { totalAmount, platformFeeAmount });
 
     // Get origin for success/cancel URLs
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
     console.log('Using base URL for redirects:', baseUrl);
 
-    // Create checkout session with payment intent
-    console.log('Creating Stripe Checkout Session...');
+    // Create Checkout Session - let Stripe create the PaymentIntent automatically
+    console.log('Creating Stripe Checkout Session with escrow...');
     const session = await stripe.checkout.sessions.create({
-      payment_intent: paymentIntent.id, // Link existing payment intent
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
@@ -155,31 +133,32 @@ Deno.serve(async (req) => {
           quantity: 1,
         }
       ],
+      payment_intent_data: {
+        capture_method: 'manual', // ESCROW: Holds funds until manual capture
+        application_fee_amount: platformFeeAmount,
+        transfer_data: {
+          destination: vendor.stripe_account_id,
+        },
+        metadata: {
+          booking_id: bookingId,
+          client_email: booking.client_email,
+          vendor_id: booking.vendor_id,
+          event_type: booking.event_type,
+          event_date: booking.event_date,
+        },
+      },
       success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,
       cancel_url: `${baseUrl}/Bookings?payment=cancelled&booking=${bookingId}`,
       client_reference_id: bookingId,
       metadata: {
         booking_id: bookingId,
-        client_email: booking.client_email,
-        vendor_id: booking.vendor_id,
-        payment_intent_id: paymentIntent.id,
       },
     });
     console.log('Checkout Session created:', session.id, 'URL:', session.url);
 
-    // Update booking with payment intent and session
-    await base44.asServiceRole.entities.Booking.update(bookingId, {
-      payment_intent_id: paymentIntent.id,
-      payment_status: 'processing',
-      stripe_session_id: session.id,
-    });
-    console.log('Booking updated with payment info');
-
-    console.log('Returning success response with URL:', session.url);
+    console.log('Returning checkout URL for redirect');
     return Response.json({ 
-      sessionId: session.id,
-      url: session.url,
-      paymentIntentId: paymentIntent.id
+      url: session.url
     });
 
   } catch (error) {
