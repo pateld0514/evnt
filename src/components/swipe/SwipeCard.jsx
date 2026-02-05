@@ -54,6 +54,7 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -106,8 +107,15 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
+  const handleDragStart = () => {
+    console.log('[CARD] DragStart', { vendorId: vendor.id });
+    setIsDragging(true);
+  };
+
   const handleDragEnd = (event, info) => {
     console.log('[CARD] DragEnd triggered', { disabled, offsetX: info.offset.x, vendorId: vendor.id });
+    
+    setIsDragging(false);
     
     if (disabled) {
       console.log('[CARD] DragEnd BLOCKED - disabled');
@@ -131,16 +139,10 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
       <motion.div
         className="absolute inset-0"
         style={{ x, rotate }}
-        drag={disabled ? false : "x"}
+        drag={disabled || isDragging ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onPointerDown={(e) => {
-          // Prevent drag if clicking on buttons
-          if (e.target.closest('button')) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
         whileTap={disabled ? {} : { cursor: "grabbing" }}
         animate={{ x: 0, rotate: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -230,17 +232,23 @@ export default function SwipeCard({ vendor, onSwipe, disabled }) {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0" onPointerDown={(e) => e.stopPropagation()}>
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-xs md:text-sm"
-                onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(createPageUrl("VendorView") + `?id=${vendor.id}`);
+                }}
               >
                 View Profile
               </Button>
               <Button
                 className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-xs md:text-sm"
-                onClick={() => setBookingOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBookingOpen(true);
+                }}
               >
                 <Calendar className="w-3.5 h-3.5 mr-1" />
                 Book Now

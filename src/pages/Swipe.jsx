@@ -518,13 +518,14 @@ export default function SwipePage() {
 
       {/* Action Buttons */}
       {currentVendor && (
-        <div className="flex justify-center items-center gap-6">
+        <div className="flex justify-center items-center gap-6" style={{ pointerEvents: isSwipeInProgress ? 'none' : 'auto' }}>
           {swipeHistory.length > 0 && (
             <Button
               size="lg"
               variant="outline"
               className="w-16 h-16 rounded-full border-4 border-gray-300 hover:bg-gray-50"
               onClick={handleUndo}
+              disabled={isSwipeInProgress}
             >
               <Undo className="w-6 h-6 text-gray-600" />
             </Button>
