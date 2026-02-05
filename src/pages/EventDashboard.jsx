@@ -162,7 +162,8 @@ export default function EventDashboardPage() {
   };
 
   const getEventBookings = (eventId) => {
-    return bookings.filter(b => b.event_id === eventId);
+    // CRITICAL: Only return bookings that match both event_id AND client_email
+    return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
   if (isLoading || !currentUser) {

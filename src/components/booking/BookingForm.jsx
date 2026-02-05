@@ -28,8 +28,13 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
   });
 
   const { data: events = [] } = useQuery({
-    queryKey: ['user-events'],
-    queryFn: () => base44.entities.Event.list('-event_date'),
+    queryKey: ['user-events', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      // CRITICAL: Only fetch events owned by authenticated user
+      return await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
+    },
+    enabled: !!currentUser,
     initialData: [],
   });
 
