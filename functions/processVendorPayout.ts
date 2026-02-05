@@ -1,26 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), {
-  apiVersion: '2024-12-18.acacia',
-});
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
     
-    // Only process when booking payment is successful and booking is completed
     const booking_id = payload.booking_id || payload.data?.id;
     const payment_status = payload.data?.payment_status;
     const booking_status = payload.data?.status;
     
-    // Check if this is a booking completion with successful payment
+    // Check if this is a booking completion trigger
     if (payload.event?.type === 'update') {
       const wasJustCompleted = booking_status === 'completed' && payload.old_data?.status !== 'completed';
-      const paymentSuccessful = payment_status === 'paid';
+      const paymentInEscrow = payment_status === 'escrow';
       
-      if (!wasJustCompleted || !paymentSuccessful) {
+      if (!wasJustCompleted || !paymentInEscrow) {
         return Response.json({ success: true, message: 'Not a payout trigger event' });
       }
     } else if (!payload.booking_id) {
@@ -44,6 +41,11 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, message: 'Payout already processed' });
     }
 
+    // Verify payment is in escrow
+    if (booking.payment_status !== 'escrow') {
+      return Response.json({ error: 'Payment not in escrow state' }, { status: 400 });
+    }
+
     // Get vendor's Stripe account
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
     if (vendors.length === 0 || !vendors[0].stripe_account_id) {
@@ -60,13 +62,6 @@ Deno.serve(async (req) => {
     const grossAmount = booking.agreed_price || 0;
     const platformFee = booking.platform_fee_amount || 0;
     const netAmount = booking.vendor_payout || (grossAmount - platformFee);
-    
-    // Convert to cents for Stripe
-    const amountInCents = Math.round(netAmount * 100);
-    
-    if (amountInCents <= 0) {
-      return Response.json({ error: 'Invalid payout amount' }, { status: 400 });
-    }
 
     // Create payout record as pending
     const payoutRecord = await base44.asServiceRole.entities.VendorPayout.create({
@@ -79,48 +74,46 @@ Deno.serve(async (req) => {
     });
 
     try {
-      // Create Stripe transfer to vendor's connected account
-      const transfer = await stripe.transfers.create({
-        amount: amountInCents,
-        currency: 'usd',
-        destination: vendor.stripe_account_id,
-        description: `Payout for booking ${booking.id} - ${booking.event_type}`,
-        metadata: {
-          booking_id: booking.id,
-          vendor_id: booking.vendor_id,
-          payout_id: payoutRecord.id
-        }
-      });
+      // CAPTURE THE PAYMENT INTENT (release from escrow)
+      const paymentIntent = await stripe.paymentIntents.capture(booking.payment_intent_id);
+
+      if (paymentIntent.status !== 'succeeded') {
+        throw new Error('Payment capture failed');
+      }
 
       // Update payout record with success
       await base44.asServiceRole.entities.VendorPayout.update(payoutRecord.id, {
-        stripe_transfer_id: transfer.id,
+        stripe_transfer_id: paymentIntent.id,
         status: 'completed',
         payout_date: new Date().toISOString()
       });
 
-      // Get vendor user for notification
-      const vendorUsers = await base44.asServiceRole.entities.User.filter({ 
-        vendor_id: booking.vendor_id 
+      // Update booking payment status
+      await base44.asServiceRole.entities.Booking.update(booking.id, {
+        payment_status: 'paid'
       });
 
-      if (vendorUsers.length > 0) {
-        // Send notification to vendor
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: vendorUsers[0].email,
-          type: 'payment_released',
-          title: 'Payout Processed Successfully',
-          message: `$${netAmount.toFixed(2)} has been transferred to your bank account for booking ${booking.id}. It may take 1-3 business days to appear.`,
-          link: `/VendorDashboard`,
-          read: false
-        });
-      }
+      // Send notification to vendor
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: vendor.contact_email,
+        subject: '💰 Payment Released - Payout Processed',
+        body: `
+          <h2>Payment Released!</h2>
+          <p>The payment for your completed booking has been released from escrow.</p>
+          <p><strong>Booking:</strong> ${booking.event_type} with ${booking.client_name}</p>
+          <p><strong>Amount:</strong> $${netAmount.toFixed(2)}</p>
+          <p>The funds will be transferred to your bank account within 1-3 business days.</p>
+          <p>View details at: ${req.headers.get('origin')}/VendorDashboard</p>
+          <br>
+          <p>Best regards,<br>The EVNT Team</p>
+        `,
+      });
 
       return Response.json({
         success: true,
         message: 'Payout processed successfully',
         payout_id: payoutRecord.id,
-        transfer_id: transfer.id,
+        payment_intent_id: paymentIntent.id,
         amount: netAmount
       });
 
@@ -131,23 +124,8 @@ Deno.serve(async (req) => {
         failure_reason: stripeError.message
       });
 
-      // Notify vendor of failure
-      const vendorUsers = await base44.asServiceRole.entities.User.filter({ 
-        vendor_id: booking.vendor_id 
-      });
-      
-      if (vendorUsers.length > 0) {
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: vendorUsers[0].email,
-          type: 'payment_received',
-          title: 'Payout Processing Issue',
-          message: `There was an issue processing your payout for booking ${booking.id}. Our team has been notified and will resolve this shortly.`,
-          read: false
-        });
-      }
-
       return Response.json({ 
-        error: 'Stripe transfer failed', 
+        error: 'Payment capture failed', 
         details: stripeError.message 
       }, { status: 500 });
     }

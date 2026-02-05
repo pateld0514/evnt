@@ -36,38 +36,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Booking is not ready for payment' }, { status: 400 });
     }
 
-    // Create line items for the checkout
-    const lineItems = [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${booking.vendor_name} - ${booking.event_type}`,
-            description: booking.service_description || `Event services for ${booking.event_date}`,
-          },
-          unit_amount: Math.round(booking.agreed_price * 100), // Stripe uses cents
-        },
-        quantity: 1,
-      }
-    ];
-
-    // Add additional fees as separate line items
-    if (booking.additional_fees && booking.additional_fees.length > 0) {
-      booking.additional_fees.forEach(fee => {
-        lineItems.push({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: fee.name,
-              description: fee.description || '',
-            },
-            unit_amount: Math.round(fee.amount * 100),
-          },
-          quantity: 1,
-        });
-      });
-    }
-
     // Get vendor's Stripe account ID
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
     if (vendors.length === 0) {
@@ -75,25 +43,55 @@ Deno.serve(async (req) => {
     }
     
     const vendor = vendors[0];
-    if (!vendor.stripe_account_id) {
+    if (!vendor.stripe_account_id || !vendor.stripe_account_verified) {
       return Response.json({ 
-        error: 'Vendor has not connected their payment account yet' 
+        error: 'Vendor has not completed payment setup yet' 
       }, { status: 400 });
     }
 
-    // Calculate platform fee (amount to EVNT)
-    const platformFeeAmount = Math.round(booking.platform_fee_amount * 100); // Convert to cents
+    // Calculate amounts in cents
+    const totalAmount = Math.round((booking.total_amount || booking.agreed_price) * 100);
+    const platformFeeAmount = Math.round(booking.platform_fee_amount * 100);
 
-    // Create checkout session with Stripe Connect
-    const session = await stripe.checkout.sessions.create({
-      line_items: lineItems,
-      mode: 'payment',
-      payment_intent_data: {
-        application_fee_amount: platformFeeAmount,
-        transfer_data: {
-          destination: vendor.stripe_account_id,
-        },
+    // Create Payment Intent with MANUAL CAPTURE for escrow
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount,
+      currency: 'usd',
+      capture_method: 'manual', // CRITICAL: This holds funds in escrow
+      application_fee_amount: platformFeeAmount,
+      transfer_data: {
+        destination: vendor.stripe_account_id,
       },
+      metadata: {
+        booking_id: bookingId,
+        client_email: booking.client_email,
+        vendor_id: booking.vendor_id,
+        event_type: booking.event_type,
+        event_date: booking.event_date,
+      },
+      description: `${booking.vendor_name} - ${booking.event_type} on ${booking.event_date}`,
+    });
+
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_intent_options: {
+        capture_method: 'manual', // Ensure manual capture
+      },
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${booking.vendor_name} - ${booking.event_type}`,
+              description: booking.service_description || `Event services for ${booking.event_date}`,
+            },
+            unit_amount: totalAmount,
+          },
+          quantity: 1,
+        }
+      ],
       success_url: `${req.headers.get('origin')}/Bookings?payment=success&booking=${bookingId}`,
       cancel_url: `${req.headers.get('origin')}/Bookings?payment=cancelled&booking=${bookingId}`,
       client_reference_id: bookingId,
@@ -101,18 +99,21 @@ Deno.serve(async (req) => {
         booking_id: bookingId,
         client_email: booking.client_email,
         vendor_id: booking.vendor_id,
+        payment_intent_id: paymentIntent.id,
       },
     });
 
-    // Update booking with payment intent
+    // Update booking with payment intent (not session)
     await base44.entities.Booking.update(bookingId, {
-      payment_intent_id: session.id,
+      payment_intent_id: paymentIntent.id,
       payment_status: 'processing',
+      stripe_session_id: session.id,
     });
 
     return Response.json({ 
       sessionId: session.id,
-      url: session.url 
+      url: session.url,
+      paymentIntentId: paymentIntent.id
     });
 
   } catch (error) {

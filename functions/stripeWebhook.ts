@@ -30,19 +30,19 @@ Deno.serve(async (req) => {
 
     // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        const bookingId = session.metadata.booking_id;
+      case 'payment_intent.amount_capturable_updated': {
+        // Payment authorized, funds in escrow
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.booking_id;
 
         if (bookingId) {
-          // Update booking status
           await base44.asServiceRole.entities.Booking.update(bookingId, {
-            payment_status: 'paid',
+            payment_status: 'escrow',
             status: 'confirmed',
-            payment_intent_id: session.payment_intent,
+            payment_intent_id: paymentIntent.id,
           });
 
-          // Send notification emails
+          // Send notifications
           const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
           const booking = bookings[0];
 
@@ -50,18 +50,17 @@ Deno.serve(async (req) => {
             // Notify client
             await base44.asServiceRole.integrations.Core.SendEmail({
               to: booking.client_email,
-              subject: '✅ Payment Confirmed - Booking Confirmed',
+              subject: '✅ Payment Authorized - Booking Confirmed',
               body: `
-                <h2>Payment Successful!</h2>
-                <p>Your payment for ${booking.vendor_name} has been processed successfully.</p>
+                <h2>Payment Authorized Successfully!</h2>
+                <p>Your payment for ${booking.vendor_name} has been authorized and is being held securely.</p>
                 <p><strong>Event:</strong> ${booking.event_type}</p>
                 <p><strong>Date:</strong> ${booking.event_date}</p>
-                <p><strong>Amount Paid:</strong> $${booking.total_amount.toFixed(2)}</p>
-                <p>Your booking is now confirmed. The vendor will be in touch soon!</p>
-                <p>View your booking details at: ${req.headers.get('origin')}/Bookings?id=${bookingId}</p>
+                <p><strong>Amount:</strong> $${booking.total_amount.toFixed(2)}</p>
+                <p>Your booking is now confirmed. Payment will be released to the vendor after the event is completed.</p>
+                <p>View your booking details at: ${req.headers.get('origin')}/Bookings</p>
                 <br>
-                <p>Best regards,<br>The Evnt Team</p>
-                <p><a href="mailto:info@joinevnt.com">info@joinevnt.com</a></p>
+                <p>Best regards,<br>The EVNT Team</p>
               `,
             });
 
@@ -72,18 +71,17 @@ Deno.serve(async (req) => {
             if (vendor) {
               await base44.asServiceRole.integrations.Core.SendEmail({
                 to: vendor.contact_email,
-                subject: '🎉 Payment Received - Booking Confirmed',
+                subject: '🎉 Booking Confirmed - Payment Secured',
                 body: `
-                  <h2>Great News! Payment Received</h2>
-                  <p>Payment for your booking with ${booking.client_name} has been received.</p>
+                  <h2>New Booking Confirmed!</h2>
+                  <p>Payment for your booking with ${booking.client_name} has been secured in escrow.</p>
                   <p><strong>Event:</strong> ${booking.event_type}</p>
                   <p><strong>Date:</strong> ${booking.event_date}</p>
                   <p><strong>Your Payout:</strong> $${booking.vendor_payout.toFixed(2)}</p>
-                  <p>The booking is now confirmed. You can proceed with the event planning!</p>
-                  <p>View booking details at: ${req.headers.get('origin')}/Bookings?id=${bookingId}</p>
+                  <p>Payment will be released to your account automatically after the event is marked as completed.</p>
+                  <p>View booking details at: ${req.headers.get('origin')}/Bookings</p>
                   <br>
-                  <p>Best regards,<br>The Evnt Team</p>
-                  <p><a href="mailto:info@joinevnt.com">info@joinevnt.com</a></p>
+                  <p>Best regards,<br>The EVNT Team</p>
                 `,
               });
             }
@@ -92,14 +90,88 @@ Deno.serve(async (req) => {
         break;
       }
 
-      case 'checkout.session.expired':
+      case 'payment_intent.succeeded': {
+        // This happens AFTER manual capture
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.booking_id;
+
+        if (bookingId) {
+          await base44.asServiceRole.entities.Booking.update(bookingId, {
+            payment_status: 'paid',
+          });
+        }
+        break;
+      }
+
+      case 'payment_intent.canceled': {
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.booking_id;
+
+        if (bookingId) {
+          await base44.asServiceRole.entities.Booking.update(bookingId, {
+            payment_status: 'cancelled',
+            status: 'cancelled',
+          });
+        }
+        break;
+      }
+
       case 'payment_intent.payment_failed': {
-        const session = event.data.object;
-        const bookingId = session.metadata?.booking_id || session.client_reference_id;
+        const paymentIntent = event.data.object;
+        const bookingId = paymentIntent.metadata.booking_id;
 
         if (bookingId) {
           await base44.asServiceRole.entities.Booking.update(bookingId, {
             payment_status: 'failed',
+          });
+
+          const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings[0];
+          
+          if (booking) {
+            await base44.asServiceRole.integrations.Core.SendEmail({
+              to: booking.client_email,
+              subject: '❌ Payment Failed',
+              body: `
+                <h2>Payment Failed</h2>
+                <p>We were unable to process your payment for ${booking.vendor_name}.</p>
+                <p>Please try again or contact us for assistance.</p>
+                <p><a href="${req.headers.get('origin')}/Bookings">Retry Payment</a></p>
+              `,
+            });
+          }
+        }
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object;
+        const paymentIntentId = charge.payment_intent;
+
+        // Find booking by payment intent
+        const bookings = await base44.asServiceRole.entities.Booking.list();
+        const booking = bookings.find(b => b.payment_intent_id === paymentIntentId);
+
+        if (booking) {
+          const refundAmount = charge.amount_refunded / 100;
+          const isFullRefund = charge.refunded;
+
+          await base44.asServiceRole.entities.Booking.update(booking.id, {
+            payment_status: isFullRefund ? 'refunded' : 'partially_refunded',
+            status: isFullRefund ? 'cancelled' : booking.status,
+            refund_amount: refundAmount,
+          });
+
+          // Notify client
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: booking.client_email,
+            subject: '💰 Refund Processed',
+            body: `
+              <h2>Refund Issued</h2>
+              <p>A refund of $${refundAmount.toFixed(2)} has been processed for your booking with ${booking.vendor_name}.</p>
+              <p>The funds should appear in your account within 5-10 business days.</p>
+              <p>Best regards,<br>The EVNT Team</p>
+            `,
           });
         }
         break;
