@@ -233,6 +233,8 @@ export default function Layout({ children, currentPageName }) {
       {/* PWA Install Prompt */}
       <InstallPrompt />
 
+
+
       {/* Bottom Navigation - Shows based on view mode */}
       {!shouldHideNav && (
         <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t-2 border-gray-800 z-50 shadow-2xl`}>
