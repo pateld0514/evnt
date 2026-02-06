@@ -33,7 +33,7 @@ const categories = [
 export default function SwipePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayableVendors, setDisplayableVendors] = useState([]);
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [filters, setFilters] = useState({
     category: "all",
@@ -98,53 +98,6 @@ export default function SwipePage() {
     initialData: [],
   });
 
-  const swipeMutation = useMutation({
-    mutationFn: ({ vendorId, direction, vendor, swipeId }) => {
-      const swipePromise = base44.entities.UserSwipe.create({
-        vendor_id: vendorId,
-        direction,
-        event_type: eventType
-      });
-
-      if (direction === "right") {
-        const savePromise = base44.entities.SavedVendor.create({
-          vendor_id: vendorId,
-          vendor_name: vendor.business_name,
-          vendor_category: vendor.category,
-          event_type: eventType
-        });
-        return Promise.all([swipePromise, savePromise]);
-      }
-      
-      return swipePromise;
-    },
-    onSuccess: (result, variables) => {
-      queryClient.invalidateQueries(['user-swipes']);
-      if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
-        toast.success("Added to your favorites! ❤️");
-      }
-      
-      // Store in history for undo
-      const swipeId = Array.isArray(result) ? result[0].id : result.id;
-      const savedId = Array.isArray(result) && result.length > 1 ? result[1].id : null;
-      setSwipeHistory(prev => [...prev, { 
-        swipeId, 
-        savedId,
-        vendorId: variables.vendorId,
-        direction: variables.direction,
-        vendor: variables.vendor 
-      }]);
-    },
-  });
-
-  // Get available categories from approved vendors
-  const availableCategories = vendors
-    .filter(v => v.approval_status === "approved" && v.profile_complete === true)
-    .map(v => v.category);
-  
-  const uniqueAvailableCategories = [...new Set(availableCategories)];
-
   // Calculate vendor tier based on completed bookings
   const getVendorTier = (vendorId) => {
     const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
@@ -155,90 +108,154 @@ export default function SwipePage() {
     return 1; // Rising Star
   };
 
-  const filteredVendors = vendors.filter(vendor => {
-    const isApproved = vendor.approval_status === "approved";
-    const profileComplete = vendor.profile_complete === true;
-    const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
-    const matchesCategory = filters.category === "all" || vendor.category === filters.category;
-    const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
-    
-    let matchesPrice = true;
-    if (filters.minPrice && vendor.starting_price) {
-      matchesPrice = vendor.starting_price >= parseFloat(filters.minPrice);
+  // Effect to re-filter and set displayable vendors when dependencies change
+  useEffect(() => {
+    if (!currentUser || vendors.length === 0) {
+      setDisplayableVendors([]);
+      return;
     }
-    if (filters.maxPrice && vendor.starting_price) {
-      matchesPrice = matchesPrice && vendor.starting_price <= parseFloat(filters.maxPrice);
-    }
-    
-    const matchesLocation = !filters.location || 
-      vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
 
-    // Rating filter
-    let matchesRating = true;
-    if (filters.minRating !== "all") {
-      const vendorReviews = reviews.filter(r => r.vendor_id === vendor.id);
-      if (vendorReviews.length > 0) {
-        const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
-        matchesRating = avgRating >= parseFloat(filters.minRating);
-      } else {
-        matchesRating = false; // No reviews, exclude from rated filter
+    const filteredAndSorted = vendors.filter(vendor => {
+      const isApproved = vendor.approval_status === "approved";
+      const profileComplete = vendor.profile_complete === true;
+      const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+      const matchesCategory = filters.category === "all" || vendor.category === filters.category;
+      const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
+      
+      let matchesPrice = true;
+      if (filters.minPrice && vendor.starting_price) {
+        matchesPrice = vendor.starting_price >= parseFloat(filters.minPrice);
       }
-    }
-    
-    return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
-  }).sort((a, b) => {
-    // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
-    const tierA = getVendorTier(a.id);
-    const tierB = getVendorTier(b.id);
-    if (tierA !== tierB) return tierB - tierA;
-    
-    // 2. Exact location match
-    if (!currentUser) return 0;
-    const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
-    const aLocationMatch = a.location?.toLowerCase() === userLocation;
-    const bLocationMatch = b.location?.toLowerCase() === userLocation;
-    if (aLocationMatch && !bLocationMatch) return -1;
-    if (!aLocationMatch && bLocationMatch) return 1;
-    
-    // 3. Location contains user's city/state
-    const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
-    const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
-    if (aLocationPartial && !bLocationPartial) return -1;
-    if (!aLocationPartial && bLocationPartial) return 1;
-    
-    // 4. Event type specialties match
-    const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
-    const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
-    if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
-    if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
-    
-    // 5. Better rating (if reviews exist)
-    const aReviews = reviews.filter(r => r.vendor_id === a.id);
-    const bReviews = reviews.filter(r => r.vendor_id === b.id);
-    if (aReviews.length > 0 && bReviews.length > 0) {
-      const aAvgRating = aReviews.reduce((sum, r) => sum + r.rating, 0) / aReviews.length;
-      const bAvgRating = bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length;
-      if (aAvgRating !== bAvgRating) return bAvgRating - aAvgRating;
-    }
-    
-    // 6. More reviews = more popular
-    if (aReviews.length !== bReviews.length) return bReviews.length - aReviews.length;
-    
-    return 0;
+      if (filters.maxPrice && vendor.starting_price) {
+        matchesPrice = matchesPrice && vendor.starting_price <= parseFloat(filters.maxPrice);
+      }
+      
+      const matchesLocation = !filters.location || 
+        vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
+
+      let matchesRating = true;
+      if (filters.minRating !== "all") {
+        const vendorReviews = reviews.filter(r => r.vendor_id === vendor.id);
+        if (vendorReviews.length > 0) {
+          const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
+          matchesRating = avgRating >= parseFloat(filters.minRating);
+        } else {
+          matchesRating = false; 
+        }
+      }
+      
+      return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+    }).sort((a, b) => {
+      // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
+      const tierA = getVendorTier(a.id);
+      const tierB = getVendorTier(b.id);
+      if (tierA !== tierB) return tierB - tierA;
+      
+      // 2. Exact location match
+      const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
+      const aLocationMatch = a.location?.toLowerCase() === userLocation;
+      const bLocationMatch = b.location?.toLowerCase() === userLocation;
+      if (aLocationMatch && !bLocationMatch) return -1;
+      if (!aLocationMatch && bLocationMatch) return 1;
+      
+      // 3. Location contains user's city/state
+      const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
+      const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
+      if (aLocationPartial && !bLocationPartial) return -1;
+      if (!aLocationPartial && bLocationPartial) return 1;
+      
+      // 4. Event type specialties match
+      const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
+      const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
+      if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
+      if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
+      
+      // 5. Better rating (if reviews exist)
+      const aReviews = reviews.filter(r => r.vendor_id === a.id);
+      const bReviews = reviews.filter(r => r.vendor_id === b.id);
+      if (aReviews.length > 0 && bReviews.length > 0) {
+        const aAvgRating = aReviews.reduce((sum, r) => sum + r.rating, 0) / aReviews.length;
+        const bAvgRating = bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length;
+        if (aAvgRating !== bAvgRating) return bAvgRating - aAvgRating;
+      }
+      
+      // 6. More reviews = more popular
+      if (aReviews.length !== bReviews.length) return bReviews.length - aReviews.length;
+      
+      return 0;
+    });
+    setDisplayableVendors(filteredAndSorted);
+  }, [vendors, swipedVendors, filters, bookings, reviews, currentUser, eventType]);
+
+  const swipeMutation = useMutation({
+    mutationFn: async ({ vendorId, direction, vendor }) => {
+      const swipePromise = base44.entities.UserSwipe.create({
+        vendor_id: vendorId,
+        direction,
+        event_type: eventType
+      });
+
+      let savedVendorId = null;
+      if (direction === "right") {
+        // Check if vendor is already saved by this user
+        const existingSavedVendors = await base44.entities.SavedVendor.filter({
+          vendor_id: vendorId,
+          created_by: currentUser.email
+        });
+
+        if (existingSavedVendors.length === 0) {
+          const savedVendor = await base44.entities.SavedVendor.create({
+            vendor_id: vendorId,
+            vendor_name: vendor.business_name,
+            vendor_category: vendor.category,
+            event_type: eventType
+          });
+          savedVendorId = savedVendor.id;
+          toast.success("Added to your favorites! ❤️");
+        } else {
+          toast.info("Vendor already in your favorites!");
+          savedVendorId = existingSavedVendors[0].id;
+        }
+      }
+      const swipeResult = await swipePromise;
+      return { swipeId: swipeResult.id, savedVendorId };
+    },
+    onSuccess: (result, variables) => {
+      queryClient.invalidateQueries(['user-swipes']);
+      if (variables.direction === "right") {
+        queryClient.invalidateQueries(['saved-vendors']);
+      }
+      
+      // Store in history for undo
+      setSwipeHistory(prev => [...prev, { 
+        swipeId: result.swipeId, 
+        savedId: result.savedVendorId,
+        vendorId: variables.vendorId,
+        direction: variables.direction,
+        vendor: variables.vendor 
+      }]);
+      // Optimistically remove the swiped vendor from the displayable list
+      setDisplayableVendors(prev => prev.slice(1));
+    },
   });
 
-  const currentVendor = filteredVendors[currentIndex];
+  // Get available categories from approved vendors
+  const availableCategories = vendors
+    .filter(v => v.approval_status === "approved" && v.profile_complete === true)
+    .map(v => v.category);
+  
+  const uniqueAvailableCategories = [...new Set(availableCategories)];
+  
+  const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor) return;
+    if (!currentVendor || !currentUser) return;
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,
       vendor: currentVendor
     });
-
-    setCurrentIndex(prev => prev + 1);
   };
 
   const handleUndo = async () => {
@@ -255,8 +272,8 @@ export default function SwipePage() {
         await base44.entities.SavedVendor.delete(lastSwipe.savedId);
       }
       
-      // Go back one card
-      setCurrentIndex(prev => Math.max(0, prev - 1));
+      // Re-add the vendor to the front of the displayable list
+      setDisplayableVendors(prev => [lastSwipe.vendor, ...prev]);
       setSwipeHistory(prev => prev.slice(0, -1));
       
       queryClient.invalidateQueries(['user-swipes']);
@@ -271,11 +288,8 @@ export default function SwipePage() {
   const handleReset = async () => {
     try {
       // Delete all user swipes to bring back all vendors
-      for (const swipe of swipedVendors) {
-        await base44.entities.UserSwipe.delete(swipe.id);
-      }
-      
-      setCurrentIndex(0);
+      await Promise.all(swipedVendors.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
+
       setSwipeHistory([]);
       setFilters({
         category: "all",
@@ -286,17 +300,16 @@ export default function SwipePage() {
         minRating: "all"
       });
       
+      // Trigger refetch of all data that affects filtering and sorting
       queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries(['vendors']);
+      queryClient.invalidateQueries(['reviews']);
+      
       toast.success("All vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
     }
   };
-
-  // Reset index when filters change
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [filters]);
 
   if (isLoading) {
     return (
@@ -444,6 +457,7 @@ export default function SwipePage() {
       <div className="relative h-[600px] mb-8">
         {currentVendor ? (
           <SwipeCard
+            key={currentVendor.id}
             vendor={currentVendor}
             onSwipe={handleSwipe}
           />
@@ -504,9 +518,9 @@ export default function SwipePage() {
       )}
 
       <div className="text-center mt-6 text-base text-gray-600 font-bold">
-        {filteredVendors.length > 0 && (
+        {vendors.length > 0 && (
           <>
-            {currentIndex + 1} / {filteredVendors.length} vendors
+            {vendors.length - displayableVendors.length} / {vendors.length} vendors seen
           </>
         )}
       </div>
