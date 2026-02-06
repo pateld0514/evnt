@@ -53,11 +53,12 @@ export default function TermsPage() {
               <div className="space-y-3 text-gray-700">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>All payments are processed securely through Stripe</li>
-                  <li>Client pays the agreed service price plus applicable sales tax based on event location</li>
-                  <li>EVNT retains a service fee percentage from the agreed service price</li>
-                  <li>EVNT also collects and retains all applicable sales taxes</li>
-                  <li>Vendor receives the agreed service price minus EVNT's service fee percentage</li>
-                  <li>Payment breakdown example: $1,000 booking in Kentucky (6% tax) = Client pays $1,060 total; Vendor receives $900 (after fee); EVNT gets $100 fee + $60 tax</li>
+                  <li>Client pays the agreed service price (no taxes or fees added on top)</li>
+                  <li>EVNT service fee and sales tax are both deducted from the agreed service price</li>
+                  <li>EVNT retains its service fee percentage from the agreed service price</li>
+                  <li>EVNT also collects and retains all applicable sales taxes based on event location</li>
+                  <li>Vendor receives the agreed service price minus EVNT's fee and applicable taxes</li>
+                  <li>Payment breakdown example: $1,000 booking in Kentucky (6% sales tax) = Client pays $1,000 total; EVNT deducts $100 fee (10%) + $60 tax (6%) = $160; Vendor receives $840</li>
                   <li>Payments are held in escrow until the event is completed</li>
                   <li>Vendors receive payout within 24-48 hours of event completion</li>
                   <li>Refunds are subject to the cancellation policy agreed upon in the booking</li>

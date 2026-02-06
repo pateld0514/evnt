@@ -188,7 +188,7 @@ export default function AboutPage() {
                 <div>
                    <p className="font-black mb-3 text-lg">How Vendor Payments Work</p>
                    <p className="text-gray-700 text-lg mb-4 leading-relaxed">
-                     EVNT takes a {platformFee}% service fee from each booking's agreed price. For example, if you agree to a $1,000 booking in Kentucky (6% sales tax): Client pays $1,060 total ($1,000 service + $60 tax). EVNT receives ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}% fee) + $60 (tax). You receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} after the fee is deducted.
+                     Both the EVNT fee and sales tax are deducted from the agreed service price. For example, if you agree to a $1,000 booking in Kentucky (6% sales tax): Client pays $1,000 (the agreed price). EVNT deducts ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}% fee) + $60 (tax) = $${(1000 * platformFee / 100 + 60).toFixed(0)} total. You receive ${(1000 - (1000 * platformFee / 100) - 60).toFixed(0)} after all deductions.
                    </p>
                  </div>
 
@@ -289,12 +289,12 @@ export default function AboutPage() {
                 <div className="bg-green-50 rounded-xl p-6 border-2 border-green-300 mt-6">
                    <p className="font-black text-green-900 mb-3 text-lg">💡 Fee & Tax Breakdown:</p>
                    <ul className="space-y-2 text-base text-green-800">
-                     <li className="font-medium">• <strong>EVNT Fee:</strong> {platformFee}% of agreed service price (deducted from vendor payout)</li>
-                     <li className="font-medium">• <strong>Sales Tax:</strong> Applied based on event location, added to client total</li>
-                     <li className="font-medium">• <strong>Client Pays:</strong> Service price + applicable sales tax</li>
-                     <li className="font-medium">• <strong>Vendor Receives:</strong> Service price minus EVNT's {platformFee}% fee</li>
-                     <li className="font-medium">• <strong>EVNT Gets:</strong> {platformFee}% fee + all collected sales taxes</li>
-                     <li className="font-medium">• <strong>Example:</strong> $1,000 booking in KY (6% tax): Client pays $1,060 • Vendor receives $900 • EVNT gets $100 fee + $60 tax</li>
+                     <li className="font-medium">• <strong>Client Pays:</strong> The agreed service price (flat, nothing added)</li>
+                     <li className="font-medium">• <strong>EVNT Fee:</strong> {platformFee}% of agreed service price (deducted)</li>
+                     <li className="font-medium">• <strong>Sales Tax:</strong> Applied based on event location (deducted)</li>
+                     <li className="font-medium">• <strong>Vendor Receives:</strong> Service price minus fee and tax</li>
+                     <li className="font-medium">• <strong>EVNT Keeps:</strong> {platformFee}% fee + all collected sales taxes</li>
+                     <li className="font-medium">• <strong>Example:</strong> $1,000 booking in KY (6% tax): Client pays $1,000 • EVNT deducts $100 fee + $60 tax = $160 • Vendor receives $840</li>
                    </ul>
                  </div>
               </div>

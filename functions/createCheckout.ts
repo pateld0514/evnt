@@ -151,13 +151,15 @@ Deno.serve(async (req) => {
     const taxCents = Math.round(salesTaxAmount * 100);
     const totalCents = Math.round(booking.total_amount_charged * 100);
 
-    // Verification: ensure total matches agreed price + tax (EVNT fee comes FROM agreed price)
-    const calculatedTotal = baseAmountCents + taxCents;
+    // Verification: ensure total matches agreed price (both fee and tax deducted FROM it)
+    // Client only pays the agreed service price, nothing added
+    const calculatedTotal = baseAmountCents;
     if (Math.abs(totalCents - calculatedTotal) > 1) { // Allow 1 cent rounding difference
       console.error(`[${requestId}] AMOUNT MISMATCH:`, {
         expected_total: totalCents,
         calculated_total: calculatedTotal,
         base: baseAmountCents,
+        fee: platformFeeCents,
         tax: taxCents
       });
       return Response.json({ 
@@ -168,9 +170,10 @@ Deno.serve(async (req) => {
     console.log(`[${requestId}] Payment breakdown (cents):`, {
       agreed_price: baseAmountCents,
       platform_fee: platformFeeCents,
-      md_tax: taxCents,
-      total: totalCents,
-      vendor_receives: baseAmountCents - platformFeeCents
+      sales_tax: taxCents,
+      total_client_pays: totalCents,
+      total_evnt_keeps: platformFeeCents + taxCents,
+      vendor_receives: baseAmountCents - platformFeeCents - taxCents
     });
 
     // Get redirect URLs
@@ -181,14 +184,15 @@ Deno.serve(async (req) => {
     // Create Stripe Checkout Session with manual capture (escrow)
     console.log(`[${requestId}] Creating Stripe Checkout Session...`);
     
-    // Build line items with detailed breakdown
+    // Build line item - client pays agreed service price only
+    // Fee and tax are deducted from vendor payout, not added to client total
     const lineItems = [
       {
         price_data: {
           currency: 'usd',
           product_data: {
             name: `Event Services - ${booking.vendor_name}`,
-            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}\n\nBreakdown:\nService Price: $${booking.base_event_amount.toFixed(2)}\nEVNT Fee (${booking.platform_fee_percent}%): -$${booking.platform_fee_amount.toFixed(2)}\nVendor Receives: $${booking.vendor_payout.toFixed(2)}`,
+            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}\n\nBreakdown:\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n\nDeductions from vendor payout:\nEVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}\nSales Tax${locationState ? ` (${locationState} ${(booking.sales_tax_rate * 100).toFixed(1)}%)` : ''}: $${(booking.sales_tax_amount || 0).toFixed(2)}\n\nVendor Receives: $${booking.vendor_payout.toFixed(2)}`,
           },
           unit_amount: baseAmountCents,
         },
@@ -196,35 +200,16 @@ Deno.serve(async (req) => {
       }
     ];
     
-    // Add sales tax if applicable
-    if (taxCents > 0) {
-      const taxLabel = locationState ? `${locationState} Sales Tax` : 'Sales Tax';
-      const taxDescription = locationState && salesTaxRate 
-        ? `${(salesTaxRate * 100).toFixed(2)}% ${locationState} sales tax on service price`
-        : 'Sales tax on service price';
-      
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: taxLabel,
-            description: taxDescription,
-          },
-          unit_amount: taxCents,
-        },
-        quantity: 1,
-      });
-    }
-    
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: lineItems,
       payment_intent_data: {
         capture_method: 'manual', // ESCROW: Holds funds until manual capture
-        application_fee_amount: platformFeeCents,
+        application_fee_amount: platformFeeCents + taxCents, // EVNT keeps fee + tax
         transfer_data: {
           destination: vendor.stripe_account_id,
+          amount: baseAmountCents - platformFeeCents - taxCents, // Vendor gets: service - fee - tax
         },
         metadata: {
           booking_id: bookingId,

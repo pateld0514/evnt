@@ -84,12 +84,12 @@ Deno.serve(async (req) => {
                 <p>Your payment for ${booking.vendor_name} has been authorized and is being held securely in escrow.</p>
                 <p><strong>Event:</strong> ${booking.event_type}</p>
                 <p><strong>Date:</strong> ${booking.event_date}</p>
-                <h3>Payment Breakdown:</h3>
+                <h3>Payment Details:</h3>
                 <ul>
-                  <li>Event Services: $${booking.base_event_amount.toFixed(2)}</li>
-                  <li>Platform Fee: $${booking.platform_fee_amount.toFixed(2)}</li>
-                  ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li>Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
-                  <li><strong>Total Charged: $${booking.total_amount_charged.toFixed(2)}</strong></li>
+                  <li><strong>You Paid (Agreed Price):</strong> $${booking.total_amount_charged.toFixed(2)}</li>
+                  <li style="margin-top: 10px; font-size: 0.9em; color: #666;">Deductions from this amount:</li>
+                  <li>• EVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</li>
+                  ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li>• Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
                 </ul>
                 <p>Your booking is now confirmed. Payment will be released to the vendor after the event is completed.</p>
                 <br>

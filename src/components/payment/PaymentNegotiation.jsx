@@ -159,9 +159,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     
     const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
     
-    // CRITICAL: EVNT fee comes FROM the agreed price
-    const vendorPayout = agreedAmount - platformFeeAmount; // Vendor receives agreed price minus EVNT fee
-    const totalAmount = agreedAmount + salesTax; // Client pays agreed price + tax (Stripe fee handled separately by Stripe)
+    // CRITICAL: BOTH fee and tax come FROM the agreed price (deducted from vendor payout)
+    const totalDeductions = platformFeeAmount + salesTax; // Total amount EVNT keeps
+    const vendorPayout = agreedAmount - totalDeductions; // Vendor receives: agreed price - fee - tax
+    const totalAmount = agreedAmount; // Client pays: just the agreed price (fee & tax already factored in)
 
     return { 
       price, 
@@ -378,20 +379,20 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Agreed Service Price:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
-          {totals.salesTax > 0 && (
-            <div className="flex justify-between text-sm">
-              <span>{totals.taxLabel}:</span>
-              <span className="font-bold">${totals.salesTax.toFixed(2)}</span>
-            </div>
-            )}
-            <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
+          <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-blue-600 pt-2 border-t border-gray-300">
-            <span>EVNT Platform Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
+            <span>EVNT Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
             <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
           </div>
+          {totals.salesTax > 0 && (
+            <div className="flex justify-between text-sm text-blue-600">
+              <span>{totals.taxLabel}:</span>
+              <span className="font-bold">-${totals.salesTax.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm text-gray-600">
             <span>Vendor Receives:</span>
             <span className="font-bold">${totals.vendorPayout.toFixed(2)}</span>
@@ -402,8 +403,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `Client pays $${totals.totalAmount.toFixed(2)} (service${totals.salesTax > 0 ? ' + tax' : ''}). EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% platform fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay: $${totals.totalAmount.toFixed(2)} total (includes ${totals.salesTax > 0 ? 'tax + ' : ''}all fees). Vendor receives $${totals.vendorPayout.toFixed(2)} after ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT platform fee.`}
+              ? `Client pays $${totals.totalAmount.toFixed(2)} (agreed price). EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee${totals.salesTax > 0 ? ` + ${(totals.salesTaxRate * 100).toFixed(1)}% tax` : ''}. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+              : `You pay $${totals.totalAmount.toFixed(2)} (the agreed price). EVNT fee${totals.salesTax > 0 ? ` and tax ` : ' '}are deducted from this amount. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
           </p>
         </div>
 
