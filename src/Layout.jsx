@@ -6,6 +6,7 @@ import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashb
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import InAppNotifications from "@/components/notifications/InAppNotifications";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -170,6 +171,11 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-1 md:gap-2">
+              {/* Notifications */}
+              {currentUserEmail && (
+                <InAppNotifications userEmail={currentUserEmail} />
+              )}
+
               {/* View Mode Toggle - Only for admin */}
               {userType === "admin" && (
                 <Button
