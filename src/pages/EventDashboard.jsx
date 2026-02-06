@@ -95,20 +95,38 @@ export default function EventDashboardPage() {
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Event.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const event = events.find(e => e.id === id);
+      if (!event || event.created_by !== currentUser.email) {
+        throw new Error("Unauthorized: You can only edit your own events");
+      }
+      return await base44.entities.Event.update(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['events']);
       setEditingEvent(null);
       resetForm();
       toast.success("Event updated!");
     },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update event");
+    },
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: (id) => base44.entities.Event.delete(id),
+    mutationFn: async (id) => {
+      const event = events.find(e => e.id === id);
+      if (!event || event.created_by !== currentUser.email) {
+        throw new Error("Unauthorized: You can only delete your own events");
+      }
+      return await base44.entities.Event.delete(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['events']);
       toast.success("Event deleted");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete event");
     },
   });
 

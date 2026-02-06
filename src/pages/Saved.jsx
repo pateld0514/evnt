@@ -95,11 +95,20 @@ export default function SavedPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (savedVendorId) => base44.entities.SavedVendor.delete(savedVendorId),
+    mutationFn: async (savedVendorId) => {
+      const saved = savedVendors.find(s => s.id === savedVendorId);
+      if (!saved || saved.created_by !== currentUser.email) {
+        throw new Error("Unauthorized: You can only remove your own saved vendors");
+      }
+      return await base44.entities.SavedVendor.delete(savedVendorId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['saved-vendors']);
       queryClient.invalidateQueries(['user-swipes']);
       toast.success("Removed from favorites");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to remove vendor");
     },
   });
 

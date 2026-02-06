@@ -202,6 +202,10 @@ export default function SwipePage() {
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
+      if (!currentUser) {
+        throw new Error("You must be logged in to swipe");
+      }
+      
       const swipeResult = await base44.entities.UserSwipe.create({
         vendor_id: vendorId,
         direction,
@@ -286,9 +290,19 @@ export default function SwipePage() {
     try {
       setIsProcessing(true);
       
+      // Verify ownership before deleting
+      const swipe = swipedVendors.find(s => s.id === lastSwipe.swipeId);
+      if (swipe && swipe.created_by !== currentUser.email) {
+        throw new Error("Unauthorized: You can only undo your own swipes");
+      }
+      
       await base44.entities.UserSwipe.delete(lastSwipe.swipeId);
       
       if (lastSwipe.savedId) {
+        const saved = savedVendors.find(s => s.id === lastSwipe.savedId);
+        if (saved && saved.created_by !== currentUser.email) {
+          throw new Error("Unauthorized: You can only remove your own saved vendors");
+        }
         await base44.entities.SavedVendor.delete(lastSwipe.savedId);
       }
       

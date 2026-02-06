@@ -86,11 +86,18 @@ export default function MessagesPage() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData) => {
+      // Verify the sender is the current user
+      if (messageData.sender_email !== currentUser.email) {
+        throw new Error("Unauthorized: You can only send messages as yourself");
+      }
       return await base44.entities.Message.create(messageData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['messages']);
       setMessageText("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to send message");
     },
   });
 

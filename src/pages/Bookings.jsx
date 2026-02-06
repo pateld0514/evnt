@@ -142,8 +142,20 @@ export default function BookingsPage() {
 
   const updateBookingMutation = useMutation({
     mutationFn: async ({ bookingId, data, oldStatus }) => {
-      const updated = await base44.entities.Booking.update(bookingId, data);
       const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) {
+        throw new Error("Booking not found");
+      }
+      
+      // Verify ownership: vendor can update their bookings, client can update their bookings
+      const isVendorBooking = currentUser.vendor_id && booking.vendor_id === currentUser.vendor_id;
+      const isClientBooking = booking.client_email === currentUser.email;
+      
+      if (!isVendorBooking && !isClientBooking) {
+        throw new Error("Unauthorized: You can only update your own bookings");
+      }
+      
+      const updated = await base44.entities.Booking.update(bookingId, data);
       if (booking && data.status && oldStatus !== data.status) {
         await notifyBookingStatusChange({...booking, ...data}, oldStatus, data.status);
       }
@@ -156,6 +168,9 @@ export default function BookingsPage() {
       queryClient.invalidateQueries(['bookings']);
       setDetailsOpen(false);
       toast.success("Booking updated!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update booking");
     },
   });
 
