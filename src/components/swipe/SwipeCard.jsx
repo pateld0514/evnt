@@ -189,40 +189,35 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
                 {vendor.description}
               </p>
 
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 md:gap-1.5">
                 {vendor.location && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <MapPin className="w-3 h-3" />
-                    {vendor.location}
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    <span className="hidden sm:inline">{vendor.location}</span>
                   </Badge>
                 )}
                 {avgRating && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs font-bold py-0.5 px-1.5">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    <Star className="w-3 h-3 md:w-3.5 md:h-3.5 fill-yellow-400 text-yellow-400" />
                     {avgRating}
                   </Badge>
                 )}
                 {vendor.price_range && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <DollarSign className="w-3 h-3" />
+                  <Badge variant="outline" className="flex items-center gap-0.5 md:gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    <DollarSign className="w-3 h-3 md:w-3.5 md:h-3.5" />
                     {vendor.price_range}
                   </Badge>
                 )}
                 {vendor.starting_price && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
+                  <Badge variant="outline" className="border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
                     From ${vendor.starting_price}
                   </Badge>
                 )}
-                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                  <Award className="w-3 h-3" />
-                  {completedBookings} events
+                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                  <Award className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                  <span className="hidden sm:inline">{completedBookings} events</span>
+                  <span className="sm:hidden">{completedBookings}</span>
                 </Badge>
-                {vendor.specialties && vendor.specialties.length > 0 && (
-                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs font-bold py-0.5 px-1.5">
-                    <Sparkles className="w-3 h-3" />
-                    {vendor.specialties[0]}
-                  </Badge>
-                )}
               </div>
             </div>
             

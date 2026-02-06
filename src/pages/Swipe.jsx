@@ -372,17 +372,17 @@ export default function SwipePage() {
         </p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6">
         <Sheet>
           <SheetTrigger asChild>
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2 border-2 border-black hover:bg-black hover:text-white font-bold"
+              className="w-full flex items-center justify-center gap-2 border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              <span className="text-sm md:text-base">Filters</span>
               {(filters.category !== "all" || filters.priceRange !== "all" || filters.location || filters.minRating !== "all") && (
-                <span className="ml-2 px-2 py-0.5 bg-black text-white rounded-full text-xs">
+                <span className="ml-2 px-2 py-0.5 bg-black text-white rounded-full text-xs font-bold">
                   Active
                 </span>
               )}
@@ -539,41 +539,41 @@ export default function SwipePage() {
       </div>
 
       {visibleVendors.length > 0 && (
-        <div className="flex justify-center items-center gap-6">
+        <div className="flex justify-center items-center gap-4 md:gap-6">
           {swipeHistory.length > 0 && (
             <Button
               size="lg"
               variant="outline"
-              className="w-16 h-16 rounded-full border-4 border-gray-300 hover:bg-gray-50"
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-gray-300 hover:bg-gray-50 flex-shrink-0"
               onClick={handleUndo}
               disabled={isProcessing}
             >
-              <Undo className="w-6 h-6 text-gray-600" />
+              <Undo className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
             </Button>
           )}
 
           <Button
             size="lg"
             variant="outline"
-            className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-black hover:bg-red-50 flex-shrink-0"
             onClick={() => handleSwipe("left")}
             disabled={isProcessing}
           >
-            <X className="w-8 h-8 text-black" />
+            <X className="w-7 h-7 md:w-8 md:h-8 text-black" />
           </Button>
 
           <Button
             size="lg"
-            className="w-20 h-20 rounded-full bg-black hover:bg-gray-800"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-black hover:bg-gray-800 flex-shrink-0"
             onClick={() => handleSwipe("right")}
             disabled={isProcessing}
           >
-            <Heart className="w-8 h-8 text-white" fill="white" />
+            <Heart className="w-7 h-7 md:w-8 md:h-8 text-white" fill="white" />
           </Button>
         </div>
       )}
 
-      <div className="text-center mt-6 text-base text-gray-600 font-bold">
+      <div className="text-center mt-4 md:mt-6 text-sm md:text-base text-gray-600 font-bold">
         {visibleVendors.length > 0 && (
           <>
             {displayableVendors.length} vendor{displayableVendors.length !== 1 ? 's' : ''} remaining
