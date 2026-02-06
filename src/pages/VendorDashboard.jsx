@@ -230,20 +230,21 @@ Provide 4-5 specific, actionable insights in this JSON format:
         <p className="text-lg md:text-xl lg:text-2xl text-gray-600 font-medium">Welcome back, {vendor.business_name}!</p>
       </div>
 
-      <Tabs defaultValue="analytics" className="mb-8">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-gray-100 border-2 border-black">
-          <TabsTrigger value="analytics" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="overview" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+      <Tabs defaultValue="overview" className="mb-8">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-gray-100 border-2 border-black">
+          <TabsTrigger value="overview" className="py-2 md:py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold text-sm md:text-base">
             Overview
           </TabsTrigger>
-          <TabsTrigger value="sales" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+          <TabsTrigger value="analytics" className="py-2 md:py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold text-sm md:text-base">
+            <BarChart3 className="w-4 h-4 mr-0 md:mr-2" />
+            <span className="hidden sm:inline">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="sales" className="py-2 md:py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold text-sm md:text-base">
             Revenue
           </TabsTrigger>
-          <TabsTrigger value="insights" className="py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-            AI Insights
+          <TabsTrigger value="insights" className="py-2 md:py-3 data-[state=active]:bg-black data-[state=active]:text-white font-bold text-sm md:text-base">
+            <Sparkles className="w-4 h-4 mr-0 md:mr-2" />
+            <span className="hidden sm:inline">Insights</span>
           </TabsTrigger>
         </TabsList>
 

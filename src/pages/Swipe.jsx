@@ -495,7 +495,7 @@ export default function SwipePage() {
         </Sheet>
       </div>
 
-      <div className="relative h-[600px] mb-8">
+      <div className="relative h-[500px] md:h-[600px] mb-6 md:mb-8">
         {visibleVendors.length > 0 ? (
           visibleVendors.map((vendor, index) => (
             <SwipeCard

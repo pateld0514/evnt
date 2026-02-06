@@ -184,18 +184,24 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="pending" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-black text-white">
-            <TabsTrigger value="pending">Pending ({pendingVendors.length})</TabsTrigger>
-            <TabsTrigger value="approved">Approved ({approvedVendors.length})</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected ({rejectedVendors.length})</TabsTrigger>
-            <TabsTrigger value="monitoring">
-              <Activity className="w-4 h-4 mr-2" />
-              System
+        <Tabs defaultValue="pending" className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-black text-white h-auto">
+            <TabsTrigger value="pending" className="py-2 md:py-3 text-xs md:text-sm font-bold">
+              Pending ({pendingVendors.length})
             </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
+            <TabsTrigger value="approved" className="py-2 md:py-3 text-xs md:text-sm font-bold">
+              Approved ({approvedVendors.length})
+            </TabsTrigger>
+            <TabsTrigger value="rejected" className="py-2 md:py-3 text-xs md:text-sm font-bold">
+              Rejected ({rejectedVendors.length})
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" className="py-2 md:py-3 text-xs md:text-sm font-bold">
+              <Activity className="w-3 h-3 md:w-4 md:h-4 mr-0 md:mr-2" />
+              <span className="hidden md:inline">System</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="py-2 md:py-3 text-xs md:text-sm font-bold">
+              <Settings className="w-3 h-3 md:w-4 md:h-4 mr-0 md:mr-2" />
+              <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 

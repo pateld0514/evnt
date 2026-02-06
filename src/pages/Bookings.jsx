@@ -284,23 +284,23 @@ export default function BookingsPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="mb-8 flex justify-center">
+      <div className="mb-6 md:mb-8 flex justify-center">
         <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="w-full max-w-3xl">
           <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-gray-100 border-2 border-black">
-            <TabsTrigger value="all" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            <TabsTrigger value="all" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               All
             </TabsTrigger>
-            <TabsTrigger value="pending" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            <TabsTrigger value="pending" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Pending
             </TabsTrigger>
-            <TabsTrigger value="negotiating" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Negotiating
+            <TabsTrigger value="negotiating" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Price
             </TabsTrigger>
-            <TabsTrigger value="confirmed" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+            <TabsTrigger value="confirmed" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Confirmed
             </TabsTrigger>
-            <TabsTrigger value="completed" className="py-2 data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Completed
+            <TabsTrigger value="completed" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Done
             </TabsTrigger>
           </TabsList>
         </Tabs>

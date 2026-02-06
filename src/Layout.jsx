@@ -219,17 +219,15 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className={isMobileView ? "pb-24" : "pb-4 md:pb-8"}>
-        <div className={isMobileView ? "" : ""}>
-          {children}
-        </div>
+      <main className={isMobileView ? "pb-20" : "pb-4"}>
+        {children}
       </main>
 
       {/* Bottom Navigation - Shows based on view mode */}
       {!shouldHideNav && (
-        <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50`}>
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-around items-center py-3">
+        <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t-2 border-gray-800 z-50 shadow-2xl`}>
+          <div className="max-w-7xl mx-auto px-2">
+            <div className="flex justify-around items-center py-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -238,16 +236,16 @@ export default function Layout({ children, currentPageName }) {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all relative ${
+                    className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all relative ${
                       isActive
                         ? "text-white"
                         : "text-gray-500 hover:text-gray-300"
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${isActive ? "fill-white" : ""}`} />
-                    <span className="text-xs font-bold">{item.name}</span>
+                    <Icon className={`w-6 h-6 ${isActive ? "fill-white" : ""}`} />
+                    <span className="text-[10px] font-bold leading-tight">{item.name}</span>
                     {showBadge && (
-                      <Badge className="absolute top-0 right-0 bg-red-500 text-white h-5 min-w-[20px] flex items-center justify-center px-1.5 rounded-full text-xs font-bold">
+                      <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-4 min-w-[16px] flex items-center justify-center px-1 rounded-full text-[10px] font-bold">
                         {item.badge}
                       </Badge>
                     )}

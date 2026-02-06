@@ -179,13 +179,13 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
             </motion.div>
           </div>
 
-          <div className="flex flex-col" style={{ height: '45%', padding: '1rem' }}>
-            <div className="flex-1 overflow-hidden mb-3">
-              <h2 className="text-lg md:text-xl font-black text-black mb-1.5 leading-tight">
+          <div className="flex flex-col" style={{ height: '45%', padding: '0.875rem 1rem' }}>
+            <div className="flex-1 overflow-hidden mb-2.5">
+              <h2 className="text-xl md:text-2xl font-black text-black mb-1.5 leading-tight">
                 {vendor.business_name}
               </h2>
               
-              <p className="text-xs md:text-sm text-gray-600 mb-2 line-clamp-2 leading-snug">
+              <p className="text-sm md:text-base text-gray-600 mb-2.5 line-clamp-2 leading-snug">
                 {vendor.description}
               </p>
 
@@ -229,16 +229,16 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
             <div className="grid grid-cols-2 gap-2 flex-shrink-0">
               <Button
                 variant="outline"
-                className="border-2 border-black hover:bg-black hover:text-white font-bold h-10 text-xs md:text-sm"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
                 onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
               <Button
-                className="bg-black text-white hover:bg-gray-800 font-bold h-10 text-xs md:text-sm"
+                className="bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 text-sm md:text-base"
                 onClick={() => setBookingOpen(true)}
               >
-                <Calendar className="w-3.5 h-3.5 mr-1" />
+                <Calendar className="w-4 h-4 mr-1.5" />
                 Book Now
               </Button>
             </div>
