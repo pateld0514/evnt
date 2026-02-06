@@ -234,10 +234,6 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       return;
     }
 
-    // Determine client state for tax purposes
-    const clientState = booking.location?.toUpperCase().includes('MD') || 
-                       booking.location?.toLowerCase().includes('maryland') ? 'MD' : null;
-
     const data = {
       base_event_amount: totals.baseEventAmount,
       agreed_price: totals.baseEventAmount,
@@ -252,7 +248,6 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       vendor_payout: totals.vendorPayout,
       total_amount_charged: totals.totalAmount,
       total_amount: totals.totalAmount,
-      client_state: clientState,
       currency: 'USD',
       status: isVendor ? "negotiating" : "payment_pending"
     };

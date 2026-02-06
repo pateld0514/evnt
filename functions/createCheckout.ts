@@ -232,9 +232,11 @@ Deno.serve(async (req) => {
           vendor_id: booking.vendor_id,
           event_type: booking.event_type,
           event_date: booking.event_date,
+          event_location: booking.location || '',
           base_event_amount: booking.base_event_amount.toString(),
           platform_fee_amount: booking.platform_fee_amount.toString(),
-          maryland_tax_amount: (booking.maryland_sales_tax_amount || 0).toString(),
+          platform_fee_percent: booking.platform_fee_percent.toString(),
+          sales_tax_amount: (booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0).toString(),
           total_amount: booking.total_amount_charged.toString(),
           request_id: requestId
         },
