@@ -112,7 +112,6 @@ export default function Layout({ children, currentPageName }) {
     { name: "Admin", path: createPageUrl("AdminDashboard"), icon: LayoutDashboard },
     { name: "Transactions", path: createPageUrl("AdminTransactions"), icon: DollarSign },
     { name: "Home", path: createPageUrl("Home"), icon: Home },
-    { name: "Vendors", path: createPageUrl("VendorDashboard"), icon: Calendar },
   ];
 
   const navItems = userType === "admin" ? adminNavItems : userType === "vendor" ? vendorNavItems : clientNavItems;
