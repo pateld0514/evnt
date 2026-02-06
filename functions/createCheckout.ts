@@ -2,8 +2,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
-const MARYLAND_TAX_RATE = 0.06; // 6% Maryland sales & use tax
-const PLATFORM_FEE_PERCENT = 0.15; // 15% platform fee
+
+// State sales tax rates for event services
+const STATE_TAX_RATES = {
+  'AL': 0.04, 'AK': 0, 'AZ': 0.056, 'AR': 0.065, 'CA': 0.0725,
+  'CO': 0.029, 'CT': 0.0635, 'DE': 0, 'FL': 0.06, 'GA': 0.04,
+  'HI': 0.04, 'ID': 0.06, 'IL': 0.0625, 'IN': 0.07, 'IA': 0.06,
+  'KS': 0.065, 'KY': 0.06, 'LA': 0.0445, 'ME': 0.055, 'MD': 0.06,
+  'MA': 0.0625, 'MI': 0.06, 'MN': 0.06875, 'MS': 0.07, 'MO': 0.04225,
+  'MT': 0, 'NE': 0.055, 'NV': 0.0685, 'NH': 0, 'NJ': 0.06625,
+  'NM': 0.05125, 'NY': 0.04, 'NC': 0.0475, 'ND': 0.05, 'OH': 0.0575,
+  'OK': 0.045, 'OR': 0, 'PA': 0.06, 'RI': 0.07, 'SC': 0.06,
+  'SD': 0.045, 'TN': 0.07, 'TX': 0.0625, 'UT': 0.0485, 'VT': 0.06,
+  'VA': 0.053, 'WA': 0.065, 'WV': 0.06, 'WI': 0.05, 'WY': 0.04,
+  'DC': 0.06
+};
 
 Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
@@ -50,8 +63,8 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Verify amounts are set
-    if (!booking.base_event_amount || !booking.platform_fee_amount || booking.total_amount_charged === undefined) {
+    // Verify amounts are set (these should be calculated during negotiation)
+    if (!booking.base_event_amount || booking.platform_fee_amount === undefined || booking.total_amount_charged === undefined) {
       console.error(`[${requestId}] INVALID DATA: Missing pricing fields`, {
         base_event_amount: booking.base_event_amount,
         platform_fee_amount: booking.platform_fee_amount,
@@ -61,6 +74,16 @@ Deno.serve(async (req) => {
         error: 'Booking pricing not calculated. Please contact support.' 
       }, { status: 400 });
     }
+
+    // Extract state from location (expecting format like "City, ST" or "ST")
+    const locationState = booking.location ? booking.location.split(',').pop().trim().toUpperCase() : null;
+    const salesTaxRate = locationState && STATE_TAX_RATES[locationState] ? STATE_TAX_RATES[locationState] : 0;
+    
+    console.log(`[${requestId}] Tax calculation:`, {
+      location: booking.location,
+      extracted_state: locationState,
+      tax_rate: salesTaxRate
+    });
 
     // Get vendor's Stripe account
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
@@ -124,7 +147,8 @@ Deno.serve(async (req) => {
     // Calculate amounts in cents - must match booking record exactly
     const baseAmountCents = Math.round(booking.base_event_amount * 100);
     const platformFeeCents = Math.round(booking.platform_fee_amount * 100);
-    const taxCents = Math.round((booking.maryland_sales_tax_amount || 0) * 100);
+    const salesTaxAmount = booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0;
+    const taxCents = Math.round(salesTaxAmount * 100);
     const totalCents = Math.round(booking.total_amount_charged * 100);
 
     // Verification: ensure total matches agreed price + tax (EVNT fee comes FROM agreed price)
@@ -172,14 +196,19 @@ Deno.serve(async (req) => {
       }
     ];
     
-    // Add Maryland sales tax if applicable
+    // Add sales tax if applicable
     if (taxCents > 0) {
+      const taxLabel = locationState ? `${locationState} Sales Tax` : 'Sales Tax';
+      const taxDescription = locationState && salesTaxRate 
+        ? `${(salesTaxRate * 100).toFixed(2)}% ${locationState} sales tax on service price`
+        : 'Sales tax on service price';
+      
       lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'Maryland Sales Tax',
-            description: '6% Maryland sales & use tax on service price',
+            name: taxLabel,
+            description: taxDescription,
           },
           unit_amount: taxCents,
         },
