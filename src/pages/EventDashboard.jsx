@@ -70,17 +70,18 @@ export default function EventDashboardPage() {
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
-      // CRITICAL: Only fetch bookings where client_email matches authenticated user
       return await base44.entities.Booking.filter({ client_email: currentUser.email });
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const createEventMutation = useMutation({

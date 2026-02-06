@@ -83,12 +83,15 @@ export default function SavedPage() {
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: allVendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const deleteMutation = useMutation({
