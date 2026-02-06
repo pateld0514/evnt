@@ -371,7 +371,7 @@ export default function SwipePage() {
   const visibleVendors = displayableVendors.slice(0, 3);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-black text-black mb-3">
           Find Your Perfect Vendors

@@ -223,7 +223,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
     : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
       <div className="mb-10">
         <h1 className="text-4xl md:text-5xl font-black text-black mb-4">Vendor Dashboard</h1>
         <p className="text-xl md:text-2xl text-gray-600 font-medium">Welcome back, {vendor.business_name}!</p>

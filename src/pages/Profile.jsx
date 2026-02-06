@@ -121,7 +121,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-black text-black mb-2">Profile</h1>
       </div>

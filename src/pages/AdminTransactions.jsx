@@ -161,7 +161,7 @@ export default function AdminTransactionsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
       {/* Header */}
       <div className="mb-10">
         <div className="text-center mb-6">
