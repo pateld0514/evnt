@@ -98,6 +98,23 @@ export default function AdminTransactionsPage() {
     }
   });
 
+  const deleteAllTransactionsMutation = useMutation({
+    mutationFn: async () => {
+      // Delete all payouts first
+      await Promise.all(payouts.map(p => base44.asServiceRole.entities.VendorPayout.delete(p.id)));
+      // Delete all bookings
+      await Promise.all(bookings.map(b => base44.asServiceRole.entities.Booking.delete(b.id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['all-bookings']);
+      queryClient.invalidateQueries(['all-payouts']);
+      toast.success("All transactions deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete transactions");
+    }
+  });
+
   const handleReleasePayment = (booking) => {
     if (confirm(`Release $${booking.vendor_payout.toFixed(2)} to vendor?`)) {
       releasePaymentMutation.mutate(booking.id);
@@ -146,11 +163,30 @@ export default function AdminTransactionsPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 md:py-12">
       {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-black text-black mb-3">Transaction Management</h1>
-        <p className="text-lg md:text-xl text-gray-600 font-medium">
-          View and manage all payments and escrow funds
-        </p>
+      <div className="mb-10">
+        <div className="text-center mb-6">
+          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">Transaction Management</h1>
+          <p className="text-lg md:text-xl text-gray-600 font-medium">
+            View and manage all payments and escrow funds
+          </p>
+        </div>
+        {bookings.length > 0 && (
+          <div className="flex justify-center">
+            <Button
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete ALL ${bookings.length} bookings and ${payouts.length} payouts? This cannot be undone!`)) {
+                  deleteAllTransactionsMutation.mutate();
+                }
+              }}
+              disabled={deleteAllTransactionsMutation.isPending}
+              variant="outline"
+              className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Delete All Transactions
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Summary Cards */}
