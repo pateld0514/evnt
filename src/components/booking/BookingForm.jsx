@@ -51,18 +51,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
   }, []);
 
   const bookingMutation = useMutation({
-    mutationFn: (bookingData) => {
-      // Track booking creation analytics
-      base44.analytics.track({
-        eventName: 'booking_created',
-        properties: {
-          vendor_id: bookingData.vendor_id,
-          event_type: bookingData.event_type,
-          has_budget: !!bookingData.budget
-        }
-      });
-      return base44.entities.Booking.create(bookingData);
-    },
+    mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
       queryClient.invalidateQueries(['events']);

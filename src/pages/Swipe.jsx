@@ -275,16 +275,6 @@ export default function SwipePage() {
     setIsProcessing(true);
     setAnimatingVendorId(currentVendor.id);
     
-    // Track analytics
-    base44.analytics.track({
-      eventName: direction === 'right' ? 'vendor_liked' : 'vendor_passed',
-      properties: {
-        vendor_id: currentVendor.id,
-        vendor_category: currentVendor.category,
-        event_type: eventType
-      }
-    });
-    
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,

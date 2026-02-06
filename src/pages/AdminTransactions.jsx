@@ -163,10 +163,10 @@ export default function AdminTransactionsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
       {/* Header */}
-      <div className="mb-10">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">Transaction Management</h1>
-          <p className="text-lg md:text-xl text-gray-600 font-medium">
+      <div className="mb-8 md:mb-10">
+        <div className="text-center mb-4 md:mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">Transaction Management</h1>
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">
             View and manage all payments and escrow funds
           </p>
         </div>

@@ -15,14 +15,6 @@ export default function ReviewDialog({ booking, open, onOpenChange }) {
 
   const reviewMutation = useMutation({
     mutationFn: async (reviewData) => {
-      // Track review submission
-      base44.analytics.track({
-        eventName: 'review_submitted',
-        properties: {
-          vendor_id: reviewData.vendor_id,
-          rating: reviewData.rating
-        }
-      });
       return await base44.entities.Review.create(reviewData);
     },
     onSuccess: () => {

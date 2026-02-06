@@ -61,15 +61,6 @@ export default function ClientRegistrationPage() {
     try {
       const currentUser = await base44.auth.me();
       
-      // Track registration
-      base44.analytics.track({
-        eventName: 'user_registered',
-        properties: {
-          user_type: 'client',
-          has_referral: !!referralCode
-        }
-      });
-      
       await base44.auth.updateMe({
         ...formData,
         user_type: "client",

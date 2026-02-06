@@ -189,16 +189,6 @@ export default function BookingsPage() {
 
   const handleStartPayment = async (booking) => {
     setIsProcessingPayment(true);
-    
-    // Track payment initiation
-    base44.analytics.track({
-      eventName: 'payment_initiated',
-      properties: {
-        booking_id: booking.id,
-        amount: booking.total_amount_charged || booking.total_amount
-      }
-    });
-    
     try {
       const response = await base44.functions.invoke('createCheckout', { 
         bookingId: booking.id 
@@ -280,14 +270,14 @@ export default function BookingsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
       {/* Header */}
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 mb-4">
-          <Calendar className="w-10 h-10 text-black" />
+      <div className="text-center mb-8 md:mb-10">
+        <div className="inline-flex items-center gap-2 mb-3 md:mb-4">
+          <Calendar className="w-8 h-8 md:w-10 md:h-10 text-black" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-black text-black mb-3">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">
           {isVendor ? "Booking Requests" : "My Bookings"}
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 font-medium">
+        <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">
           {bookings.length} total booking{bookings.length !== 1 ? 's' : ''}
         </p>
       </div>
