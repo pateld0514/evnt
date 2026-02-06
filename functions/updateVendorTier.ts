@@ -81,15 +81,57 @@ Deno.serve(async (req) => {
       fee_discount_percent: feeDiscount
     };
 
+    const oldTier = existingTiers.length > 0 ? existingTiers[0].tier_level : null;
+    const tierChanged = oldTier !== tierLevel;
+
     if (existingTiers.length > 0) {
       await base44.asServiceRole.entities.VendorTier.update(existingTiers[0].id, tierData);
     } else {
       await base44.asServiceRole.entities.VendorTier.create(tierData);
     }
 
+    // Send tier update notification if tier changed
+    if (tierChanged && tierLevel !== 'bronze') {
+      try {
+        await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
+          user_email: vendor_id, // This will be looked up in the function
+          user_type: 'vendor',
+          old_tier: oldTier,
+          new_tier: tierLevel,
+          benefits: [
+            `${feeDiscount}% platform fee discount`,
+            'Enhanced profile visibility',
+            tierLevel === 'gold' ? 'Featured vendor badge' : 'Priority support'
+          ]
+        });
+
+        // Get vendor email
+        const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
+        if (vendors.length > 0) {
+          const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id });
+          if (vendorUsers.length > 0) {
+            await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
+              user_email: vendorUsers[0].email,
+              user_type: 'vendor',
+              old_tier: oldTier,
+              new_tier: tierLevel,
+              benefits: [
+                `${feeDiscount}% platform fee discount`,
+                'Enhanced profile visibility',
+                tierLevel === 'gold' ? 'Featured vendor badge' : 'Priority support'
+              ]
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to send tier notification:', error);
+      }
+    }
+
     return Response.json({ 
       success: true, 
-      tier: tierData 
+      tier: tierData,
+      tier_changed: tierChanged
     });
 
   } catch (error) {

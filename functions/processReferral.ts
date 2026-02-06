@@ -88,6 +88,18 @@ Deno.serve(async (req) => {
             message: `Congratulations! You've earned $25 credit for referring ${referred_email}. Use it on your next booking!`,
             read: false
           });
+
+          // Send professional email notification
+          try {
+            await base44.asServiceRole.functions.invoke('sendReferralNotification', {
+              referrer_email: referral.referrer_email,
+              referrer_type: 'client',
+              referred_email,
+              reward_type: 'earned'
+            });
+          } catch (error) {
+            console.error('Failed to send referral email:', error);
+          }
         } else if (referrerType === 'vendor') {
           // Track commission-free booking for vendor
           const referrer = referrerUsers[0];
@@ -103,6 +115,18 @@ Deno.serve(async (req) => {
             message: `Congratulations! You've earned 1 commission-free booking for referring ${referred_email}!`,
             read: false
           });
+
+          // Send professional email notification
+          try {
+            await base44.asServiceRole.functions.invoke('sendReferralNotification', {
+              referrer_email: referral.referrer_email,
+              referrer_type: 'vendor',
+              referred_email,
+              reward_type: 'earned'
+            });
+          } catch (error) {
+            console.error('Failed to send referral email:', error);
+          }
         }
 
         // Reward the referred person too

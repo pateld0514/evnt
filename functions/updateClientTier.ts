@@ -68,15 +68,38 @@ Deno.serve(async (req) => {
       discount_percent: discount
     };
 
+    const oldTier = existingTiers.length > 0 ? existingTiers[0].tier_level : null;
+    const tierChanged = oldTier !== tierLevel;
+
     if (existingTiers.length > 0) {
       await base44.asServiceRole.entities.ClientTier.update(existingTiers[0].id, tierData);
     } else {
       await base44.asServiceRole.entities.ClientTier.create(tierData);
     }
 
+    // Send tier update notification if tier changed
+    if (tierChanged && tierLevel !== 'starter') {
+      try {
+        await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
+          user_email: client_email,
+          user_type: 'client',
+          old_tier: oldTier,
+          new_tier: tierLevel,
+          benefits: [
+            `${discount}% discount on all bookings`,
+            'Priority customer support',
+            tierLevel === 'vip' ? 'Exclusive VIP perks' : 'Early access to new vendors'
+          ]
+        });
+      } catch (error) {
+        console.error('Failed to send tier notification:', error);
+      }
+    }
+
     return Response.json({ 
       success: true, 
-      tier: tierData 
+      tier: tierData,
+      tier_changed: tierChanged
     });
 
   } catch (error) {
