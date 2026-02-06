@@ -116,70 +116,12 @@ export default function AdminDashboardPage() {
   });
 
 
-  // Filter out demo vendors from counts - check both email and business name
-  const isDemoVendor = (v) => {
-    return v.contact_email === "demo_vendor_admin@test.com" || 
-           v.business_name?.includes("🎭 Demo Vendor") ||
-           v.business_name?.includes("Demo Vendor");
-  };
-  
-  const realVendors = vendors.filter(v => !isDemoVendor(v));
-  const pendingVendors = realVendors.filter(v => v.approval_status === "pending");
-  const approvedVendors = realVendors.filter(v => v.approval_status === "approved");
-  const rejectedVendors = realVendors.filter(v => v.approval_status === "rejected");
+  const pendingVendors = vendors.filter(v => v.approval_status === "pending");
+  const approvedVendors = vendors.filter(v => v.approval_status === "approved");
+  const rejectedVendors = vendors.filter(v => v.approval_status === "rejected");
   
   const clientUsers = allUsers.filter(u => u.user_type === "client" && u.email !== "pateld0514@gmail.com");
   const vendorUsers = allUsers.filter(u => u.user_type === "vendor");
-
-  const switchToClient = async () => {
-    await base44.auth.updateMe({ 
-      demo_mode: "client",
-      demo_user_type: "client",
-      demo_onboarding_complete: true
-    });
-    toast.success("Switched to Demo Client Mode - All actions are simulated");
-    window.location.href = createPageUrl("Home");
-  };
-
-  const switchToVendor = async () => {
-    // Create demo vendor profile if it doesn't exist
-    let demoVendors = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
-    let demoVendor;
-    
-    if (demoVendors.length === 0) {
-      demoVendor = await base44.entities.Vendor.create({
-        business_name: "👻 Ghost Vendor (Admin Testing)",
-        category: "dj",
-        description: "This is a ghost vendor account for admin testing. All bookings and messages are simulated. Not counted in statistics.",
-        contact_email: "demo_vendor_admin@test.com",
-        contact_phone: "609-442-3524",
-        location: "Washington, DC",
-        price_range: "$$",
-        approval_status: "ghost",
-        profile_complete: true,
-        starting_price: 500,
-        pricing_type: "package",
-        image_url: "https://images.unsplash.com/photo-1571266028243-d220c9f8c3e4?w=400"
-      });
-    } else {
-      demoVendor = demoVendors[0];
-      // Update existing demo vendor to ghost status
-      await base44.entities.Vendor.update(demoVendor.id, { 
-        approval_status: "ghost",
-        business_name: "👻 Ghost Vendor (Admin Testing)"
-      });
-    }
-    
-    await base44.auth.updateMe({ 
-      demo_mode: "vendor",
-      demo_vendor_id: demoVendor.id,
-      demo_user_type: "vendor",
-      demo_onboarding_complete: true,
-      demo_approval_status: "approved"
-    });
-    toast.success("Switched to Demo Vendor Mode - All actions are simulated");
-    window.location.href = createPageUrl("VendorDashboard");
-  };
 
   if (!currentUser) {
     return (
@@ -195,108 +137,6 @@ export default function AdminDashboardPage() {
         <div className="mb-10">
           <h1 className="text-4xl md:text-5xl font-black text-black mb-3">Admin Dashboard</h1>
           <p className="text-lg md:text-xl text-gray-600 font-medium">Manage vendor approvals and view platform activity</p>
-          
-          <div className="flex gap-4 mt-4">
-            <Button onClick={switchToClient} variant="outline" className="border-2 border-black font-bold">
-              <Users className="w-4 h-4 mr-2" />
-              View as Client
-            </Button>
-            <Button onClick={switchToVendor} variant="outline" className="border-2 border-black font-bold">
-              <Store className="w-4 h-4 mr-2" />
-              View as Vendor
-            </Button>
-            <Button 
-              onClick={async () => {
-                setSendingNotification(true);
-                try {
-                  // Send all email samples
-                  await base44.integrations.Core.SendEmail({
-                    to: "pateld0514@gmail.com",
-                    from_name: "EVNT Team",
-                    subject: "📧 Sample: Booking Confirmation",
-                    body: EmailTemplate.bookingConfirmation(
-                      "John Smith",
-                      "Elite Events DJ",
-                      "Wedding",
-                      "June 15, 2026",
-                      "The Grand Ballroom, New York",
-                      150,
-                      2500
-                    )
-                  });
-
-                  await base44.integrations.Core.SendEmail({
-                    to: "pateld0514@gmail.com",
-                    from_name: "EVNT Team",
-                    subject: "📧 Sample: New Booking Request",
-                    body: EmailTemplate.newBookingRequest(
-                      "Elite Events DJ",
-                      "Sarah Johnson",
-                      "Wedding",
-                      "August 20, 2026",
-                      "Riverside Gardens, Boston",
-                      3000,
-                      "Looking for a DJ with experience in weddings. Need someone who can read the crowd and keep the energy high!"
-                    )
-                  });
-
-                  await base44.integrations.Core.SendEmail({
-                    to: "pateld0514@gmail.com",
-                    from_name: "EVNT Team",
-                    subject: "📧 Sample: Payment Received",
-                    body: EmailTemplate.paymentReceived(
-                      "Elite Events DJ",
-                      "Michael Chen",
-                      3500,
-                      "July 10, 2026"
-                    )
-                  });
-
-                  await base44.integrations.Core.SendEmail({
-                    to: "pateld0514@gmail.com",
-                    from_name: "EVNT Team",
-                    subject: "📧 Sample: Vendor Approval",
-                    body: EmailTemplate.vendorApproval(
-                      "Jessica",
-                      "Elegant Photography Studio"
-                    )
-                  });
-
-                  await base44.integrations.Core.SendEmail({
-                    to: "pateld0514@gmail.com",
-                    from_name: "EVNT Team",
-                    subject: "📧 Sample: Vendor Rejection",
-                    body: EmailTemplate.vendorRejection(
-                      "Mark",
-                      "Budget Events Co",
-                      "We require vendors to have valid business licenses and insurance. Please reapply once you have obtained these documents."
-                    )
-                  });
-
-                  toast.success("All 5 sample emails sent to pateld0514@gmail.com!");
-                } catch (error) {
-                  toast.error("Failed to send emails");
-                } finally {
-                  setSendingNotification(false);
-                }
-              }}
-              variant="outline" 
-              className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold"
-              disabled={sendingNotification}
-            >
-              {sendingNotification ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Bell className="w-4 h-4 mr-2" />
-                  Test All Emails
-                </>
-              )}
-            </Button>
-          </div>
         </div>
 
 
