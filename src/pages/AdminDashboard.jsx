@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [viewingBooking, setViewingBooking] = useState(null);
   const [viewingType, setViewingType] = useState(null); // 'contract' or 'invoice'
-  const [sendingNotification, setSendingNotification] = useState(false);
+  const [testEmailsSent, setTestEmailsSent] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -114,6 +114,20 @@ export default function AdminDashboardPage() {
     },
   });
 
+  const testEmailsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await base44.functions.invoke('sendAllTestEmails', {});
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setTestEmailsSent(true);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to send test emails");
+    }
+  });
+
 
   const pendingVendors = vendors.filter(v => v.approval_status === "pending");
   const approvedVendors = vendors.filter(v => v.approval_status === "approved");
@@ -134,12 +148,32 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 md:mb-10">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">Admin Dashboard</h1>
-          <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">Manage vendor approvals and platform activity</p>
+        <div className="mb-8 md:mb-10 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">Admin Dashboard</h1>
+            <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">Manage vendor approvals and platform activity</p>
+          </div>
+          {!testEmailsSent && (
+            <Button
+              onClick={() => testEmailsMutation.mutate()}
+              disabled={testEmailsMutation.isPending}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold whitespace-nowrap"
+              title="Send sample notification emails to verify email templates are working correctly"
+            >
+              {testEmailsMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4 mr-2" />
+                  Test All Emails
+                </>
+              )}
+            </Button>
+          )}
         </div>
-
-
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-2 border-black">
