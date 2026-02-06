@@ -52,6 +52,16 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
 
   const bookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
+    onMutate: async (newBooking) => {
+      // Optimistic update
+      await queryClient.cancelQueries(['bookings']);
+      const previousBookings = queryClient.getQueryData(['bookings']);
+      
+      // Show optimistic feedback
+      toast.success("Sending booking request...", { duration: 1000 });
+      
+      return { previousBookings };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
       queryClient.invalidateQueries(['events']);
@@ -59,7 +69,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       if (onSuccess) onSuccess();
       navigate(createPageUrl("Bookings"));
     },
-    onError: () => {
+    onError: (err, newBooking, context) => {
       toast.error("Failed to send booking request. Please try again.");
     }
   });

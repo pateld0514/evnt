@@ -127,8 +127,8 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-black border-b-2 border-gray-800 sticky top-0 z-50 shadow-lg">
-        <div className={`${isMobileView ? 'px-3' : 'max-w-7xl mx-auto px-4 md:px-6 lg:px-8'}`}>
+      <header className="bg-black dark:bg-gray-900 border-b-2 border-gray-800 dark:border-gray-700 sticky top-0 z-50 shadow-lg">
+        <div className={`${isMobileView ? 'px-3 safe-area-top safe-area-left safe-area-right' : 'max-w-7xl mx-auto px-4 md:px-6 lg:px-8'}`}>
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
             <Link to={createPageUrl("About")} className="flex items-center gap-1.5 md:gap-2">
@@ -237,7 +237,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Navigation - Shows based on view mode */}
       {!shouldHideNav && (
-        <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black border-t-2 border-gray-800 z-50 shadow-2xl`}>
+        <nav className={`${isMobileView ? 'block' : 'md:hidden'} fixed bottom-0 left-0 right-0 bg-black dark:bg-gray-900 border-t-2 border-gray-800 dark:border-gray-700 z-50 shadow-2xl safe-area-bottom safe-area-left safe-area-right`}>
           <div className="max-w-7xl mx-auto px-2">
             <div className="flex justify-around items-center py-2">
               {navItems.map((item) => {
