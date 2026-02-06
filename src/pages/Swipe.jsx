@@ -453,14 +453,25 @@ export default function SwipePage() {
         </Sheet>
       </div>
 
-      {/* Swipe Card */}
+      {/* Swipe Card Stack */}
       <div className="relative h-[600px] mb-8">
-        {currentVendor ? (
-          <SwipeCard
-            key={currentVendor.id}
-            vendor={currentVendor}
-            onSwipe={handleSwipe}
-          />
+        {displayableVendors.length > 0 ? (
+          displayableVendors.slice(0, 3).map((vendor, index) => (
+            <SwipeCard
+              key={vendor.id}
+              vendor={vendor}
+              onSwipe={index === 0 ? handleSwipe : null}
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                zIndex: displayableVendors.length - index,
+                transform: `scale(${(20 - index) / 20}) translateY(-${30 * index}px)`,
+                opacity: (10 - index) / 10,
+                pointerEvents: index === 0 ? 'auto' : 'none'
+              }}
+            />
+          ))
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-4 border-dashed border-gray-300">
             <div className="text-center px-8">
@@ -485,7 +496,7 @@ export default function SwipePage() {
       </div>
 
       {/* Action Buttons */}
-      {currentVendor && (
+      {displayableVendors.length > 0 && (
         <div className="flex justify-center items-center gap-6">
           {swipeHistory.length > 0 && (
             <Button

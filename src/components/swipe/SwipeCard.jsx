@@ -48,7 +48,7 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe }) {
+export default function SwipeCard({ vendor, onSwipe, style }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -107,22 +107,35 @@ export default function SwipeCard({ vendor, onSwipe }) {
     : null;
 
   const handleDragEnd = (event, info) => {
-    if (Math.abs(info.offset.x) > 100) {
-      onSwipe(info.offset.x > 0 ? "right" : "left");
+    if (!onSwipe) return;
+    
+    const threshold = 80;
+    if (Math.abs(info.offset.x) > threshold) {
+      const direction = info.offset.x > 0 ? "right" : "left";
+      onSwipe(direction);
     }
   };
 
   return (
     <>
       <motion.div
-        className="absolute inset-0"
-        style={{ x, rotate }}
-        drag="x"
+        style={{ 
+          ...style,
+          x: onSwipe ? x : 0,
+          rotate: onSwipe ? rotate : 0,
+        }}
+        drag={onSwipe ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
-        whileTap={{ cursor: "grabbing" }}
+        whileTap={onSwipe ? { cursor: "grabbing" } : {}}
+        animate={!onSwipe ? { 
+          scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
+          y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
+          opacity: style?.opacity || 1
+        } : {}}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <Card className="h-full bg-white shadow-2xl border-4 border-black cursor-grab active:cursor-grabbing flex flex-col overflow-hidden">
+        <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
             <img
               src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
