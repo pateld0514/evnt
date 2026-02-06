@@ -59,12 +59,15 @@ export default function MessagesPage() {
       );
     },
     enabled: !!currentUser,
-    refetchInterval: 2000,
+    refetchInterval: selectedConversation ? 10000 : false,
+    staleTime: 30 * 1000,
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -78,6 +81,7 @@ export default function MessagesPage() {
       }
     },
     enabled: !!currentUser && (isVendor ? !!vendorData : true),
+    staleTime: 2 * 60 * 1000,
   });
 
   const sendMessageMutation = useMutation({

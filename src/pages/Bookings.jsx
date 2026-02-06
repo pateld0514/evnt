@@ -99,7 +99,6 @@ export default function BookingsPage() {
     queryFn: async () => {
       if (!currentUser) return [];
       
-      // Handle demo mode
       if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
       } else if (currentUser.demo_mode === "client") {
@@ -112,23 +111,26 @@ export default function BookingsPage() {
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 1 * 60 * 1000,
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
-      // Get reviews created by this user
       return await base44.entities.Review.filter({ created_by: currentUser.email });
     },
     enabled: !!currentUser,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: allUsers = [] } = useQuery({
