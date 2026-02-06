@@ -245,8 +245,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       additional_fees: additionalFees.filter(f => f.name && f.amount),
       platform_fee_percent: totals.finalFeePercent || platformFeePercent,
       platform_fee_amount: totals.platformFeeAmount,
+      sales_tax_amount: totals.salesTax || 0,
+      sales_tax_rate: totals.salesTaxRate || 0,
+      maryland_sales_tax_amount: totals.salesTax || 0, // Legacy field for compatibility
       maryland_sales_tax_percent: totals.salesTax > 0 && totals.salesTaxRate > 0 ? totals.salesTaxRate * 100 : 0,
-      maryland_sales_tax_amount: totals.salesTax || 0,
       vendor_payout: totals.vendorPayout,
       total_amount_charged: totals.totalAmount,
       total_amount: totals.totalAmount,

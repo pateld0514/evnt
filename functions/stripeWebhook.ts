@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
                 <ul>
                   <li>Event Services: $${booking.base_event_amount.toFixed(2)}</li>
                   <li>Platform Fee: $${booking.platform_fee_amount.toFixed(2)}</li>
-                  ${booking.maryland_sales_tax_amount ? `<li>Maryland Sales Tax (6%): $${booking.maryland_sales_tax_amount.toFixed(2)}</li>` : ''}
+                  ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li>Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
                   <li><strong>Total Charged: $${booking.total_amount_charged.toFixed(2)}</strong></li>
                 </ul>
                 <p>Your booking is now confirmed. Payment will be released to the vendor after the event is completed.</p>
