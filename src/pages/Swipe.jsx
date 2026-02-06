@@ -34,9 +34,9 @@ export default function SwipePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [displayableVendors, setDisplayableVendors] = useState([]);
-  const [removedVendorIds, setRemovedVendorIds] = useState(new Set());
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [animatingVendorId, setAnimatingVendorId] = useState(null);
   const [filters, setFilters] = useState({
     category: "all",
     priceRange: "all",
@@ -110,7 +110,6 @@ export default function SwipePage() {
     initialData: [],
   });
 
-  // Calculate vendor tier based on completed bookings
   const getVendorTier = (vendorId) => {
     const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
     if (completedCount >= 100) return 5;
@@ -120,7 +119,6 @@ export default function SwipePage() {
     return 1;
   };
 
-  // Effect to re-filter and set displayable vendors when dependencies change
   useEffect(() => {
     if (!currentUser || vendors.length === 0) {
       setDisplayableVendors([]);
@@ -130,9 +128,8 @@ export default function SwipePage() {
     const filteredAndSorted = vendors.filter(vendor => {
       const isApproved = vendor.approval_status === "approved";
       const profileComplete = vendor.profile_complete === true;
-      const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+      const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
       const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
-      const notRemoved = !removedVendorIds.has(vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
       const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
       
@@ -158,7 +155,7 @@ export default function SwipePage() {
         }
       }
       
-      return isApproved && profileComplete && notSwiped && notSaved && notRemoved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+      return isApproved && profileComplete && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       const tierA = getVendorTier(a.id);
       const tierB = getVendorTier(b.id);
@@ -193,7 +190,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, bookings, reviews, currentUser, eventType, removedVendorIds]);
+  }, [vendors, swipedVendors, savedVendors, filters, bookings, reviews, currentUser, eventType]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -227,11 +224,6 @@ export default function SwipePage() {
       return { swipeId: swipeResult.id, savedVendorId };
     },
     onSuccess: (result, variables) => {
-      queryClient.invalidateQueries(['user-swipes']);
-      if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
-      }
-      
       setSwipeHistory(prev => [...prev, { 
         swipeId: result.swipeId, 
         savedId: result.savedVendorId,
@@ -240,17 +232,20 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      setIsProcessing(false);
+      // Wait for animation to complete before refreshing data
+      setTimeout(() => {
+        queryClient.invalidateQueries(['user-swipes']);
+        if (variables.direction === "right") {
+          queryClient.invalidateQueries(['saved-vendors']);
+        }
+        setAnimatingVendorId(null);
+        setIsProcessing(false);
+      }, 400);
     },
     onError: () => {
       toast.error("Failed to process swipe");
+      setAnimatingVendorId(null);
       setIsProcessing(false);
-      // Remove from removed set if failed
-      setRemovedVendorIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(displayableVendors[0]?.id);
-        return newSet;
-      });
     }
   });
 
@@ -260,17 +255,14 @@ export default function SwipePage() {
   
   const uniqueAvailableCategories = [...new Set(availableCategories)];
   
-  const currentVendor = displayableVendors.find(v => !removedVendorIds.has(v.id));
+  const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {
     if (!currentVendor || !currentUser || isProcessing) return;
     
     setIsProcessing(true);
+    setAnimatingVendorId(currentVendor.id);
     
-    // Mark as removed immediately for UI
-    setRemovedVendorIds(prev => new Set([...prev, currentVendor.id]));
-    
-    // Process the swipe
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,
@@ -291,12 +283,6 @@ export default function SwipePage() {
       if (lastSwipe.savedId) {
         await base44.entities.SavedVendor.delete(lastSwipe.savedId);
       }
-      
-      setRemovedVendorIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(lastSwipe.vendorId);
-        return newSet;
-      });
       
       setSwipeHistory(prev => prev.slice(0, -1));
       
@@ -321,7 +307,6 @@ export default function SwipePage() {
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
 
       setSwipeHistory([]);
-      setRemovedVendorIds(new Set());
       setFilters({
         category: "all",
         priceRange: "all",
@@ -351,7 +336,7 @@ export default function SwipePage() {
     );
   }
 
-  const visibleVendors = displayableVendors.filter(v => !removedVendorIds.has(v.id)).slice(0, 3);
+  const visibleVendors = displayableVendors.slice(0, 3);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -364,7 +349,6 @@ export default function SwipePage() {
         </p>
       </div>
 
-      {/* Filters */}
       <div className="mb-6">
         <Sheet>
           <SheetTrigger asChild>
@@ -488,7 +472,6 @@ export default function SwipePage() {
         </Sheet>
       </div>
 
-      {/* Swipe Card Stack */}
       <div className="relative h-[600px] mb-8">
         {visibleVendors.length > 0 ? (
           visibleVendors.map((vendor, index) => (
@@ -496,7 +479,7 @@ export default function SwipePage() {
               key={vendor.id}
               vendor={vendor}
               onSwipe={index === 0 ? handleSwipe : null}
-              isRemoving={index === 0 && removedVendorIds.has(vendor.id)}
+              isRemoving={vendor.id === animatingVendorId}
               style={{
                 position: 'absolute',
                 width: '100%',
@@ -532,7 +515,6 @@ export default function SwipePage() {
         )}
       </div>
 
-      {/* Action Buttons */}
       {visibleVendors.length > 0 && (
         <div className="flex justify-center items-center gap-6">
           {swipeHistory.length > 0 && (
@@ -571,7 +553,7 @@ export default function SwipePage() {
       <div className="text-center mt-6 text-base text-gray-600 font-bold">
         {visibleVendors.length > 0 && (
           <>
-            {visibleVendors.length} vendor{visibleVendors.length !== 1 ? 's' : ''} remaining
+            {displayableVendors.length} vendor{displayableVendors.length !== 1 ? 's' : ''} remaining
           </>
         )}
       </div>
