@@ -180,22 +180,16 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
   const submitProposalMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('Submitting proposal for booking:', booking.id, 'Data:', data);
-      
       // Update booking first
       const updated = await base44.entities.Booking.update(booking.id, data);
-      console.log('Booking updated:', updated);
       
       // If client is accepting, redirect to Stripe Checkout
       if (!isVendor) {
-        console.log('Client accepting - creating checkout session...');
         const response = await base44.functions.invoke('createCheckout', { 
           bookingId: booking.id 
         });
-        console.log('Checkout response:', response);
         
         if (response.data?.url) {
-          console.log('Redirecting to Stripe:', response.data.url);
           // Close dialog before redirect
           if (onClose) onClose();
           window.location.href = response.data.url;
@@ -210,7 +204,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       queryClient.invalidateQueries(['bookings']);
       
       if (isVendor) {
-        toast.success("Proposal sent!");
+        toast.success("Proposal sent to client!");
         if (onClose) onClose();
       }
       // Client redirect handled in mutationFn
