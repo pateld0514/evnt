@@ -187,8 +187,6 @@ export default function SwipePage() {
     setDisplayableVendors(filteredAndSorted);
   }, [vendors, swipedVendors, filters, bookings, reviews, currentUser, eventType]);
 
-  const [isProcessingSwipe, setIsProcessingSwipe] = useState(false);
-
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
       const swipePromise = base44.entities.UserSwipe.create({
@@ -238,11 +236,7 @@ export default function SwipePage() {
       }]);
       // Optimistically remove the swiped vendor from the displayable list
       setDisplayableVendors(prev => prev.slice(1));
-      setIsProcessingSwipe(false);
     },
-    onError: () => {
-      setIsProcessingSwipe(false);
-    }
   });
 
   // Get available categories from approved vendors
@@ -255,9 +249,8 @@ export default function SwipePage() {
   const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor || !currentUser || isProcessingSwipe) return;
+    if (!currentVendor || !currentUser) return;
     
-    setIsProcessingSwipe(true);
     swipeMutation.mutate({
       vendorId: currentVendor.id,
       direction,

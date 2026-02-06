@@ -54,7 +54,6 @@ export default function SwipeCard({ vendor, onSwipe }) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
-  const [hasBeenSwiped, setHasBeenSwiped] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
@@ -108,9 +107,7 @@ export default function SwipeCard({ vendor, onSwipe }) {
     : null;
 
   const handleDragEnd = (event, info) => {
-    if (hasBeenSwiped) return; // Prevent multiple swipes
     if (Math.abs(info.offset.x) > 100) {
-      setHasBeenSwiped(true);
       onSwipe(info.offset.x > 0 ? "right" : "left");
     }
   };
