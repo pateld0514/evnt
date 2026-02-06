@@ -101,9 +101,9 @@ export default function AdminTransactionsPage() {
   const deleteAllTransactionsMutation = useMutation({
     mutationFn: async () => {
       // Delete all payouts first
-      await Promise.all(payouts.map(p => base44.asServiceRole.entities.VendorPayout.delete(p.id)));
+      await Promise.all(payouts.map(p => base44.entities.VendorPayout.delete(p.id)));
       // Delete all bookings
-      await Promise.all(bookings.map(b => base44.asServiceRole.entities.Booking.delete(b.id)));
+      await Promise.all(bookings.map(b => base44.entities.Booking.delete(b.id)));
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['all-bookings']);
