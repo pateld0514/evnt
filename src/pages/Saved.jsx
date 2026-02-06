@@ -87,7 +87,7 @@ export default function SavedPage() {
   });
 
   const { data: allVendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: ['vendors-for-saved'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,

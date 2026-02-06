@@ -195,18 +195,21 @@ export default function EventDashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">My Events</h1>
-          <p className="text-lg md:text-xl text-gray-600 font-medium">Organize and track all your upcoming events</p>
+    <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 md:mb-10">
+        <div className="text-center md:text-left">
+          <div className="inline-flex items-center gap-2 mb-3 md:mb-0 md:hidden">
+            <CalendarIconLucide className="w-8 h-8 text-black" />
+          </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">My Events</h1>
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">Organize and track all your upcoming events</p>
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="bg-black text-white hover:bg-gray-800 font-bold h-12 px-6"
+          className="bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 px-4 md:px-6 w-full md:w-auto"
         >
           <Plus className="w-5 h-5 mr-2" />
-          Create Event
+          <span className="md:inline">Create Event</span>
         </Button>
       </div>
 

@@ -246,16 +246,16 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
     const data = {
       base_event_amount: totals.baseEventAmount,
-      agreed_price: totals.baseEventAmount, // Keep for backward compat
+      agreed_price: totals.baseEventAmount,
       service_description: serviceDescription,
-      additional_fees: additionalFees,
+      additional_fees: additionalFees.filter(f => f.name && f.amount),
       platform_fee_percent: totals.finalFeePercent || platformFeePercent,
       platform_fee_amount: totals.platformFeeAmount,
-      maryland_sales_tax_percent: totals.marylandTax > 0 ? 6 : 0,
-      maryland_sales_tax_amount: totals.marylandTax,
+      maryland_sales_tax_percent: totals.salesTax > 0 && totals.salesTaxRate > 0 ? totals.salesTaxRate * 100 : 0,
+      maryland_sales_tax_amount: totals.salesTax || 0,
       vendor_payout: totals.vendorPayout,
       total_amount_charged: totals.totalAmount,
-      total_amount: totals.totalAmount, // Keep for backward compat
+      total_amount: totals.totalAmount,
       client_state: clientState,
       currency: 'USD',
       status: isVendor ? "negotiating" : "payment_pending"

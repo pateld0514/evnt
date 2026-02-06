@@ -125,15 +125,15 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
-        <div className={`${isMobileView ? 'px-4' : 'max-w-7xl mx-auto px-6 lg:px-8'}`}>
-          <div className="flex items-center justify-between h-16">
+      <header className="bg-black border-b-2 border-gray-800 sticky top-0 z-50 shadow-lg">
+        <div className={`${isMobileView ? 'px-3' : 'max-w-7xl mx-auto px-4 md:px-6 lg:px-8'}`}>
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
-            <Link to={createPageUrl("About")} className="flex items-center gap-2">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-3xl font-black text-black">E</span>
+            <Link to={createPageUrl("About")} className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-2xl md:text-3xl font-black text-black">E</span>
               </div>
-              <span className="text-3xl font-black text-white tracking-tight">
+              <span className="text-2xl md:text-3xl font-black text-white tracking-tight">
                 EVNT
               </span>
             </Link>
@@ -169,7 +169,7 @@ export default function Layout({ children, currentPageName }) {
             )}
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               {/* View Mode Toggle - Only for admin */}
               {userType === "admin" && (
                 <Button
@@ -195,23 +195,23 @@ export default function Layout({ children, currentPageName }) {
 
               <Link 
                 to={createPageUrl("About")}
-                className={`text-white hover:text-gray-300 transition-colors ${isMobileView ? 'px-2' : 'hidden md:flex'} flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800`}
+                className="text-white hover:text-gray-300 transition-colors hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800"
               >
                 <Info className="w-5 h-5" />
-                <span className={`font-bold text-base ${isMobileView ? 'hidden' : ''}`}>About</span>
+                <span className="font-bold text-base">About</span>
               </Link>
               <Link 
                 to={createPageUrl("Terms")}
-                className={`text-white hover:text-gray-300 transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-base font-bold`}
+                className="text-white hover:text-gray-300 transition-colors hidden sm:flex items-center gap-1 md:gap-2 px-2 md:px-3 py-2 rounded-lg hover:bg-gray-800 text-sm md:text-base font-bold"
               >
                 Terms
               </Link>
               <Link 
                 to={createPageUrl("Profile")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors`}
+                className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
               >
                 <User className="w-5 h-5" />
-                <span className={`font-bold text-base ${isMobileView ? 'hidden' : 'hidden md:inline'}`}>Profile</span>
+                <span className="font-bold text-base hidden lg:inline">Profile</span>
               </Link>
             </div>
           </div>
