@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import InAppNotifications from "@/components/notifications/InAppNotifications";
+import { InstallPrompt } from "@/components/mobile/MobileFeatures";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -228,6 +229,9 @@ export default function Layout({ children, currentPageName }) {
       <main className={isMobileView ? "pb-20" : "pb-4"}>
         {children}
       </main>
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
 
       {/* Bottom Navigation - Shows based on view mode */}
       {!shouldHideNav && (

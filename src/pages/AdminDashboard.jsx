@@ -71,20 +71,18 @@ export default function AdminDashboardPage() {
       
       const vendor = vendors.find(v => v.id === vendorId);
       const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
-      await base44.integrations.Core.SendEmail({
-        to: vendor.contact_email,
-        from_name: "EVNT Team",
-        subject: "🎉 Your EVNT Vendor Account Has Been Approved!",
-        body: EmailTemplate.vendorApproval(
-          vendorUser?.full_name || "there",
-          vendor.business_name
-        )
+      
+      // Send approval notification via backend function
+      await base44.functions.invoke('notifyVendorApproval', {
+        vendor_email: vendorUser?.email || vendor.contact_email,
+        vendor_name: vendorUser?.full_name || vendor.business_name,
+        status: 'approved'
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-vendors']);
       queryClient.invalidateQueries(['admin-users']);
-      toast.success("Vendor approved successfully");
+      toast.success("Vendor approved and notified!");
     },
   });
 
@@ -98,21 +96,19 @@ export default function AdminDashboardPage() {
       
       const vendor = vendors.find(v => v.id === vendorId);
       const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
-      await base44.integrations.Core.SendEmail({
-        to: vendor.contact_email,
-        from_name: "EVNT Team",
-        subject: "Update on Your EVNT Vendor Application",
-        body: EmailTemplate.vendorRejection(
-          vendorUser?.full_name || "there",
-          vendor.business_name,
-          reason
-        )
+      
+      // Send rejection notification via backend function
+      await base44.functions.invoke('notifyVendorApproval', {
+        vendor_email: vendorUser?.email || vendor.contact_email,
+        vendor_name: vendorUser?.full_name || vendor.business_name,
+        status: 'rejected',
+        rejection_reason: reason
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-vendors']);
       queryClient.invalidateQueries(['admin-users']);
-      toast.success("Vendor rejected");
+      toast.success("Vendor rejected and notified");
       setSelectedVendor(null);
       setRejectionReason("");
     },

@@ -116,6 +116,8 @@ export default function VendorProfilePage() {
 
     setSaving(true);
     try {
+      const currentUser = await base44.auth.me();
+      
       await base44.entities.Vendor.update(vendor.id, {
         business_name: formData.business_name,
         description: formData.description,
@@ -131,6 +133,15 @@ export default function VendorProfilePage() {
         facebook: formData.facebook || null,
         twitter: formData.twitter || null,
         tiktok: formData.tiktok || null,
+      });
+
+      // Send notification about profile update
+      await base44.entities.Notification.create({
+        recipient_email: currentUser.email,
+        type: "booking_status",
+        title: "✅ Vendor Profile Updated",
+        message: "Your vendor profile has been updated successfully. All changes are now visible to clients.",
+        read: false
       });
 
       toast.success("Profile updated successfully!");
