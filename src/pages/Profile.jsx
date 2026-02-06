@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Store, LogOut, Loader2, RefreshCw, Bell, Trash2 } from "lucide-react";
+import { User, Store, LogOut, Loader2, RefreshCw, Bell, Trash2, Settings } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ReferralCard from "../components/referral/ReferralCard";
@@ -251,29 +251,14 @@ export default function ProfilePage() {
           <Card className="border-2 border-purple-600 bg-purple-50">
             <CardContent className="p-4">
               <div>
-                <p className="font-bold text-purple-900 mb-3">👑 Admin Controls</p>
-                <div className="grid grid-cols-3 gap-3">
-                  <Button
-                    onClick={() => switchView("admin")}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                  >
-                    Admin Panel
-                  </Button>
-                  <Button
-                    onClick={() => switchView("client")}
-                    variant="outline"
-                    className="border-2 border-black font-bold"
-                  >
-                    View as Client
-                  </Button>
-                  <Button
-                    onClick={() => switchView("vendor")}
-                    variant="outline"
-                    className="border-2 border-black font-bold"
-                  >
-                    View as Vendor
-                  </Button>
-                </div>
+                <p className="font-bold text-purple-900 mb-3">👑 Admin Access</p>
+                <Button
+                  onClick={() => navigate(createPageUrl("AdminDashboard"))}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin Dashboard
+                </Button>
               </div>
             </CardContent>
           </Card>

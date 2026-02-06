@@ -26,7 +26,8 @@ export default function VendorViewPage() {
   const { data: portfolioItems = [] } = useQuery({
     queryKey: ['portfolio', vendorId],
     queryFn: () => base44.entities.PortfolioItem.filter({ vendor_id: vendorId }, 'display_order'),
-    enabled: !!vendorId
+    enabled: !!vendorId,
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

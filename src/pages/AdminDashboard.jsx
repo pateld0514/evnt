@@ -45,20 +45,23 @@ export default function AdminDashboardPage() {
     queryKey: ['admin-vendors'],
     queryFn: () => base44.entities.Vendor.list('-created_date'),
     initialData: [],
-    refetchInterval: 3000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => base44.entities.User.list('-created_date'),
     initialData: [],
-    refetchInterval: 3000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
     queryFn: () => base44.entities.Booking.list('-created_date'),
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const approveVendorMutation = useMutation({

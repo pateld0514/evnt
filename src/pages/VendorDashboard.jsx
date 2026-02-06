@@ -77,6 +77,7 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
+    staleTime: 1 * 60 * 1000,
   });
 
   const { data: messages = [] } = useQuery({
@@ -87,6 +88,8 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
+    staleTime: 30 * 1000,
+    refetchInterval: 30000,
   });
 
   const { data: vendorViews = [] } = useQuery({
@@ -94,11 +97,11 @@ export default function VendorDashboard() {
     queryFn: async () => {
       if (!vendor?.id) return [];
       const allViews = await base44.entities.VendorView.filter({ vendor_id: vendor.id });
-      // Views are analytics - show all views for this vendor
       return allViews;
     },
     enabled: !!vendor?.id,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: vendorSwipes = [] } = useQuery({
@@ -106,11 +109,11 @@ export default function VendorDashboard() {
     queryFn: async () => {
       if (!vendor?.id) return [];
       const allSwipes = await base44.entities.UserSwipe.filter({ vendor_id: vendor.id });
-      // Swipes are analytics - show all swipes for this vendor
       return allSwipes;
     },
     enabled: !!vendor?.id,
     initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const generateAIInsights = async () => {
@@ -254,9 +257,11 @@ Provide 4-5 specific, actionable insights in this JSON format:
 
         <TabsContent value="overview" className="mt-6">
         {/* Stripe Account Status */}
-        <div className="mb-8">
-          <StripeAccountStatus vendorId={vendor?.id} />
-        </div>
+        {vendor?.id && (
+          <div className="mb-8">
+            <StripeAccountStatus vendorId={vendor.id} />
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="border-2 border-black cursor-pointer hover:shadow-xl transition-shadow" onClick={() => navigate(createPageUrl("Bookings"))}>

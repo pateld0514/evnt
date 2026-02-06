@@ -94,8 +94,8 @@ export default function Home() {
               For Your Event
             </h1>
             
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              No more calling hundreds of vendors or endless emails. Find DJs, venues, caterers, and more with a simple swipe.
+            <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto font-medium">
+              Connect with verified vendors for your perfect event. Browse, message, book, and pay - all in one place.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -215,7 +215,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-2">Browse Vendors</h3>
               <p className="text-gray-600">
-                Swipe through DJs, venues, caterers, photographers and more
+                Discover verified event professionals - DJs, photographers, caterers, venues, and more
               </p>
             </div>
 
@@ -235,7 +235,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-2">Connect & Book</h3>
               <p className="text-gray-600">
-                Message your saved vendors and book everything in one place
+                Message vendors, negotiate pricing, and complete secure payments all in one platform
               </p>
             </div>
           </div>

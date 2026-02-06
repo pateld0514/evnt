@@ -72,19 +72,36 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       return;
     }
 
+    if (!formData.event_type || !formData.event_date) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Validate date is in the future
+    const eventDate = new Date(formData.event_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (eventDate < today) {
+      toast.error("Event date must be in the future");
+      return;
+    }
+
     const bookingData = {
       event_id: formData.event_id || null,
       vendor_id: vendor.id,
       vendor_name: vendor.business_name,
       client_email: currentUser.email,
       client_name: currentUser.full_name,
+      client_state: formData.location?.toUpperCase().includes('MD') || formData.location?.toLowerCase().includes('maryland') ? 'MD' : null,
       event_type: formData.event_type,
       event_date: formData.event_date,
-      guest_count: formData.guest_count ? parseInt(formData.guest_count) : undefined,
-      budget: formData.budget ? parseFloat(formData.budget) : undefined,
-      location: formData.location,
-      notes: formData.notes,
-      status: "pending"
+      guest_count: formData.guest_count ? parseInt(formData.guest_count) : null,
+      budget: formData.budget ? parseFloat(formData.budget) : null,
+      location: formData.location || null,
+      notes: formData.notes || null,
+      status: "pending",
+      payment_status: "unpaid"
     };
 
     bookingMutation.mutate(bookingData);

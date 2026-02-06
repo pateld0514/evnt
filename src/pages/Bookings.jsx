@@ -115,7 +115,7 @@ export default function BookingsPage() {
   });
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: ['vendors-for-bookings'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,

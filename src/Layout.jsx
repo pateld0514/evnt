@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashboard, Monitor, Smartphone, DollarSign } from "lucide-react";
+import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashboard, Monitor, Smartphone, DollarSign, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -109,9 +109,9 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const adminNavItems = [
-    { name: "Admin", path: createPageUrl("AdminDashboard"), icon: LayoutDashboard },
+    { name: "Dashboard", path: createPageUrl("AdminDashboard"), icon: LayoutDashboard },
     { name: "Transactions", path: createPageUrl("AdminTransactions"), icon: DollarSign },
-    { name: "Home", path: createPageUrl("Home"), icon: Home },
+    { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
   ];
 
   const navItems = userType === "admin" ? adminNavItems : userType === "vendor" ? vendorNavItems : clientNavItems;
