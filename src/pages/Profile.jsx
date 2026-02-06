@@ -13,6 +13,10 @@ import { toast } from "sonner";
 import ReferralCard from "../components/referral/ReferralCard";
 import ReferralTracker from "../components/referral/ReferralTracker";
 import TierDisplay from "../components/tier/TierDisplay";
+import ClientProfileEditor from "../components/profile/ClientProfileEditor";
+import VendorProfileEditor from "../components/profile/VendorProfileEditor";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Edit } from "lucide-react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -23,6 +27,7 @@ export default function ProfilePage() {
   const [notificationPref, setNotificationPref] = useState("email");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteStep, setDeleteStep] = useState(1);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -131,10 +136,21 @@ export default function ProfilePage() {
 
       <Card className="border-2 border-black mb-6">
         <CardHeader className="bg-black text-white">
-          <CardTitle className="flex items-center gap-2 font-black">
-            <User className="w-6 h-6" />
-            {user?.user_type ? (user.user_type === "vendor" ? "Vendor Account" : "Client Account") : "Account"}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 font-black">
+              <User className="w-6 h-6" />
+              {user?.user_type ? (user.user_type === "vendor" ? "Vendor Account" : "Client Account") : "Account"}
+            </CardTitle>
+            <Button
+              onClick={() => setEditingProfile(true)}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-gray-800 font-bold"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Profile
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
@@ -347,6 +363,38 @@ export default function ProfilePage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto border-4 border-black">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">
+              Edit {user?.user_type === "vendor" ? "Vendor" : "Client"} Profile
+            </DialogTitle>
+          </DialogHeader>
+          
+          {user?.user_type === "vendor" && vendor ? (
+            <VendorProfileEditor
+              user={user}
+              vendor={vendor}
+              onSave={() => {
+                setEditingProfile(false);
+                window.location.reload();
+              }}
+              onCancel={() => setEditingProfile(false)}
+            />
+          ) : user?.user_type === "client" ? (
+            <ClientProfileEditor
+              user={user}
+              onSave={() => {
+                setEditingProfile(false);
+                window.location.reload();
+              }}
+              onCancel={() => setEditingProfile(false)}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
