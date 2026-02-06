@@ -48,7 +48,7 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, style }) {
+export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -107,7 +107,7 @@ export default function SwipeCard({ vendor, onSwipe, style }) {
     : null;
 
   const handleDragEnd = (event, info) => {
-    if (!onSwipe) return;
+    if (!onSwipe || isRemoving) return;
     
     const threshold = 80;
     if (Math.abs(info.offset.x) > threshold) {
@@ -121,19 +121,25 @@ export default function SwipeCard({ vendor, onSwipe, style }) {
       <motion.div
         style={{ 
           ...style,
-          x: onSwipe ? x : 0,
-          rotate: onSwipe ? rotate : 0,
+          x: onSwipe && !isRemoving ? x : 0,
+          rotate: onSwipe && !isRemoving ? rotate : 0,
         }}
-        drag={onSwipe ? "x" : false}
+        drag={onSwipe && !isRemoving ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
-        whileTap={onSwipe ? { cursor: "grabbing" } : {}}
-        animate={!onSwipe ? { 
+        whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
+        animate={isRemoving ? {
+          x: 1000,
+          y: -100,
+          rotate: -30,
+          opacity: 0,
+          transition: { duration: 0.3 }
+        } : !onSwipe ? { 
           scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
           y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
-          opacity: style?.opacity || 1
+          opacity: style?.opacity || 1,
+          transition: { type: "spring", stiffness: 300, damping: 30 }
         } : {}}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
