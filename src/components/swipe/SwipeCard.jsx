@@ -116,20 +116,6 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
     }
   };
 
-  // Track vendor view
-  const trackView = () => {
-    if (vendor?.id && !hasTrackedView.current) {
-      base44.entities.VendorView.create({ vendor_id: vendor.id }).catch(() => {});
-      hasTrackedView.current = true;
-    }
-  };
-
-  const hasTrackedView = React.useRef(false);
-
-  React.useEffect(() => {
-    trackView();
-  }, [vendor?.id]);
-
   return (
     <>
       <motion.div

@@ -372,11 +372,11 @@ export default function SwipePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl md:text-5xl font-black text-black mb-3">
+      <div className="text-center mb-6 md:mb-8">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">
           Find Your Perfect Vendors
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 font-medium">
+        <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">
           Swipe right to save, left to pass
         </p>
       </div>

@@ -94,9 +94,8 @@ export default function Layout({ children, currentPageName }) {
   }, [userBookings, userType]);
 
   const clientNavItems = [
-    { name: "Home", path: createPageUrl("Home"), icon: Home },
-    { name: "Events", path: createPageUrl("EventDashboard"), icon: Calendar },
     { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
+    { name: "Events", path: createPageUrl("EventDashboard"), icon: Calendar },
     { name: "Saved", path: createPageUrl("Saved"), icon: Heart },
     { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar, badge: bookingsNeedingAction },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare, badge: unreadCount },
@@ -104,7 +103,7 @@ export default function Layout({ children, currentPageName }) {
 
   const vendorNavItems = [
     { name: "Dashboard", path: createPageUrl("VendorDashboard"), icon: LayoutDashboard },
-    { name: "Bookings", path: createPageUrl("Bookings"), icon: Calendar, badge: bookingsNeedingAction },
+    { name: "Requests", path: createPageUrl("Bookings"), icon: Calendar, badge: bookingsNeedingAction },
     { name: "Messages", path: createPageUrl("Messages"), icon: MessageSquare, badge: unreadCount },
   ];
 
