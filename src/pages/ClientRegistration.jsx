@@ -68,12 +68,25 @@ export default function ClientRegistrationPage() {
         referred_by: referralCode || null
       });
 
-      // Create referral reward if referred
+      // Create referral reward if referred - decode referral code to get referrer email
       if (referralCode) {
         try {
+          // Decode the referral code back to email (reverse of btoa encoding)
+          let referrerEmail;
+          try {
+            referrerEmail = atob(referralCode);
+          } catch {
+            // If decode fails, referralCode might be the email directly
+            referrerEmail = referralCode;
+          }
+
+          // Get referrer user to determine their type
+          const referrerUsers = await base44.entities.User.filter({ email: referrerEmail });
+          const referrerType = referrerUsers.length > 0 ? referrerUsers[0].user_type : "unknown";
+
           await base44.entities.ReferralReward.create({
-            referrer_email: referralCode,
-            referrer_type: "unknown",
+            referrer_email: referrerEmail,
+            referrer_type: referrerType,
             referred_email: currentUser.email,
             referred_type: "client",
             reward_amount: 25,

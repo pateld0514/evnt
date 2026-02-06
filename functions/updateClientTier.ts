@@ -22,15 +22,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_email is required' }, { status: 400 });
     }
 
-    // Get all completed bookings for this client
+    // Get all completed AND PAID bookings for this client
     const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
       client_email,
-      status: 'completed'
+      status: 'completed',
+      payment_status: 'paid'
     });
 
     // Calculate stats
     const totalBookings = completedBookings.length;
-    const totalSpent = completedBookings.reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    const totalSpent = completedBookings.reduce((sum, b) => sum + (b.total_amount_charged || b.total_amount || 0), 0);
 
     // Calculate bookings this year
     const now = new Date();
@@ -40,6 +41,9 @@ Deno.serve(async (req) => {
     ).length;
 
     // Determine tier level and discount
+    // STARTER: 0-15 bookings = 0% discount
+    // REGULAR: 16-45 bookings = 1% discount
+    // VIP: 46+ bookings = 3% discount
     let tierLevel = 'starter';
     let discount = 0;
 

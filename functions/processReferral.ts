@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
       if (users.length > 0 && users[0].vendor_id) {
         const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
           vendor_id: users[0].vendor_id,
-          status: 'completed'
+          status: 'completed',
+          payment_status: 'paid'
         });
         hasCompletedRequirement = completedBookings.length >= 1;
         referredUserId = users[0].vendor_id;
@@ -51,7 +52,8 @@ Deno.serve(async (req) => {
     } else if (referred_type === 'client') {
       const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
         client_email: referred_email,
-        status: 'completed'
+        status: 'completed',
+        payment_status: 'paid'
       });
       hasCompletedRequirement = completedBookings.length >= 1;
     }

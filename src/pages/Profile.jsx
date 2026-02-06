@@ -11,6 +11,8 @@ import { User, Store, LogOut, Loader2, RefreshCw, Bell, Trash2, Settings } from 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ReferralCard from "../components/referral/ReferralCard";
+import ReferralTracker from "../components/referral/ReferralTracker";
+import TierDisplay from "../components/tier/TierDisplay";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -242,7 +244,13 @@ export default function ProfilePage() {
       </Card>
 
       {user?.user_type && (
-        <div className="mb-6">
+        <div className="space-y-6 mb-6">
+          <TierDisplay 
+            userEmail={user.email} 
+            userType={user.user_type}
+            vendorId={user.vendor_id}
+          />
+          <ReferralTracker userEmail={user.email} userType={user.user_type} />
           <ReferralCard userEmail={user.email} userType={user.user_type} />
         </div>
       )}

@@ -22,10 +22,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'vendor_id is required' }, { status: 400 });
     }
 
-    // Get all completed bookings for this vendor
+    // Get all completed AND PAID bookings for this vendor
     const completedBookings = await base44.asServiceRole.entities.Booking.filter({ 
       vendor_id,
-      status: 'completed'
+      status: 'completed',
+      payment_status: 'paid'
     });
 
     // Get all reviews for this vendor
@@ -45,16 +46,20 @@ Deno.serve(async (req) => {
       new Date(b.updated_date) >= startOfMonth
     ).length;
 
-    // Determine tier level
+    // Determine tier level and fee discount
+    // BRONZE: 0-30 bookings = 0% base fee discount
+    // SILVER: 31-80 bookings = 1.0% fee discount
+    // GOLD: 81+ bookings = 2.5% fee discount
+    // VOLUME BONUS: 10+ bookings this month = additional 1.5% (stacks)
     let tierLevel = 'bronze';
     let feeDiscount = 0;
 
     if (completedCount >= 81) {
       tierLevel = 'gold';
-      feeDiscount = 2.5; // 2.5% discount on fees
+      feeDiscount = 2.5; // 2.5% discount on platform fee
     } else if (completedCount >= 31) {
       tierLevel = 'silver';
-      feeDiscount = 1.0; // 1.0% discount on fees
+      feeDiscount = 1.0; // 1.0% discount on platform fee
     }
 
     // Additional discount for volume (10+ bookings this month) - stacks with tier discount
