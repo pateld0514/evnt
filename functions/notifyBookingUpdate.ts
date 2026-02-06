@@ -24,11 +24,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const vendor = await base44.asServiceRole.entities.Vendor.get(booking.vendor_id);
-    if (!vendor) {
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    if (!vendors || vendors.length === 0) {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
-
+    
+    const vendor = vendors[0];
     const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: booking.vendor_id });
     const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email;
 
