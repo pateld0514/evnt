@@ -186,11 +186,11 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="p-8 space-y-5">
                 <div>
-                  <p className="font-black mb-3 text-lg">How Vendor Payments Work</p>
-                  <p className="text-gray-700 text-lg mb-4 leading-relaxed">
-                    EVNT takes a {platformFee}% service fee from each completed booking. For example, if you agree to a $1,000 booking, the client pays $1,000, EVNT receives ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}%), and you receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} ({(100 - platformFee).toFixed(0)}%).
-                  </p>
-                </div>
+                   <p className="font-black mb-3 text-lg">How Vendor Payments Work</p>
+                   <p className="text-gray-700 text-lg mb-4 leading-relaxed">
+                     EVNT takes a {platformFee}% service fee from each booking's agreed price. For example, if you agree to a $1,000 booking in Kentucky (6% sales tax): Client pays $1,060 total ($1,000 service + $60 tax). EVNT receives ${(1000 * platformFee / 100).toFixed(0)} ({platformFee}% fee) + $60 (tax). You receive ${(1000 - (1000 * platformFee / 100)).toFixed(0)} after the fee is deducted.
+                   </p>
+                 </div>
 
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-2 border-gray-300 space-y-4">
                   <div>
@@ -287,14 +287,16 @@ export default function AboutPage() {
                 </div>
 
                 <div className="bg-green-50 rounded-xl p-6 border-2 border-green-300 mt-6">
-                  <p className="font-black text-green-900 mb-3 text-lg">💡 Key Benefits:</p>
-                  <ul className="space-y-2 text-base text-green-800">
-                    <li className="font-medium">• <strong>Pricing:</strong> Client pays agreed amount. Vendor receives {(100 - platformFee).toFixed(0)}%. EVNT's {platformFee}% fee comes from the total</li>
-                    <li className="font-medium">• <strong>Clients:</strong> Escrow protection until service is delivered</li>
-                    <li className="font-medium">• <strong>Vendors:</strong> No upfront costs, only pay when you book</li>
-                    <li className="font-medium">• <strong>Security:</strong> Stripe-powered payments with fraud protection</li>
-                  </ul>
-                </div>
+                   <p className="font-black text-green-900 mb-3 text-lg">💡 Fee & Tax Breakdown:</p>
+                   <ul className="space-y-2 text-base text-green-800">
+                     <li className="font-medium">• <strong>EVNT Fee:</strong> {platformFee}% of agreed service price (deducted from vendor payout)</li>
+                     <li className="font-medium">• <strong>Sales Tax:</strong> Applied based on event location, added to client total</li>
+                     <li className="font-medium">• <strong>Client Pays:</strong> Service price + applicable sales tax</li>
+                     <li className="font-medium">• <strong>Vendor Receives:</strong> Service price minus EVNT's {platformFee}% fee</li>
+                     <li className="font-medium">• <strong>EVNT Gets:</strong> {platformFee}% fee + all collected sales taxes</li>
+                     <li className="font-medium">• <strong>Example:</strong> $1,000 booking in KY (6% tax): Client pays $1,060 • Vendor receives $900 • EVNT gets $100 fee + $60 tax</li>
+                   </ul>
+                 </div>
               </div>
             </CardContent>
           </Card>
