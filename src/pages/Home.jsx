@@ -67,12 +67,20 @@ export default function Home() {
     checkUser();
   }, [navigate]);
 
-  const handleEventSelect = (eventType) => {
-    const eventSlug = eventType.toLowerCase().replace(/\s+/g, '-');
-    if (eventType === "Other") {
-      navigate(createPageUrl("Swipe") + `?event=${eventSlug}`);
-    } else {
-      navigate(createPageUrl("EventVendors") + `?event=${eventSlug}`);
+  const handleEventSelect = async (eventType) => {
+    // Check if user is authenticated
+    try {
+      await base44.auth.me();
+      // User is authenticated, proceed
+      const eventSlug = eventType.toLowerCase().replace(/\s+/g, '-');
+      if (eventType === "Other") {
+        navigate(createPageUrl("Swipe") + `?event=${eventSlug}`);
+      } else {
+        navigate(createPageUrl("EventVendors") + `?event=${eventSlug}`);
+      }
+    } catch (error) {
+      // User not authenticated, redirect to login
+      base44.auth.redirectToLogin(window.location.pathname);
     }
   };
 
@@ -102,7 +110,14 @@ export default function Home() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-gray-100 text-lg h-14 px-8 font-bold"
-                onClick={() => navigate(createPageUrl("Swipe"))}
+                onClick={async () => {
+                  try {
+                    await base44.auth.me();
+                    navigate(createPageUrl("Swipe"));
+                  } catch (error) {
+                    base44.auth.redirectToLogin(window.location.pathname);
+                  }
+                }}
               >
                 Start Swiping
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -169,7 +184,14 @@ export default function Home() {
             <Button
               size="lg"
               className="h-24 bg-black text-white hover:bg-gray-800 font-bold text-lg flex flex-col items-center justify-center gap-2"
-              onClick={() => navigate(createPageUrl("Swipe"))}
+              onClick={async () => {
+                try {
+                  await base44.auth.me();
+                  navigate(createPageUrl("Swipe"));
+                } catch (error) {
+                  base44.auth.redirectToLogin(window.location.pathname);
+                }
+              }}
             >
               <Sparkles className="w-6 h-6" />
               Browse All Vendors
@@ -178,7 +200,14 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="h-24 border-2 border-black hover:bg-black hover:text-white font-bold text-lg flex flex-col items-center justify-center gap-2"
-              onClick={() => navigate(createPageUrl("Saved"))}
+              onClick={async () => {
+                try {
+                  await base44.auth.me();
+                  navigate(createPageUrl("Saved"));
+                } catch (error) {
+                  base44.auth.redirectToLogin(window.location.pathname);
+                }
+              }}
             >
               <Heart className="w-6 h-6" />
               View Favorites
@@ -187,7 +216,14 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="h-24 border-2 border-black hover:bg-black hover:text-white font-bold text-lg flex flex-col items-center justify-center gap-2"
-              onClick={() => navigate(createPageUrl("Messages"))}
+              onClick={async () => {
+                try {
+                  await base44.auth.me();
+                  navigate(createPageUrl("Messages"));
+                } catch (error) {
+                  base44.auth.redirectToLogin(window.location.pathname);
+                }
+              }}
             >
               <MessageSquare className="w-6 h-6" />
               Messages
