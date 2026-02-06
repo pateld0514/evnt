@@ -189,6 +189,16 @@ export default function BookingsPage() {
 
   const handleStartPayment = async (booking) => {
     setIsProcessingPayment(true);
+    
+    // Track payment initiation
+    base44.analytics.track({
+      eventName: 'payment_initiated',
+      properties: {
+        booking_id: booking.id,
+        amount: booking.total_amount_charged || booking.total_amount
+      }
+    });
+    
     try {
       const response = await base44.functions.invoke('createCheckout', { 
         bookingId: booking.id 

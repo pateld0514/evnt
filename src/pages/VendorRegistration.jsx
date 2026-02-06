@@ -213,6 +213,16 @@ export default function VendorRegistrationPage() {
         profile_complete: true
       });
 
+      // Track vendor registration
+      base44.analytics.track({
+        eventName: 'user_registered',
+        properties: {
+          user_type: 'vendor',
+          category: finalCategory,
+          has_referral: !!referralCode
+        }
+      });
+      
       await base44.auth.updateMe({
         vendor_id: vendor.id,
         user_type: "vendor",
