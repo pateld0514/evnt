@@ -64,6 +64,7 @@ import Profile from './pages/Profile';
 import Refund from './pages/Refund';
 import Rewards from './pages/Rewards';
 import Saved from './pages/Saved';
+import Swipe from './pages/Swipe';
 import Terms from './pages/Terms';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorOnboarding from './pages/VendorOnboarding';
@@ -71,7 +72,6 @@ import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
 import VendorView from './pages/VendorView';
-import Swipe from './pages/Swipe';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +93,7 @@ export const PAGES = {
     "Refund": Refund,
     "Rewards": Rewards,
     "Saved": Saved,
+    "Swipe": Swipe,
     "Terms": Terms,
     "VendorDashboard": VendorDashboard,
     "VendorOnboarding": VendorOnboarding,
@@ -100,7 +101,6 @@ export const PAGES = {
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
     "VendorView": VendorView,
-    "Swipe": Swipe,
 }
 
 export const pagesConfig = {

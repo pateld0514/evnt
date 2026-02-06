@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, Store, Loader2 } from "lucide-react";
+import { requestNotificationPermission } from "../components/mobile/MobileFeatures";
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
@@ -13,6 +14,10 @@ export default function OnboardingPage() {
   useEffect(() => {
     const checkUser = async () => {
       const user = await base44.auth.me();
+      
+      // Request notification permission on onboarding
+      requestNotificationPermission();
+      
       if (user.onboarding_complete) {
         if (user.user_type === "vendor") {
           navigate(createPageUrl("VendorDashboard"));
