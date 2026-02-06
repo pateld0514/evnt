@@ -99,7 +99,7 @@ export default function SwipePage() {
   });
 
   const swipeMutation = useMutation({
-    mutationFn: ({ vendorId, direction, vendor, swipeId }) => {
+    mutationFn: async ({ vendorId, direction, vendor, swipeId }) => {
       const swipePromise = base44.entities.UserSwipe.create({
         vendor_id: vendorId,
         direction,
@@ -107,13 +107,23 @@ export default function SwipePage() {
       });
 
       if (direction === "right") {
-        const savePromise = base44.entities.SavedVendor.create({
+        // Check if vendor is already saved
+        const existingSaved = await base44.entities.SavedVendor.filter({ 
           vendor_id: vendorId,
-          vendor_name: vendor.business_name,
-          vendor_category: vendor.category,
-          event_type: eventType
+          created_by: currentUser.email 
         });
-        return Promise.all([swipePromise, savePromise]);
+        
+        if (existingSaved.length === 0) {
+          const savePromise = base44.entities.SavedVendor.create({
+            vendor_id: vendorId,
+            vendor_name: vendor.business_name,
+            vendor_category: vendor.category,
+            event_type: eventType
+          });
+          return Promise.all([swipePromise, savePromise]);
+        } else {
+          return [await swipePromise, existingSaved[0]];
+        }
       }
       
       return swipePromise;
@@ -230,7 +240,7 @@ export default function SwipePage() {
   const currentVendor = filteredVendors[currentIndex];
 
   const handleSwipe = (direction) => {
-    if (!currentVendor) return;
+    if (!currentVendor || swipeMutation.isPending) return;
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
@@ -489,6 +499,7 @@ export default function SwipePage() {
             variant="outline"
             className="w-20 h-20 rounded-full border-4 border-black hover:bg-red-50"
             onClick={() => handleSwipe("left")}
+            disabled={swipeMutation.isPending}
           >
             <X className="w-8 h-8 text-black" />
           </Button>
@@ -497,6 +508,7 @@ export default function SwipePage() {
             size="lg"
             className="w-20 h-20 rounded-full bg-black hover:bg-gray-800"
             onClick={() => handleSwipe("right")}
+            disabled={swipeMutation.isPending}
           >
             <Heart className="w-8 h-8 text-white" fill="white" />
           </Button>
