@@ -92,6 +92,16 @@ export default function SwipePage() {
     initialData: [],
   });
 
+  const { data: savedVendors = [] } = useQuery({
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
+    },
+    enabled: !!currentUser,
+    initialData: [],
+  });
+
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
@@ -119,6 +129,7 @@ export default function SwipePage() {
       const isApproved = vendor.approval_status === "approved";
       const profileComplete = vendor.profile_complete === true;
       const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+      const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
       const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
       
@@ -144,7 +155,7 @@ export default function SwipePage() {
         }
       }
       
-      return isApproved && profileComplete && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+      return isApproved && profileComplete && notSwiped && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       // 1. HIGHEST PRIORITY: Vendor tier (based on completed bookings)
       const tierA = getVendorTier(a.id);
@@ -185,7 +196,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, filters, bookings, reviews, currentUser, eventType]);
+  }, [vendors, swipedVendors, savedVendors, filters, bookings, reviews, currentUser, eventType]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -287,8 +298,9 @@ export default function SwipePage() {
 
   const handleReset = async () => {
     try {
-      // Delete all user swipes to bring back all vendors
-      await Promise.all(swipedVendors.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
+      // Delete only "left" swipes (passes) to bring back non-saved vendors
+      const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
+      await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
 
       setSwipeHistory([]);
       setFilters({
@@ -305,7 +317,7 @@ export default function SwipePage() {
       queryClient.invalidateQueries(['vendors']);
       queryClient.invalidateQueries(['reviews']);
       
-      toast.success("All vendors restored!");
+      toast.success("Passed vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
     }
@@ -529,9 +541,9 @@ export default function SwipePage() {
       )}
 
       <div className="text-center mt-6 text-base text-gray-600 font-bold">
-        {vendors.length > 0 && (
+        {displayableVendors.length > 0 && (
           <>
-            {vendors.length - displayableVendors.length} / {vendors.length} vendors seen
+            {displayableVendors.length} vendor{displayableVendors.length !== 1 ? 's' : ''} remaining
           </>
         )}
       </div>
