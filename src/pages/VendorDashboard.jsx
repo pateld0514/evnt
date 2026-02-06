@@ -170,8 +170,9 @@ Provide 4-5 specific, actionable insights in this JSON format:
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
+        <p className="text-gray-600 font-medium">Loading dashboard...</p>
       </div>
     );
   }
