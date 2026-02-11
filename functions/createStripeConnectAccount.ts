@@ -14,26 +14,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user already has a Stripe account
-    let accountId = user.stripe_account_id;
-
-    // Create new Stripe Connect account if needed
-    if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: 'express',
-        email: user.email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-      });
-      accountId = account.id;
-
-      // Save to user record
-      await base44.auth.updateMe({
-        stripe_account_id: accountId,
-      });
-    }
+    // Always create a new Stripe Connect account for vendors
+    // (User record stripe_account_id is for users who are clients, not vendors)
+    let accountId;
+    const account = await stripe.accounts.create({
+      type: 'express',
+      email: user.email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+    });
+    accountId = account.id;
 
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
