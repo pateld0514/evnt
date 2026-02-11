@@ -43,10 +43,14 @@ export default function AdminDashboardPage() {
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['admin-vendors'],
-    queryFn: () => base44.entities.Vendor.list('-created_date'),
+    queryFn: async () => {
+      const allVendors = await base44.entities.Vendor.list('-created_date', 1000);
+      console.log('Fetched vendors:', allVendors);
+      return allVendors;
+    },
     initialData: [],
-    staleTime: 2 * 60 * 1000,
-    refetchInterval: 30000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const { data: allUsers = [] } = useQuery({
