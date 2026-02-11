@@ -69,11 +69,16 @@ export default function ClientRegistrationPage() {
       });
 
       // Send welcome email to client
-      await base44.functions.invoke('sendWelcomeEmail', {
-        email: currentUser.email,
-        name: currentUser.full_name,
-        user_type: 'client'
-      });
+      try {
+        await base44.functions.invoke('sendWelcomeEmail', {
+          email: currentUser.email,
+          name: currentUser.full_name,
+          user_type: 'client'
+        });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't block registration if email fails
+      }
 
       // Create referral reward if referred - decode referral code to get referrer email
       if (referralCode) {
