@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Upload, CheckCircle, X, CreditCard } from "lucide-react";
+import { Loader2, Upload, CheckCircle, X, CreditCard, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 
@@ -40,6 +40,7 @@ export default function VendorRegistrationPage() {
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
   const [referralCode, setReferralCode] = useState("");
+  const [connectingStripe, setConnectingStripe] = useState(false);
   const [formData, setFormData] = useState({
     business_name: "",
     category: "",
@@ -156,7 +157,61 @@ export default function VendorRegistrationPage() {
     if (ref) {
       setReferralCode(ref);
     }
+
+    // Check if returning from Stripe Connect
+    const stripeSuccess = params.get('stripe_success');
+    const stripeAccountId = params.get('stripe_account_id');
+    
+    if (stripeSuccess === 'true' && stripeAccountId) {
+      // Restore form data from localStorage
+      const savedData = localStorage.getItem('vendorRegistrationDraft');
+      const savedCategory = localStorage.getItem('vendorCustomCategory');
+      const savedReferral = localStorage.getItem('vendorReferralCode');
+      
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setFormData({ ...parsedData, stripe_account_id: stripeAccountId });
+        toast.success("Stripe account connected successfully!");
+      } else {
+        setFormData(prev => ({ ...prev, stripe_account_id: stripeAccountId }));
+        toast.success("Stripe account connected!");
+      }
+      
+      if (savedCategory) setCustomCategory(savedCategory);
+      if (savedReferral) setReferralCode(savedReferral);
+      
+      // Clean up
+      localStorage.removeItem('vendorRegistrationDraft');
+      localStorage.removeItem('vendorCustomCategory');
+      localStorage.removeItem('vendorReferralCode');
+      
+      // Remove params from URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
+
+  const handleConnectStripe = async () => {
+    setConnectingStripe(true);
+    try {
+      const response = await base44.functions.invoke('createStripeConnectAccount', {});
+      
+      if (response.data?.url) {
+        // Save current form data to localStorage before redirect
+        localStorage.setItem('vendorRegistrationDraft', JSON.stringify(formData));
+        localStorage.setItem('vendorCustomCategory', customCategory);
+        localStorage.setItem('vendorReferralCode', referralCode);
+        
+        // Redirect to Stripe onboarding
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('No redirect URL received from Stripe');
+      }
+    } catch (error) {
+      console.error('Stripe Connect error:', error);
+      toast.error('Failed to connect Stripe. Please try again.');
+      setConnectingStripe(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -173,6 +228,11 @@ export default function VendorRegistrationPage() {
 
     if (formData.category === "custom" && !customCategory.trim()) {
       toast.error("Please specify your custom category");
+      return;
+    }
+
+    if (!formData.stripe_account_id) {
+      toast.error("Please connect your Stripe account before submitting");
       return;
     }
 
@@ -655,53 +715,74 @@ export default function VendorRegistrationPage() {
 
 
             {/* Stripe Connect Integration - REQUIRED */}
-            <div className="space-y-4 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-2 border-red-400">
+            <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-400">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <Label className="text-lg font-bold">Payment Account Setup *</Label>
-                  <p className="text-sm text-gray-700 font-medium">REQUIRED to accept bookings</p>
+                  <p className="text-sm text-gray-700 font-medium">REQUIRED to receive payments</p>
                 </div>
               </div>
               
-              <div className="bg-white border-2 border-red-300 rounded-lg p-4">
-                <p className="text-sm text-gray-800 mb-3 font-bold">
-                  ⚠️ Stripe Connect is MANDATORY before submitting your vendor application.
-                </p>
-                <p className="text-sm text-gray-700 mb-3">
-                  You must connect your bank account through Stripe Connect to receive payments. This ensures you can get paid immediately after approval.
+              <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
+                <p className="text-sm text-gray-800 mb-3">
+                  Connect your bank account through Stripe to receive payments securely. This is <strong>required</strong> before submitting your vendor application.
                 </p>
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-600 font-medium">What Stripe will verify:</p>
+                  <p className="text-xs text-gray-600 font-medium">What you'll need:</p>
                   <ul className="text-xs text-gray-700 space-y-1 ml-4">
                     <li>• Business information and EIN/SSN</li>
                     <li>• Bank account details for payouts</li>
-                    <li>• Identity verification</li>
-                    <li>• Address confirmation</li>
+                    <li>• Government-issued ID</li>
+                    <li>• Business address</li>
                   </ul>
+                  <p className="text-xs text-gray-500 mt-2">Takes about 5 minutes to complete</p>
                 </div>
               </div>
 
               {!formData.stripe_account_id ? (
-                <div className="bg-red-100 border-2 border-red-400 rounded-lg p-4 text-center">
-                  <p className="text-red-900 font-bold mb-2">❌ Stripe Not Connected</p>
-                  <p className="text-sm text-red-800 mb-3">You must connect Stripe before proceeding with registration</p>
+                <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="bg-yellow-400 rounded-full p-1 mt-0.5">
+                      <ExternalLink className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-yellow-900 font-bold mb-1">Stripe Account Not Connected</p>
+                      <p className="text-sm text-yellow-800 mb-3">
+                        You'll be redirected to Stripe to securely connect your bank account. Your form data will be saved and restored when you return.
+                      </p>
+                    </div>
+                  </div>
                   <Button
                     type="button"
-                    onClick={async () => {
-                      toast.info("Stripe Connect integration coming soon. For now, you can skip this step.");
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                    onClick={handleConnectStripe}
+                    disabled={connectingStripe}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12"
                   >
-                    Connect Stripe Account
+                    {connectingStripe ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Connecting to Stripe...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Connect Stripe Account
+                      </>
+                    )}
                   </Button>
                 </div>
               ) : (
-                <div className="bg-green-100 border-2 border-green-400 rounded-lg p-3 text-center">
-                  <p className="text-green-900 font-bold">✓ Stripe Connected Successfully</p>
-                  <p className="text-sm text-green-800">You're ready to receive payments!</p>
+                <div className="bg-green-100 border-2 border-green-400 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="flex-1">
+                      <p className="text-green-900 font-bold">Stripe Connected Successfully!</p>
+                      <p className="text-sm text-green-800">Account ID: {formData.stripe_account_id.substring(0, 20)}...</p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -795,10 +876,25 @@ export default function VendorRegistrationPage() {
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingLicense}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingLicense || !formData.stripe_account_id}
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit for Approval"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : !formData.stripe_account_id ? (
+                "Connect Stripe First"
+              ) : (
+                "Submit for Approval"
+              )}
             </Button>
+            
+            {!formData.stripe_account_id && (
+              <p className="text-center text-sm text-red-600 font-medium">
+                ⚠️ Please connect your Stripe account above to enable submission
+              </p>
+            )}
           </form>
         </CardContent>
       </Card>

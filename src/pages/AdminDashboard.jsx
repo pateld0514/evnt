@@ -41,31 +41,41 @@ export default function AdminDashboardPage() {
     checkAdmin();
   }, [navigate]);
 
-  const { data: vendors = [] } = useQuery({
+  const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['admin-vendors'],
     queryFn: async () => {
-      const allVendors = await base44.entities.Vendor.list('-created_date', 1000);
-      console.log('Fetched vendors:', allVendors);
-      return allVendors;
+      // Use a backend function to fetch ALL vendors with service role access
+      try {
+        const response = await base44.functions.invoke('getAllVendorsForAdmin', {});
+        console.log('Admin fetched vendors:', response.data);
+        return response.data || [];
+      } catch (error) {
+        console.error('Failed to fetch vendors:', error);
+        return [];
+      }
     },
-    initialData: [],
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    enabled: !!currentUser,
+    refetchOnMount: true,
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => base44.entities.User.list('-created_date'),
-    initialData: [],
-    staleTime: 2 * 60 * 1000,
-    refetchInterval: 30000,
+    queryFn: async () => {
+      try {
+        const response = await base44.functions.invoke('getAllUsersForAdmin', {});
+        return response.data || [];
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        return [];
+      }
+    },
+    enabled: !!currentUser,
   });
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
-    queryFn: () => base44.entities.Booking.list('-created_date'),
+    queryFn: () => base44.entities.Booking.list('-created_date', 1000),
     initialData: [],
-    staleTime: 2 * 60 * 1000,
   });
 
   const approveVendorMutation = useMutation({
