@@ -253,6 +253,7 @@ export default function VendorRegistrationPage() {
         }
       }
 
+      // Send admin notification
       await base44.integrations.Core.SendEmail({
         to: "pateld0514@gmail.com",
         from_name: "EVNT System",
@@ -292,6 +293,13 @@ export default function VendorRegistrationPage() {
 </body>
 </html>
         `
+      });
+
+      // Send welcome email to vendor
+      await base44.functions.invoke('sendWelcomeEmail', {
+        email: user.email,
+        name: user.full_name,
+        user_type: 'vendor'
       });
       
       toast.success("Registration submitted! You'll hear from us soon.");
@@ -646,25 +654,28 @@ export default function VendorRegistrationPage() {
 
 
 
-            {/* Stripe Connect Integration */}
-            <div className="space-y-4 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-300">
+            {/* Stripe Connect Integration - REQUIRED */}
+            <div className="space-y-4 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-2 border-red-400">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
                   <CreditCard className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <Label className="text-lg font-bold">Payment Account Setup</Label>
-                  <p className="text-sm text-gray-600">Secure payment processing powered by Stripe</p>
+                  <Label className="text-lg font-bold">Payment Account Setup *</Label>
+                  <p className="text-sm text-gray-700 font-medium">REQUIRED to accept bookings</p>
                 </div>
               </div>
               
-              <div className="bg-white border-2 border-blue-200 rounded-lg p-4">
+              <div className="bg-white border-2 border-red-300 rounded-lg p-4">
+                <p className="text-sm text-gray-800 mb-3 font-bold">
+                  ⚠️ Stripe Connect is MANDATORY before submitting your vendor application.
+                </p>
                 <p className="text-sm text-gray-700 mb-3">
-                  <strong>Skip for now and complete after approval.</strong> Once your vendor application is approved, you'll be able to connect your bank account through Stripe Connect in your dashboard to receive payments.
+                  You must connect your bank account through Stripe Connect to receive payments. This ensures you can get paid immediately after approval.
                 </p>
                 <div className="space-y-2">
                   <p className="text-xs text-gray-600 font-medium">What Stripe will verify:</p>
-                  <ul className="text-xs text-gray-600 space-y-1 ml-4">
+                  <ul className="text-xs text-gray-700 space-y-1 ml-4">
                     <li>• Business information and EIN/SSN</li>
                     <li>• Bank account details for payouts</li>
                     <li>• Identity verification</li>
@@ -673,11 +684,26 @@ export default function VendorRegistrationPage() {
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3">
-                <p className="text-xs text-yellow-800">
-                  <strong>⚠️ Important:</strong> You must complete Stripe Connect setup before accepting paid bookings. Without it, you can still receive booking requests but won't be able to process payments.
-                </p>
-              </div>
+              {!formData.stripe_account_id ? (
+                <div className="bg-red-100 border-2 border-red-400 rounded-lg p-4 text-center">
+                  <p className="text-red-900 font-bold mb-2">❌ Stripe Not Connected</p>
+                  <p className="text-sm text-red-800 mb-3">You must connect Stripe before proceeding with registration</p>
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      toast.info("Stripe Connect integration coming soon. For now, you can skip this step.");
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                  >
+                    Connect Stripe Account
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-green-100 border-2 border-green-400 rounded-lg p-3 text-center">
+                  <p className="text-green-900 font-bold">✓ Stripe Connected Successfully</p>
+                  <p className="text-sm text-green-800">You're ready to receive payments!</p>
+                </div>
+              )}
             </div>
 
             {/* Website & Social Media */}

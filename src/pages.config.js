@@ -66,14 +66,14 @@ import Rewards from './pages/Rewards';
 import Saved from './pages/Saved';
 import Swipe from './pages/Swipe';
 import Terms from './pages/Terms';
+import TestSuite from './pages/TestSuite';
 import VendorDashboard from './pages/VendorDashboard';
 import VendorOnboarding from './pages/VendorOnboarding';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
-import VendorView from './pages/VendorView';
 import VendorRewards from './pages/VendorRewards';
-import TestSuite from './pages/TestSuite';
+import VendorView from './pages/VendorView';
 import __Layout from './Layout.jsx';
 
 
@@ -97,14 +97,14 @@ export const PAGES = {
     "Saved": Saved,
     "Swipe": Swipe,
     "Terms": Terms,
+    "TestSuite": TestSuite,
     "VendorDashboard": VendorDashboard,
     "VendorOnboarding": VendorOnboarding,
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
     "VendorRegistration": VendorRegistration,
-    "VendorView": VendorView,
     "VendorRewards": VendorRewards,
-    "TestSuite": TestSuite,
+    "VendorView": VendorView,
 }
 
 export const pagesConfig = {

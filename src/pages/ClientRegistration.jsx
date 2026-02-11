@@ -68,6 +68,13 @@ export default function ClientRegistrationPage() {
         referred_by: referralCode || null
       });
 
+      // Send welcome email to client
+      await base44.functions.invoke('sendWelcomeEmail', {
+        email: currentUser.email,
+        name: currentUser.full_name,
+        user_type: 'client'
+      });
+
       // Create referral reward if referred - decode referral code to get referrer email
       if (referralCode) {
         try {
