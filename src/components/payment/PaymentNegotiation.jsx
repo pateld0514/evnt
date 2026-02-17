@@ -149,11 +149,20 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     let taxLabel = '';
     
     // Try to match state abbreviation or full name
-    for (const [abbr, data] of Object.entries(stateTaxRates)) {
-      if (location.includes(abbr) || location.includes(data.name.toUpperCase())) {
-        salesTaxRate = data.rate;
-        taxLabel = `${data.name} Sales Tax (${(data.rate * 100).toFixed(1)}%)`;
-        break;
+    // First try to find state abbreviation after comma or as separate word
+    const stateMatch = location.match(/,\s*([A-Z]{2})(?:\s|$)/) || location.match(/\b([A-Z]{2})(?:\s|$)/);
+    if (stateMatch && stateTaxRates[stateMatch[1]]) {
+      const abbr = stateMatch[1];
+      salesTaxRate = stateTaxRates[abbr].rate;
+      taxLabel = `${stateTaxRates[abbr].name} Sales Tax (${(stateTaxRates[abbr].rate * 100).toFixed(1)}%)`;
+    } else {
+      // Fall back to checking for full state name
+      for (const [abbr, data] of Object.entries(stateTaxRates)) {
+        if (location.includes(data.name.toUpperCase())) {
+          salesTaxRate = data.rate;
+          taxLabel = `${data.name} Sales Tax (${(data.rate * 100).toFixed(1)}%)`;
+          break;
+        }
       }
     }
     
