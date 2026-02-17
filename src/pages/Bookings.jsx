@@ -122,6 +122,18 @@ export default function BookingsPage() {
     staleTime: 1 * 60 * 1000,
   });
 
+  // Real-time subscription for booking updates
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = base44.entities.Booking.subscribe((event) => {
+      // Refetch bookings when any booking is created, updated, or deleted
+      queryClient.invalidateQueries(['bookings']);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, queryClient]);
+
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors-for-bookings'],
     queryFn: () => base44.entities.Vendor.list(),
