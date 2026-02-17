@@ -209,7 +209,6 @@ Deno.serve(async (req) => {
         application_fee_amount: platformFeeCents + taxCents, // EVNT keeps fee + tax
         transfer_data: {
           destination: vendor.stripe_account_id,
-          amount: baseAmountCents - platformFeeCents - taxCents, // Vendor gets: service - fee - tax
         },
         metadata: {
           booking_id: bookingId,
@@ -223,6 +222,7 @@ Deno.serve(async (req) => {
           platform_fee_percent: booking.platform_fee_percent.toString(),
           sales_tax_amount: (booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0).toString(),
           total_amount: booking.total_amount_charged.toString(),
+          vendor_payout: booking.vendor_payout.toString(),
           request_id: requestId
         },
       },
