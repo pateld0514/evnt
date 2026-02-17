@@ -167,13 +167,17 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
+    // Calculate Stripe processing fee (2.9% + $0.30)
+    const stripeFeeCents = Math.round(totalCents * 0.029) + 30;
+    
     console.log(`[${requestId}] Payment breakdown (cents):`, {
       agreed_price: baseAmountCents,
       platform_fee: platformFeeCents,
       sales_tax: taxCents,
+      stripe_fee: stripeFeeCents,
       total_client_pays: totalCents,
-      total_evnt_keeps: platformFeeCents + taxCents,
-      vendor_receives: baseAmountCents - platformFeeCents - taxCents
+      total_evnt_keeps: platformFeeCents + taxCents + stripeFeeCents,
+      vendor_receives: baseAmountCents - platformFeeCents - taxCents - stripeFeeCents
     });
 
     // Get redirect URLs
@@ -191,16 +195,13 @@ Deno.serve(async (req) => {
           currency: 'usd',
           product_data: {
             name: `${booking.event_type} Event Services`,
-            description: `Vendor: ${booking.vendor_name}`,
+            description: `Professional ${booking.event_type.toLowerCase()} services provided by ${booking.vendor_name}\n\nEvent Date: ${booking.event_date}\nLocation: ${booking.location || 'To be determined'}\n${booking.service_description ? '\n' + booking.service_description : ''}`,
           },
           unit_amount: baseAmountCents,
         },
         quantity: 1,
       }
     ];
-    
-    // Calculate Stripe processing fee (2.9% + $0.30)
-    const stripeFeeCents = Math.round(totalCents * 0.029) + 30;
     
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -252,22 +253,27 @@ Deno.serve(async (req) => {
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: `${booking.event_type} Event Services by ${booking.vendor_name}`,
+          description: `Professional ${booking.event_type} Event Services`,
           custom_fields: [
+            {
+              name: 'Service Provider',
+              value: booking.vendor_name,
+            },
             {
               name: 'Event Date',
               value: booking.event_date,
             },
             {
-              name: 'Location',
-              value: booking.location || 'TBD',
+              name: 'Event Location',
+              value: booking.location || 'To be determined',
             },
             {
-              name: 'Vendor',
-              value: booking.vendor_name,
+              name: 'Service Description',
+              value: booking.service_description || 'Professional event services',
             },
           ],
-          footer: `Service Price: $${booking.base_event_amount.toFixed(2)} | EVNT Fee: $${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? ` | Tax: $${salesTaxAmount.toFixed(2)}` : ''} | Processing: $${(stripeFeeCents / 100).toFixed(2)} | Vendor Receives: $${booking.vendor_payout.toFixed(2)}`,
+          footer: `PAYMENT BREAKDOWN\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n\nDEDUCTIONS FROM AGREED PRICE:\n- EVNT Platform Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n- Sales Tax: -$${salesTaxAmount.toFixed(2)}` : ''}\n- Payment Processing Fee: -$${(stripeFeeCents / 100).toFixed(2)}\n\nVendor Net Payment: $${booking.vendor_payout.toFixed(2)}\n\nAll fees and taxes are included in the agreed price. Funds held in secure escrow until event completion.`,
+          account_tax_ids: [],
         },
       },
       metadata: {
