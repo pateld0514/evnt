@@ -104,10 +104,11 @@ export default function BookingsPage() {
       } else if (currentUser.demo_mode === "client") {
         return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
       } else if (currentUser.user_type === "vendor") {
-        // Get vendor record by email to find vendor_id
-        const vendors = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-        if (vendors.length > 0) {
-          return await base44.entities.Booking.filter({ vendor_id: vendors[0].id }, '-created_date');
+        // Get vendor record created by this user
+        const allVendors = await base44.entities.Vendor.list();
+        const myVendor = allVendors.find(v => v.created_by === currentUser.email);
+        if (myVendor) {
+          return await base44.entities.Booking.filter({ vendor_id: myVendor.id }, '-created_date');
         }
         return [];
       } else {

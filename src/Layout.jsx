@@ -72,10 +72,11 @@ export default function Layout({ children, currentPageName }) {
       if (!currentUserEmail) return [];
 
       if (userType === "vendor") {
-        // Get vendor record by email to find vendor_id
-        const vendors = await base44.entities.Vendor.filter({ contact_email: currentUserEmail });
-        if (vendors.length > 0) {
-          return await base44.entities.Booking.filter({ vendor_id: vendors[0].id });
+        // Get vendor record created by this user
+        const allVendors = await base44.entities.Vendor.list();
+        const myVendor = allVendors.find(v => v.created_by === currentUserEmail);
+        if (myVendor) {
+          return await base44.entities.Booking.filter({ vendor_id: myVendor.id });
         }
         return [];
       } else if (userType === "client") {
