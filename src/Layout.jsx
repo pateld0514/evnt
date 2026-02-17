@@ -72,11 +72,13 @@ export default function Layout({ children, currentPageName }) {
       if (!currentUserEmail) return [];
 
       if (userType === "vendor") {
-        // Get vendor record created by this user
+        // Get all bookings and filter by vendor
+        const allBookings = await base44.entities.Booking.list();
         const allVendors = await base44.entities.Vendor.list();
         const myVendor = allVendors.find(v => v.created_by === currentUserEmail);
+        
         if (myVendor) {
-          return await base44.entities.Booking.filter({ vendor_id: myVendor.id });
+          return allBookings.filter(b => b.vendor_id === myVendor.id);
         }
         return [];
       } else if (userType === "client") {
