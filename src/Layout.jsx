@@ -71,14 +71,11 @@ export default function Layout({ children, currentPageName }) {
     queryFn: async () => {
       if (!currentUserEmail) return [];
 
-      const user = await base44.auth.me();
-      
-      if (user.demo_mode === "vendor" && user.demo_vendor_id) {
-        return await base44.entities.Booking.filter({ vendor_id: user.demo_vendor_id });
-      } else if (user.demo_mode === "client") {
-        return await base44.entities.Booking.filter({ client_email: currentUserEmail });
-      } else if (userType === "vendor" && user.vendor_id) {
-        return await base44.entities.Booking.filter({ vendor_id: user.vendor_id });
+      if (userType === "vendor") {
+        const user = await base44.auth.me();
+        if (user.vendor_id) {
+          return await base44.entities.Booking.filter({ vendor_id: user.vendor_id });
+        }
       } else if (userType === "client") {
         return await base44.entities.Booking.filter({ client_email: currentUserEmail });
       }
