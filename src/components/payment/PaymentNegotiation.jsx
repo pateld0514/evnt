@@ -195,16 +195,25 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       
       // If client is accepting, redirect to Stripe Checkout
       if (!isVendor) {
-        const response = await base44.functions.invoke('createCheckout', { 
-          bookingId: booking.id 
-        });
-        
-        if (response.data?.url) {
-          // Close dialog before redirect
-          if (onClose) onClose();
-          window.location.href = response.data.url;
-        } else {
-          throw new Error('No checkout URL received from server');
+        try {
+          const response = await base44.functions.invoke('createCheckout', { 
+            bookingId: booking.id 
+          });
+          
+          if (response.data?.url) {
+            // Close dialog and redirect
+            if (onClose) onClose();
+            // Use a slight delay to ensure state updates
+            setTimeout(() => {
+              window.location.href = response.data.url;
+            }, 100);
+            return updated;
+          } else {
+            throw new Error('No checkout URL received from server');
+          }
+        } catch (checkoutError) {
+          console.error('Checkout error:', checkoutError);
+          throw checkoutError;
         }
       }
       
@@ -221,7 +230,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     },
     onError: (error) => {
       console.error('Payment mutation error:', error);
-      const errorData = error.response?.data;
+      const errorData = error.response?.data || error.data;
       let errorMsg = error.message || 'Failed to process payment. Please try again.';
       
       if (errorData?.error) {
