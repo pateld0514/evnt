@@ -191,8 +191,9 @@ Deno.serve(async (req) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Event Services - ${booking.vendor_name}`,
-            description: `${booking.event_type} on ${booking.event_date}${booking.service_description ? '\n' + booking.service_description : ''}\n\nBreakdown:\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n\nDeductions from vendor payout:\nEVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}\nSales Tax${locationState ? ` (${locationState} ${(booking.sales_tax_rate * 100).toFixed(1)}%)` : ''}: $${(booking.sales_tax_amount || 0).toFixed(2)}\n\nVendor Receives: $${booking.vendor_payout.toFixed(2)}`,
+            name: `${booking.event_type} - ${booking.vendor_name}`,
+            description: `Event Date: ${booking.event_date}\nLocation: ${booking.location || 'TBD'}${booking.service_description ? '\nServices: ' + booking.service_description : ''}`,
+            images: [], // Stripe checkout will use default professional styling
           },
           unit_amount: baseAmountCents,
         },
@@ -225,10 +226,21 @@ Deno.serve(async (req) => {
           vendor_payout: booking.vendor_payout.toString(),
           request_id: requestId
         },
+        description: `Payment for ${booking.event_type} services`,
       },
       success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,
       cancel_url: `${baseUrl}/Bookings?payment=cancelled&booking=${bookingId}`,
       client_reference_id: bookingId,
+      customer_email: booking.client_email,
+      billing_address_collection: 'required',
+      phone_number_collection: {
+        enabled: true,
+      },
+      custom_text: {
+        submit: {
+          message: 'Your payment is secure and will be held in escrow until the event is completed. You will receive a confirmation email shortly.',
+        },
+      },
       metadata: {
         booking_id: bookingId,
         request_id: requestId
