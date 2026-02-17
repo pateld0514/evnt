@@ -168,10 +168,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     
     const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
     
-    // CRITICAL: BOTH fee and tax come FROM the agreed price (deducted from vendor payout)
-    const totalDeductions = platformFeeAmount + salesTax; // Total amount EVNT keeps
-    const vendorPayout = agreedAmount - totalDeductions; // Vendor receives: agreed price - fee - tax
-    const totalAmount = agreedAmount; // Client pays: just the agreed price (fee & tax already factored in)
+    // Calculate Stripe processing fee (2.9% + $0.30) - comes from client's payment
+    const stripeFee = (agreedAmount * 0.029) + 0.30;
+    
+    // CRITICAL: fee, tax, and Stripe fee all come FROM the agreed price (deducted from vendor payout)
+    const totalDeductions = platformFeeAmount + salesTax + stripeFee; // Total amount EVNT keeps
+    const vendorPayout = agreedAmount - totalDeductions; // Vendor receives: agreed price - fee - tax - stripe fee
+    const totalAmount = agreedAmount; // Client pays: just the agreed price (fee & tax & stripe fee already factored in)
 
     return { 
       price, 
@@ -182,6 +185,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       salesTax,
       salesTaxRate,
       taxLabel,
+      stripeFee,
       totalAmount, 
       vendorPayout, 
       finalFeePercent
@@ -412,6 +416,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               <span className="font-bold">-${totals.salesTax.toFixed(2)}</span>
             </div>
           )}
+          <div className="flex justify-between text-sm text-blue-600">
+            <span>Stripe Processing Fee:</span>
+            <span className="font-bold">-${totals.stripeFee?.toFixed(2) || '0.00'}</span>
+          </div>
           <div className="flex justify-between text-sm text-gray-600">
             <span>Vendor Receives:</span>
             <span className="font-bold">${totals.vendorPayout.toFixed(2)}</span>
@@ -422,8 +430,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             {isVendor 
-              ? `Client pays $${totals.totalAmount.toFixed(2)} (agreed price). EVNT deducts ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% fee${totals.salesTax > 0 ? ` + ${(totals.salesTaxRate * 100).toFixed(1)}% tax` : ''}. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay $${totals.totalAmount.toFixed(2)} (the agreed price). EVNT fee${totals.salesTax > 0 ? ` and tax ` : ' '}are deducted from this amount. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
+              ? `Client pays $${totals.totalAmount.toFixed(2)} (agreed price). Deductions: ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee${totals.salesTax > 0 ? ` + ${(totals.salesTaxRate * 100).toFixed(1)}% tax` : ''} + Stripe fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+              : `You pay $${totals.totalAmount.toFixed(2)} (the agreed price). EVNT fee, ${totals.salesTax > 0 ? 'tax, ' : ''}and payment processing are deducted from this amount. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
           </p>
         </div>
 

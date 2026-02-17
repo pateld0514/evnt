@@ -184,16 +184,14 @@ Deno.serve(async (req) => {
     // Create Stripe Checkout Session with manual capture (escrow)
     console.log(`[${requestId}] Creating Stripe Checkout Session...`);
     
-    // Build line item - client pays agreed service price only
-    // Fee and tax are deducted from vendor payout, not added to client total
+    // Build line items - show detailed breakdown
     const lineItems = [
       {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${booking.event_type} - ${booking.vendor_name}`,
-            description: `Event Date: ${booking.event_date}\nLocation: ${booking.location || 'TBD'}${booking.service_description ? '\nServices: ' + booking.service_description : ''}`,
-            images: [], // Stripe checkout will use default professional styling
+            name: `${booking.event_type} Event Services`,
+            description: `Vendor: ${booking.vendor_name}`,
           },
           unit_amount: baseAmountCents,
         },
@@ -227,9 +225,10 @@ Deno.serve(async (req) => {
           sales_tax_amount: (booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0).toString(),
           total_amount: booking.total_amount_charged.toString(),
           vendor_payout: booking.vendor_payout.toString(),
+          stripe_fee: (stripeFeeCents / 100).toString(),
           request_id: requestId
         },
-        description: `Payment for ${booking.event_type} services`,
+        description: `${booking.event_type} on ${booking.event_date}`,
       },
       success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,
       cancel_url: `${baseUrl}/Bookings?payment=cancelled&booking=${bookingId}`,
@@ -241,12 +240,42 @@ Deno.serve(async (req) => {
       },
       custom_text: {
         submit: {
-          message: 'Your payment is secure and will be held in escrow until the event is completed. You will receive a confirmation email shortly.',
+          message: '🔒 Secure Payment via EVNT - Funds held in escrow until event completion',
+        },
+        shipping_address: {
+          message: 'Event location address',
+        },
+        after_submit: {
+          message: 'Thank you! You will receive a confirmation email with booking details and receipt. Your vendor will contact you shortly to finalize arrangements.',
+        },
+      },
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `${booking.event_type} Event Services by ${booking.vendor_name}`,
+          custom_fields: [
+            {
+              name: 'Event Date',
+              value: booking.event_date,
+            },
+            {
+              name: 'Location',
+              value: booking.location || 'TBD',
+            },
+            {
+              name: 'Vendor',
+              value: booking.vendor_name,
+            },
+          ],
+          footer: `Service Price: $${booking.base_event_amount.toFixed(2)} | EVNT Fee: $${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? ` | Tax: $${salesTaxAmount.toFixed(2)}` : ''} | Processing: $${(stripeFeeCents / 100).toFixed(2)} | Vendor Receives: $${booking.vendor_payout.toFixed(2)}`,
         },
       },
       metadata: {
         booking_id: bookingId,
-        request_id: requestId
+        request_id: requestId,
+        vendor_name: booking.vendor_name,
+        event_type: booking.event_type,
+        event_date: booking.event_date,
       },
     });
     
