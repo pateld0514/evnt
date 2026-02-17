@@ -63,6 +63,17 @@ export default function MessagesPage() {
     staleTime: 30 * 1000,
   });
 
+  // Real-time subscription for messages
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = base44.entities.Message.subscribe((event) => {
+      queryClient.invalidateQueries(['messages']);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, queryClient]);
+
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),

@@ -255,6 +255,17 @@ export default function BookingsPage() {
     });
   };
 
+  // Real-time subscription for messages
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = base44.entities.Message.subscribe((event) => {
+      queryClient.invalidateQueries(['unread-messages']);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, queryClient]);
+
   const filteredBookings = bookings.filter(booking => 
     selectedStatus === "all" || booking.status === selectedStatus
   );

@@ -70,6 +70,15 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
   });
 
+  // Real-time subscription for vendors
+  useEffect(() => {
+    const unsubscribe = base44.entities.Vendor.subscribe((event) => {
+      queryClient.invalidateQueries(['vendors']);
+    });
+
+    return () => unsubscribe();
+  }, [queryClient]);
+
   const { data: bookings = [] } = useQuery({
     queryKey: ['all-bookings'],
     queryFn: () => base44.entities.Booking.list(),
