@@ -201,13 +201,16 @@ Deno.serve(async (req) => {
       }
     ];
     
+    // Calculate Stripe processing fee (2.9% + $0.30)
+    const stripeFeeCents = Math.round(totalCents * 0.029) + 30;
+    
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: lineItems,
       payment_intent_data: {
         capture_method: 'manual', // ESCROW: Holds funds until manual capture
-        application_fee_amount: platformFeeCents + taxCents, // EVNT keeps fee + tax
+        application_fee_amount: platformFeeCents + taxCents + stripeFeeCents, // EVNT keeps fee + tax + Stripe processing fee
         transfer_data: {
           destination: vendor.stripe_account_id,
         },
