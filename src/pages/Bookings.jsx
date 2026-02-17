@@ -208,21 +208,27 @@ export default function BookingsPage() {
   };
 
   const handleStartPayment = async (booking) => {
+    console.log('Starting payment for booking:', booking.id);
     setIsProcessingPayment(true);
     try {
+      console.log('Calling createCheckout function...');
       const response = await base44.functions.invoke('createCheckout', { 
         bookingId: booking.id 
       });
       
+      console.log('Checkout response:', response);
+      
       if (response.data?.url) {
-        // Simple redirect to Stripe Checkout - no Stripe JS needed
+        console.log('Redirecting to Stripe:', response.data.url);
+        // Simple redirect to Stripe Checkout
         window.location.href = response.data.url;
       } else {
+        console.error('No URL in response:', response);
         throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Payment error:', error);
-      const errorData = error.response?.data;
+      const errorData = error.response?.data || error.data;
       let errorMsg = error.message || 'Failed to start payment. Please try again.';
       
       if (errorData?.error) {

@@ -190,30 +190,31 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
   const submitProposalMutation = useMutation({
     mutationFn: async (data) => {
+      console.log('Mutation started:', { isVendor, bookingId: booking.id });
+      
       // Update booking first
       const updated = await base44.entities.Booking.update(booking.id, data);
+      console.log('Booking updated:', updated);
       
       // If client is accepting, redirect to Stripe Checkout
       if (!isVendor) {
-        try {
-          const response = await base44.functions.invoke('createCheckout', { 
-            bookingId: booking.id 
-          });
-          
-          if (response.data?.url) {
-            // Close dialog and redirect
-            if (onClose) onClose();
-            // Use a slight delay to ensure state updates
-            setTimeout(() => {
-              window.location.href = response.data.url;
-            }, 100);
-            return updated;
-          } else {
-            throw new Error('No checkout URL received from server');
-          }
-        } catch (checkoutError) {
-          console.error('Checkout error:', checkoutError);
-          throw checkoutError;
+        console.log('Client accepting - creating checkout...');
+        const response = await base44.functions.invoke('createCheckout', { 
+          bookingId: booking.id 
+        });
+        
+        console.log('Checkout response:', response);
+        
+        if (response.data?.url) {
+          console.log('Redirecting to:', response.data.url);
+          // Close dialog before redirect
+          if (onClose) onClose();
+          // Direct redirect without delay
+          window.location.href = response.data.url;
+          return updated;
+        } else {
+          console.error('No URL in response:', response);
+          throw new Error('No checkout URL received from server');
         }
       }
       
@@ -226,7 +227,6 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         toast.success("Proposal sent to client!");
         if (onClose) onClose();
       }
-      // Client redirect handled in mutationFn
     },
     onError: (error) => {
       console.error('Payment mutation error:', error);
@@ -247,7 +247,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     },
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
       toast.error("Please enter a valid price");
       return;
@@ -271,6 +271,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       status: isVendor ? "negotiating" : "payment_pending"
     };
 
+    console.log('Submitting proposal:', { isVendor, bookingId: booking.id, data });
     submitProposalMutation.mutate(data);
   };
 
