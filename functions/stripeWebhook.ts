@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
         if (bookingId) {
           await base44.asServiceRole.entities.Booking.update(bookingId, {
             payment_status: 'processing',
+            status: 'confirmed',
             payment_intent_id: paymentIntentId,
             stripe_session_id: session.id,
           });
@@ -133,7 +134,78 @@ Deno.serve(async (req) => {
         if (bookingId) {
           await base44.asServiceRole.entities.Booking.update(bookingId, {
             payment_status: 'paid',
+            status: 'confirmed',
           });
+
+          // Send receipt emails
+          const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings[0];
+
+          if (booking) {
+            // Send receipt to client
+            await base44.asServiceRole.integrations.Core.SendEmail({
+              to: booking.client_email,
+              subject: '🎉 Payment Receipt - Booking Confirmed',
+              body: `
+                <h2>Payment Successful!</h2>
+                <p>Thank you for your payment. Your booking with ${booking.vendor_name} is now confirmed.</p>
+                
+                <h3>Booking Details</h3>
+                <ul>
+                  <li><strong>Event:</strong> ${booking.event_type}</li>
+                  <li><strong>Date:</strong> ${booking.event_date}</li>
+                  <li><strong>Location:</strong> ${booking.location || 'TBD'}</li>
+                </ul>
+
+                <h3>Payment Summary</h3>
+                <ul>
+                  <li><strong>Service Price:</strong> $${booking.base_event_amount.toFixed(2)}</li>
+                  ${booking.platform_fee_amount ? `<li><strong>EVNT Platform Fee (${booking.platform_fee_percent}%):</strong> $${booking.platform_fee_amount.toFixed(2)}</li>` : ''}
+                  ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li><strong>Sales Tax:</strong> $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
+                  <li style="margin-top: 10px;"><strong>Total Paid:</strong> $${booking.total_amount_charged.toFixed(2)}</li>
+                </ul>
+
+                <p>Your vendor will contact you soon to finalize event details.</p>
+                
+                <p>Best regards,<br>The EVNT Team</p>
+              `,
+            });
+
+            // Send notification to vendor
+            const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+            const vendor = vendors[0];
+            
+            if (vendor) {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: vendor.contact_email || vendor.created_by,
+                subject: '💰 Payment Received - Booking Confirmed',
+                body: `
+                  <h2>Payment Received!</h2>
+                  <p>Great news! Payment for your booking with ${booking.client_name} has been processed.</p>
+                  
+                  <h3>Booking Details</h3>
+                  <ul>
+                    <li><strong>Client:</strong> ${booking.client_name} (${booking.client_email})</li>
+                    <li><strong>Event:</strong> ${booking.event_type}</li>
+                    <li><strong>Date:</strong> ${booking.event_date}</li>
+                    <li><strong>Location:</strong> ${booking.location || 'TBD'}</li>
+                  </ul>
+
+                  <h3>Payment Summary</h3>
+                  <ul>
+                    <li><strong>Client Paid:</strong> $${booking.total_amount_charged.toFixed(2)}</li>
+                    <li><strong>Your Payout:</strong> $${booking.vendor_payout.toFixed(2)}</li>
+                  </ul>
+
+                  <p>Funds will be transferred to your connected Stripe account after the event is completed.</p>
+                  
+                  <p>Please reach out to the client to finalize event details.</p>
+                  
+                  <p>Best regards,<br>The EVNT Team</p>
+                `,
+              });
+            }
+          }
         }
         break;
       }
