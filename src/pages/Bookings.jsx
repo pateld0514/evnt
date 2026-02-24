@@ -610,10 +610,12 @@ export default function BookingsPage() {
                               <span className="font-bold">-${(selectedBooking.sales_tax_amount || selectedBooking.maryland_sales_tax_amount).toFixed(2)}</span>
                             </div>
                           )}
-                          <div className="flex justify-between text-blue-600">
-                            <span>Stripe Processing Fee:</span>
-                            <span className="font-bold">-${((selectedBooking.stripe_fee || selectedBooking.stripe_fee_amount) || 0).toFixed(2)}</span>
-                          </div>
+                          {((selectedBooking.stripe_fee_amount || selectedBooking.stripe_fee) > 0) && (
+                            <div className="flex justify-between text-blue-600">
+                              <span>Stripe Processing Fee:</span>
+                              <span className="font-bold">-${(selectedBooking.stripe_fee_amount || selectedBooking.stripe_fee).toFixed(2)}</span>
+                            </div>
+                          )}
                           {selectedBooking.vendor_payout > 0 && (
                             <div className="flex justify-between font-bold text-gray-800 pt-2 border-t border-gray-300">
                               <span>{isVendor ? 'You Receive' : 'Vendor Receives'}:</span>
