@@ -74,23 +74,35 @@ export default function AdminDashboardPage() {
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
-    queryFn: () => base44.entities.Booking.list('-created_date', 1000),
+    queryFn: async () => {
+      // Fetch in batches to avoid limits
+      const limit = 500;
+      let allRecords = [];
+      let skip = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const batch = await base44.entities.Booking.list('-created_date', limit);
+        allRecords = [...allRecords, ...batch];
+        
+        if (batch.length < limit) {
+          hasMore = false;
+        } else {
+          skip += limit;
+        }
+      }
+      
+      return allRecords;
+    },
     initialData: [],
   });
 
   const approveVendorMutation = useMutation({
     mutationFn: async ({ vendorId, userId }) => {
-      await base44.entities.Vendor.update(vendorId, { approval_status: "approved" });
-      await base44.entities.User.update(userId, { approval_status: "approved" });
-      
-      const vendor = vendors.find(v => v.id === vendorId);
-      const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
-      
-      // Send approval notification via backend function
-      await base44.functions.invoke('notifyVendorApproval', {
-        vendor_email: vendorUser?.email || vendor.contact_email,
-        vendor_name: vendorUser?.full_name || vendor.business_name,
-        status: 'approved'
+      // SECURE: Use backend function with admin validation
+      return await base44.functions.invoke('approveVendor', {
+        vendorId,
+        userId
       });
     },
     onSuccess: () => {
@@ -102,21 +114,11 @@ export default function AdminDashboardPage() {
 
   const rejectVendorMutation = useMutation({
     mutationFn: async ({ vendorId, userId, reason }) => {
-      await base44.entities.Vendor.update(vendorId, { 
-        approval_status: "rejected",
-        rejection_reason: reason
-      });
-      await base44.entities.User.update(userId, { approval_status: "rejected" });
-      
-      const vendor = vendors.find(v => v.id === vendorId);
-      const vendorUser = allUsers.find(u => u.vendor_id === vendorId);
-      
-      // Send rejection notification via backend function
-      await base44.functions.invoke('notifyVendorApproval', {
-        vendor_email: vendorUser?.email || vendor.contact_email,
-        vendor_name: vendorUser?.full_name || vendor.business_name,
-        status: 'rejected',
-        rejection_reason: reason
+      // SECURE: Use backend function with admin validation
+      return await base44.functions.invoke('rejectVendor', {
+        vendorId,
+        userId,
+        reason
       });
     },
     onSuccess: () => {

@@ -181,8 +181,13 @@ export default function EventDashboardPage() {
   };
 
   const getEventBookings = (eventId) => {
-    // CRITICAL: Only return bookings that match both event_id AND client_email
-    return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
+    // CRITICAL: Only return bookings that match event_id (or null) AND client_email
+    // Handle null event_id for standalone bookings
+    return bookings.filter(b => {
+      const emailMatch = b.client_email === currentUser?.email;
+      const eventMatch = eventId ? b.event_id === eventId : true;
+      return emailMatch && eventMatch;
+    });
   };
 
   if (isLoading || !currentUser) {

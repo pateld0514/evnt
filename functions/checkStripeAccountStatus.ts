@@ -14,22 +14,35 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!user.stripe_account_id) {
+    // Check if vendor - use vendor's Stripe account ID
+    let stripeAccountId = user.stripe_account_id;
+    
+    if (user.user_type === 'vendor' && user.vendor_id) {
+      // Fetch vendor record to get Stripe account
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: user.vendor_id });
+      if (vendors.length > 0 && vendors[0].stripe_account_id) {
+        stripeAccountId = vendors[0].stripe_account_id;
+      }
+    }
+
+    if (!stripeAccountId) {
       return Response.json({ 
         connected: false,
         charges_enabled: false,
-        payouts_enabled: false
+        payouts_enabled: false,
+        details_submitted: false
       });
     }
 
     // Retrieve account details from Stripe
-    const account = await stripe.accounts.retrieve(user.stripe_account_id);
+    const account = await stripe.accounts.retrieve(stripeAccountId);
 
     return Response.json({
       connected: true,
       charges_enabled: account.charges_enabled,
       payouts_enabled: account.payouts_enabled,
       details_submitted: account.details_submitted,
+      account_id: stripeAccountId
     });
 
   } catch (error) {
