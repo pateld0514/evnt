@@ -35,9 +35,9 @@ export const EmailTemplate = {
       text-align: center;
     }
     .logo {
-      display: inline-block;
+      display: block;
       text-align: center;
-      margin-bottom: 16px;
+      margin: 0 auto 16px;
     }
     .logo > * {
       display: inline-block;
@@ -45,6 +45,9 @@ export const EmailTemplate = {
       margin: 0 6px;
     }
     .logo-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 48px;
       height: 48px;
       background: #ffffff;
@@ -52,7 +55,7 @@ export const EmailTemplate = {
       font-size: 32px;
       font-weight: 900;
       color: #000000;
-      line-height: 48px;
+      line-height: 1;
       text-align: center;
     }
     .logo-text {
@@ -204,9 +207,9 @@ export const EmailTemplate = {
     </div>
     ${content}
     <div class="footer">
-      <div class="logo" style="justify-content: center; margin-bottom: 20px;">
-        <div class="logo-icon" style="width: 32px; height: 32px; font-size: 20px;">E</div>
-        <div class="logo-text" style="font-size: 24px; color: #000000;">EVNT</div>
+      <div class="logo" style="margin: 0 auto 20px; display: block; text-align: center;">
+        <div class="logo-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; font-size: 20px; line-height: 1;">E</div>
+        <div class="logo-text" style="display: inline-block; font-size: 24px; color: #000000; vertical-align: middle;">EVNT</div>
       </div>
       <div class="footer-links">
         <a href="#" class="footer-link">About</a>

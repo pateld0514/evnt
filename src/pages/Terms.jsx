@@ -51,6 +51,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-bold mb-3">4. Payments and Fees</h2>
               <div className="space-y-3 text-gray-700">
+                <p className="font-semibold mb-2">Payment Processing:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>All payments are processed securely through Stripe</li>
                   <li>Client pays the agreed service price (no taxes or fees added on top)</li>
@@ -60,8 +61,15 @@ export default function TermsPage() {
                   <li>Vendor receives the agreed service price minus EVNT's fee and applicable taxes</li>
                   <li>Payment breakdown example: $1,000 booking in Kentucky (6% sales tax) = Client pays $1,000 total; EVNT deducts $100 fee (10%) + $60 tax (6%) = $160; Vendor receives $840</li>
                   <li>Payments are held in escrow until the event is completed</li>
-                  <li>Vendors receive payout within 24-48 hours of event completion</li>
                   <li>Refunds are subject to the cancellation policy agreed upon in the booking</li>
+                </ul>
+
+                <p className="font-semibold mt-6 mb-2">Vendor Payout Timeline:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>After booking completion:</strong> Vendors will receive their payout within 5-7 business days following the successful completion of the event</li>
+                  <li><strong>Stripe processing fees:</strong> Standard payment processing fees (approximately 2.9% + $0.30 per transaction) are deducted from the vendor's payout before funds are transferred to their bank account</li>
+                  <li><strong>Bank transfer timing:</strong> Once released by EVNT, funds typically appear in the vendor's bank account within 2-3 business days, depending on their financial institution</li>
+                  <li><strong>Payout tracking:</strong> Vendors can view all pending and completed payouts in their dashboard under the Payout History section</li>
                 </ul>
               </div>
             </section>

@@ -77,7 +77,8 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: messages = [] } = useQuery({
