@@ -64,16 +64,9 @@ Deno.serve(async (req) => {
       sales_tax_amount: calc.sales_tax_amount,
       sales_tax_rate: calc.sales_tax_rate,
       client_state: calc.state_abbreviation,
-      stripe_fee: calc.stripe_fee,
       stripe_fee_amount: calc.stripe_fee,
       vendor_payout: calc.vendor_payout,
       total_amount_charged: calc.total_amount_charged,
-      total_amount: calc.total_amount_charged,
-      // Legacy fields for backward compatibility
-      maryland_sales_tax_amount: calc.sales_tax_amount,
-      maryland_sales_tax_percent: calc.sales_tax_amount > 0 && calc.sales_tax_rate > 0 
-        ? calc.sales_tax_rate * 100 
-        : 0,
       currency: 'USD',
       status: proposalData.newStatus || booking.status
     };
