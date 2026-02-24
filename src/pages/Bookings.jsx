@@ -887,8 +887,8 @@ export default function BookingsPage() {
                               if (daysUntilEvent < 7) {
                                 toast.error("Bookings cannot be cancelled within 7 days of the event");
                               } else {
-                                handleCancelBooking(selectedBooking.id);
-                                setDetailsOpen(false);
+                                setBookingToCancel(selectedBooking);
+                                setCancelConfirmOpen(true);
                               }
                             }}
                             variant="outline"
@@ -928,6 +928,38 @@ export default function BookingsPage() {
         open={reviewDialogOpen}
         onOpenChange={setReviewDialogOpen}
       />
+
+      {/* Cancel Booking Confirmation Dialog */}
+      <AlertDialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
+        <AlertDialogContent className="border-2 border-black">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black">Cancel Booking?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              Are you sure you want to cancel this booking with <strong>{bookingToCancel?.vendor_name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+            <p><strong>Event Date:</strong> {bookingToCancel && format(new Date(bookingToCancel.event_date), "MMM d, yyyy")}</p>
+            <p className="mt-2 text-green-700 font-medium">✓ You can cancel free up to 7 days before your event.</p>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel className="border-2 border-gray-300 font-bold">
+              Keep Booking
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (bookingToCancel) {
+                  handleCancelBooking(bookingToCancel.id);
+                  setDetailsOpen(false);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold border-2 border-red-600"
+            >
+              Yes, Cancel
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
