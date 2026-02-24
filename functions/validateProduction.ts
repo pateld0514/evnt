@@ -1,183 +1,133 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Production readiness validation script
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin only
-    if (!user || (user.email !== "pateld0514@gmail.com" && user.role !== "admin")) {
+    // CRITICAL: Admin-only check
+    if (!user || user.role !== "admin") {
+      console.error('Unauthorized validateProduction attempt', { user_id: user?.id, email: user?.email });
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const validationResults = {
-      timestamp: new Date().toISOString(),
-      checks: [],
-      critical_issues: [],
-      warnings: [],
-      passed: 0,
-      failed: 0
-    };
+    const issues = [];
+    const warnings = [];
 
-    // Check 1: Verify backend functions exist
-    const requiredFunctions = [
-      'approveVendor',
-      'rejectVendor', 
-      'calculateProposal',
-      'updateProposal',
-      'extractStateFromLocation',
-      'backfillStripeFees'
-    ];
+    // Phase 7: Validate production data consistency
+    console.log('Starting production data validation...');
 
-    for (const funcName of requiredFunctions) {
-      try {
-        await base44.asServiceRole.functions.invoke(funcName, { test: true });
-        validationResults.checks.push({
-          name: `Backend function: ${funcName}`,
-          status: 'pass',
-          message: 'Function exists and is callable'
-        });
-        validationResults.passed++;
-      } catch (error) {
-        validationResults.checks.push({
-          name: `Backend function: ${funcName}`,
-          status: 'fail',
-          message: error.message
-        });
-        validationResults.critical_issues.push(`Missing function: ${funcName}`);
-        validationResults.failed++;
+    // 1. Check for legacy fields in bookings
+    const allBookings = await base44.asServiceRole.entities.Booking.list();
+    
+    for (const booking of allBookings) {
+      // Check for standardized field names
+      if (booking.stripe_fee !== undefined && booking.stripe_fee !== null) {
+        warnings.push(`Booking ${booking.id} has deprecated stripe_fee field instead of stripe_fee_amount`);
+      }
+      
+      if (booking.total_amount !== undefined && booking.total_amount !== null) {
+        warnings.push(`Booking ${booking.id} has deprecated total_amount field instead of total_amount_charged`);
+      }
+
+      // Check for missing standardized fields
+      if (booking.stripe_fee_amount === undefined && booking.payment_status === 'paid') {
+        issues.push(`Booking ${booking.id} (paid) missing stripe_fee_amount - CRITICAL`);
+      }
+
+      if (!booking.total_amount_charged && booking.payment_status !== 'unpaid' && booking.payment_status !== 'failed') {
+        issues.push(`Booking ${booking.id} (${booking.payment_status}) missing total_amount_charged - CRITICAL`);
+      }
+
+      // Check for tax consistency
+      if (booking.sales_tax_amount === undefined && booking.status !== 'pending') {
+        warnings.push(`Booking ${booking.id} missing sales_tax_amount`);
+      }
+
+      // Check idempotency key for paid bookings
+      if (booking.payment_status === 'paid' && !booking.idempotency_key) {
+        warnings.push(`Booking ${booking.id} (paid) missing idempotency_key - should have been set during capture`);
+      }
+
+      // Validate fee calculations
+      if (booking.platform_fee_amount && booking.platform_fee_percent && booking.base_event_amount) {
+        const expectedFee = (booking.base_event_amount * booking.platform_fee_percent) / 100;
+        const diff = Math.abs(expectedFee - booking.platform_fee_amount);
+        if (diff > 0.01) {
+          issues.push(`Booking ${booking.id} platform fee calculation mismatch: expected $${expectedFee.toFixed(2)}, got $${booking.platform_fee_amount.toFixed(2)}`);
+        }
+      }
+
+      // Validate vendor payout calculation
+      if (booking.vendor_payout && booking.base_event_amount && booking.platform_fee_amount) {
+        const expectedPayout = booking.base_event_amount - booking.platform_fee_amount - (booking.sales_tax_amount || 0) - (booking.stripe_fee_amount || 0);
+        const diff = Math.abs(expectedPayout - booking.vendor_payout);
+        if (diff > 0.01) {
+          warnings.push(`Booking ${booking.id} vendor payout calculation mismatch: expected $${expectedPayout.toFixed(2)}, got $${booking.vendor_payout.toFixed(2)}`);
+        }
       }
     }
 
-    // Check 2: Verify User entity has state field
-    try {
-      const users = await base44.asServiceRole.entities.User.list();
-      const hasStateField = users.length === 0 || users.some(u => u.hasOwnProperty('state'));
-      
-      validationResults.checks.push({
-        name: 'User entity state field',
-        status: hasStateField ? 'pass' : 'warning',
-        message: hasStateField ? 'State field exists' : 'State field not found on existing users'
-      });
-      
-      if (hasStateField) {
-        validationResults.passed++;
+    // 2. Validate vendor Stripe accounts
+    const allVendors = await base44.asServiceRole.entities.Vendor.list();
+    
+    for (const vendor of allVendors) {
+      if (vendor.approval_status === 'approved' && !vendor.stripe_account_id) {
+        issues.push(`Vendor ${vendor.id} (${vendor.business_name}) approved but missing Stripe account - CRITICAL`);
+      }
+
+      if (vendor.stripe_account_id && !vendor.stripe_account_verified) {
+        warnings.push(`Vendor ${vendor.id} has Stripe account but not verified`);
+      }
+    }
+
+    // 3. Check for orphaned payout records
+    const allPayouts = await base44.asServiceRole.entities.VendorPayout.list();
+    
+    for (const payout of allPayouts) {
+      const relatedBookings = allBookings.filter(b => b.id === payout.booking_id);
+      if (relatedBookings.length === 0) {
+        issues.push(`VendorPayout ${payout.id} orphaned - no matching booking`);
       } else {
-        validationResults.warnings.push('User entity may need state field populated for existing users');
-        validationResults.failed++;
+        const booking = relatedBookings[0];
+        if (payout.status === 'completed' && booking.payment_status !== 'paid') {
+          issues.push(`VendorPayout ${payout.id} completed but booking not paid - data inconsistency`);
+        }
       }
-    } catch (error) {
-      validationResults.checks.push({
-        name: 'User entity state field',
-        status: 'fail',
-        message: error.message
-      });
-      validationResults.failed++;
     }
 
-    // Check 3: Verify Booking entity has client_state field
-    try {
-      const bookings = await base44.asServiceRole.entities.Booking.list();
-      const hasClientStateField = bookings.length === 0 || bookings.some(b => b.hasOwnProperty('client_state'));
-      
-      validationResults.checks.push({
-        name: 'Booking entity client_state field',
-        status: hasClientStateField ? 'pass' : 'warning',
-        message: hasClientStateField ? 'client_state field exists' : 'client_state field not found'
-      });
-      
-      if (hasClientStateField) {
-        validationResults.passed++;
-      } else {
-        validationResults.warnings.push('Bookings may need client_state populated');
-        validationResults.failed++;
+    // 4. Check platform fee settings
+    const feeSettings = await base44.asServiceRole.entities.PlatformSettings.filter({ 
+      setting_key: 'platform_fee_percent' 
+    });
+    
+    if (feeSettings.length === 0) {
+      issues.push('Platform fee percentage not configured - CRITICAL');
+    } else {
+      const feePercent = parseFloat(feeSettings[0].setting_value);
+      if (feePercent < 5 || feePercent > 50) {
+        warnings.push(`Platform fee percentage ${feePercent}% seems unusual - verify it's correct`);
       }
-    } catch (error) {
-      validationResults.checks.push({
-        name: 'Booking entity client_state',
-        status: 'fail',
-        message: error.message
-      });
-      validationResults.failed++;
     }
-
-    // Check 4: Verify Stripe fees backfilled
-    try {
-      const bookingsWithoutFee = await base44.asServiceRole.entities.Booking.list();
-      const missingFee = bookingsWithoutFee.filter(b => 
-        !b.stripe_fee && !b.stripe_fee_amount && b.total_amount_charged > 0
-      );
-      
-      validationResults.checks.push({
-        name: 'Stripe fee backfill',
-        status: missingFee.length === 0 ? 'pass' : 'warning',
-        message: missingFee.length === 0 
-          ? 'All bookings have stripe_fee set' 
-          : `${missingFee.length} bookings missing stripe_fee`
-      });
-      
-      if (missingFee.length === 0) {
-        validationResults.passed++;
-      } else {
-        validationResults.warnings.push(`Run backfillStripeFees to update ${missingFee.length} bookings`);
-        validationResults.failed++;
-      }
-    } catch (error) {
-      validationResults.checks.push({
-        name: 'Stripe fee backfill',
-        status: 'fail',
-        message: error.message
-      });
-      validationResults.failed++;
-    }
-
-    // Check 5: Email template consistency
-    validationResults.checks.push({
-      name: 'Email template updates',
-      status: 'pass',
-      message: 'stripeWebhook emails wrapped with EmailTemplate, notifyVendorApproval uses info@joinevnt.com'
-    });
-    validationResults.passed++;
-
-    // Check 6: Admin authorization hardening
-    validationResults.checks.push({
-      name: 'Admin action security',
-      status: 'pass',
-      message: 'Admin approvals/rejections moved to backend functions with role validation'
-    });
-    validationResults.passed++;
-
-    // Check 7: Financial calculation security
-    validationResults.checks.push({
-      name: 'Server-side financial validation',
-      status: 'pass',
-      message: 'calculateProposal and updateProposal enforce server-side validation'
-    });
-    validationResults.passed++;
-
-    // Final assessment
-    const readiness = validationResults.critical_issues.length === 0 
-      ? (validationResults.warnings.length === 0 ? 'READY' : 'READY_WITH_WARNINGS')
-      : 'NOT_READY';
 
     return Response.json({
-      ...validationResults,
-      readiness,
-      summary: {
-        total_checks: validationResults.checks.length,
-        passed: validationResults.passed,
-        failed: validationResults.failed,
-        critical_issues: validationResults.critical_issues.length,
-        warnings: validationResults.warnings.length
-      }
+      success: true,
+      validation_timestamp: new Date().toISOString(),
+      total_bookings: allBookings.length,
+      total_vendors: allVendors.length,
+      total_payouts: allPayouts.length,
+      issues: issues,
+      issue_count: issues.length,
+      warnings: warnings,
+      warning_count: warnings.length,
+      status: issues.length === 0 ? 'PASS' : 'FAIL'
     });
 
   } catch (error) {
     console.error('Validation error:', error);
     return Response.json({ 
-      error: error.message,
-      readiness: 'ERROR'
+      error: error.message || 'Validation failed',
+      stack: error.stack 
     }, { status: 500 });
   }
 });
