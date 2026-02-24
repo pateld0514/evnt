@@ -94,7 +94,7 @@ export default function BookingsPage() {
     }
   }, []);
 
-  const { data: bookings = [], isLoading } = useQuery({
+  const { data: bookings = [], isLoading, refetch } = useQuery({
     queryKey: ['bookings', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
@@ -119,7 +119,9 @@ export default function BookingsPage() {
     },
     enabled: !!currentUser,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   // Real-time subscription for booking updates
@@ -127,19 +129,19 @@ export default function BookingsPage() {
     if (!currentUser) return;
 
     const unsubscribe = base44.entities.Booking.subscribe((event) => {
-      // Refetch bookings when any booking is created, updated, or deleted
-      queryClient.invalidateQueries(['bookings']);
+      // Immediately refetch bookings when any booking changes
+      refetch();
     });
 
     return () => unsubscribe();
-  }, [currentUser, queryClient]);
+  }, [currentUser, refetch]);
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors-for-bookings'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: reviews = [] } = useQuery({
@@ -150,7 +152,8 @@ export default function BookingsPage() {
     },
     enabled: !!currentUser,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: allUsers = [] } = useQuery({
