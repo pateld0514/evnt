@@ -32,7 +32,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const checkAdmin = async () => {
       const user = await base44.auth.me();
-      if (user.email !== "pateld0514@gmail.com") {
+      const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
+      
+      if (!isAdmin) {
         navigate(createPageUrl("Home"));
         return;
       }
