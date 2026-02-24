@@ -569,7 +569,7 @@ export default function BookingsPage() {
                       <p className="text-lg font-bold">${selectedBooking.budget}</p>
                     </div>
                   )}
-                  {selectedBooking.base_event_amount && selectedBooking.status !== "negotiating" && selectedBooking.status !== "pending" && (
+                  {selectedBooking.base_event_amount && selectedBooking.status !== "negotiating" && selectedBooking.status !== "pending" && selectedBooking.status !== "payment_pending" && (
                     <div className="col-span-2">
                       <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
                         <p className="text-sm font-bold text-gray-700 mb-3">Price Breakdown</p>
@@ -842,23 +842,32 @@ export default function BookingsPage() {
                       )}
 
                       {!isVendor && selectedBooking.status === "payment_pending" && (
-                        <Button
-                          onClick={() => handleStartPayment(selectedBooking)}
-                          disabled={isProcessingPayment}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
-                        >
-                          {isProcessingPayment ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              Complete Payment
-                            </>
-                          )}
-                        </Button>
+                        <>
+                          <Button
+                            onClick={handleOpenNegotiation}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                          >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Review Price Proposal
+                          </Button>
+                          <Button
+                            onClick={() => handleStartPayment(selectedBooking)}
+                            disabled={isProcessingPayment}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+                          >
+                            {isProcessingPayment ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <DollarSign className="w-4 h-4 mr-2" />
+                                Complete Payment
+                              </>
+                            )}
+                          </Button>
+                        </>
                       )}
 
                       {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "negotiating") && (
