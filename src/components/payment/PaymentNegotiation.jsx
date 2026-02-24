@@ -88,7 +88,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         discountSource = 'referral_perk';
       }
       
-      // Call calculateDynamicFee to get the actual fee with tier discounts applied
+      // Call calculateDynamicFee to get tier discounts (but will recalculate on discounted amount)
       const feeCalc = await base44.functions.invoke('calculateDynamicFee', {
         vendor_id: booking.vendor_id,
         client_email: booking.client_email,
@@ -97,11 +97,16 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       
       if (feeCalc.data && feeCalc.data.final_fee_percent !== undefined) {
         finalFeePercent = feeCalc.data.final_fee_percent;
-        platformFeeAmount = feeCalc.data.platform_fee_amount;
       }
     } catch (error) {
       console.warn('Could not calculate dynamic fee, using base fee', error);
     }
+    
+    // Apply discount to agreed amount FIRST
+    const discountedAmount = Math.max(0, agreedAmount - appliedDiscount);
+    
+    // NOW calculate fees on the DISCOUNTED amount
+    platformFeeAmount = (discountedAmount * finalFeePercent) / 100;
     
     // State sales tax rates (2026 data - combined state + avg local rates)
     const stateTaxRates = {
@@ -181,10 +186,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       }
     }
     
-    const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
-    
-    // Apply discount to agreed amount
-    const discountedAmount = Math.max(0, agreedAmount - appliedDiscount);
+    // Calculate tax on DISCOUNTED amount
+    const salesTax = salesTaxRate > 0 ? discountedAmount * salesTaxRate : 0;
     
     // Calculate Stripe processing fee (2.9% + $0.30) - comes from client's payment
     const stripeFee = (discountedAmount * 0.029) + 0.30;
