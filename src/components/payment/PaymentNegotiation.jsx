@@ -22,6 +22,29 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       toast.success("Proposal declined");
     },
   });
+
+  const submitProposalMutation = useMutation({
+    mutationFn: async (proposalData) => {
+      return await base44.functions.invoke('updateProposal', {
+        bookingId: booking.id,
+        proposalData: {
+          agreedPrice: parseFloat(agreedPrice),
+          additionalFees: additionalFees.filter(f => f.name && f.amount),
+          serviceDescription: serviceDescription,
+          clientState: booking.client_state,
+          newStatus: isVendor ? "negotiating" : "payment_pending"
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
+      toast.success(isVendor ? "Proposal sent!" : "Proceeding to payment...");
+      onClose();
+    },
+    onError: (error) => {
+      toast.error("Failed to submit proposal");
+    }
+  });
   const [agreedPrice, setAgreedPrice] = useState(booking.agreed_price || booking.budget || "");
   const [serviceDescription, setServiceDescription] = useState(booking.service_description || "");
   const [additionalFees, setAdditionalFees] = useState(booking.additional_fees || []);
@@ -107,28 +130,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       return;
     }
 
-    const data = {
-      base_event_amount: totals.baseEventAmount,
-      agreed_price: totals.baseEventAmount,
-      service_description: serviceDescription,
-      additional_fees: additionalFees.filter(f => f.name && f.amount),
-      platform_fee_percent: totals.finalFeePercent || platformFeePercent,
-      platform_fee_amount: totals.platformFeeAmount,
-      sales_tax_amount: totals.salesTax || 0,
-      sales_tax_rate: totals.salesTaxRate || 0,
-      stripe_fee: totals.stripeFee || 0,
-      stripe_fee_amount: totals.stripeFee || 0,
-      maryland_sales_tax_amount: totals.salesTax || 0, // Legacy field for compatibility
-      maryland_sales_tax_percent: totals.salesTax > 0 && totals.salesTaxRate > 0 ? totals.salesTaxRate * 100 : 0,
-      vendor_payout: totals.vendorPayout,
-      total_amount_charged: totals.totalAmount,
-      total_amount: totals.totalAmount,
-      currency: 'USD',
-      status: isVendor ? "negotiating" : "payment_pending"
-    };
-
-    console.log('Submitting proposal:', { isVendor, bookingId: booking.id, data });
-    submitProposalMutation.mutate(data);
+    submitProposalMutation.mutate();
   };
 
   return (

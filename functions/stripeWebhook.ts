@@ -123,9 +123,6 @@ Deno.serve(async (req) => {
           const booking = bookings[0];
 
           if (booking) {
-            // Import EmailTemplate for consistent branding
-            const { EmailTemplate } = await import('./emailTemplateHelper.js');
-            
             // Notify client
             const clientEmailContent = `
               <div class="content">
@@ -170,6 +167,10 @@ Deno.serve(async (req) => {
             const vendor = vendors[0];
             
             if (vendor) {
+              // Get vendor's user email for reliable delivery
+              const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
+              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email || vendor.created_by;
+
               const vendorEmailContent = `
                 <div class="content">
                   <h1><span class="emoji">🎉</span> Booking Confirmed!</h1>
@@ -269,6 +270,10 @@ Deno.serve(async (req) => {
             const vendor = vendors[0];
             
             if (vendor) {
+              // Get vendor's user email for reliable delivery
+              const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
+              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email || vendor.created_by;
+
               const vendorPaymentContent = `
                 <div class="content">
                   <h1><span class="emoji">💰</span> Payment Received!</h1>
@@ -298,7 +303,7 @@ Deno.serve(async (req) => {
               `;
 
               await base44.asServiceRole.integrations.Core.SendEmail({
-                to: vendor.contact_email || vendor.created_by,
+                to: vendorEmail,
                 from_name: "EVNT",
                 subject: '💰 Payment Received - Booking Confirmed',
                 body: EmailTemplate.wrap(vendorPaymentContent, `Payment received for ${booking.event_type}`)

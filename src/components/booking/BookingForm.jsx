@@ -109,6 +109,9 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
         }
       } catch (error) {
         console.warn('Failed to extract state, using user profile state:', error);
+        if (!currentUser.state) {
+          toast.warning("Could not determine your state. Tax may not be applied correctly.");
+        }
       }
     }
 
