@@ -49,9 +49,11 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
-        if (!currentUser.onboarding_complete && currentUser.email !== "pateld0514@gmail.com") {
+        const isAdmin = currentUser.email === "pateld0514@gmail.com" || currentUser.role === "admin";
+        
+        if (!currentUser.onboarding_complete && !isAdmin) {
           navigate(createPageUrl("Onboarding"));
-        } else if (currentUser.user_type === "vendor" && currentUser.email !== "pateld0514@gmail.com") {
+        } else if (currentUser.user_type === "vendor" && !isAdmin) {
           if (currentUser.approval_status === "pending" || currentUser.approval_status === "rejected") {
             navigate(createPageUrl("VendorPending"));
           } else {

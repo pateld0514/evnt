@@ -63,7 +63,7 @@ export default function ProfilePage() {
     base44.auth.logout();
   };
 
-  const isAdmin = user?.email === "pateld0514@gmail.com";
+  const isAdmin = user?.email === "pateld0514@gmail.com" || user?.role === "admin";
 
   const switchView = (type) => {
     if (type === "vendor") {

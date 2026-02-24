@@ -39,7 +39,7 @@ export default function Layout({ children, currentPageName }) {
         if (user.demo_mode) {
           setUserType(user.demo_user_type);
           setOnboardingComplete(user.demo_onboarding_complete || false);
-        } else if (user.email === "pateld0514@gmail.com") {
+        } else if (user.email === "pateld0514@gmail.com" || user.role === "admin") {
           setUserType("admin");
           setOnboardingComplete(true);
         } else {

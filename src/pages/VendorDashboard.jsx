@@ -37,12 +37,14 @@ export default function VendorDashboard() {
           return;
         }
 
-        if (user.user_type === "vendor" && user.approval_status !== "approved" && user.email !== "pateld0514@gmail.com") {
+        const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
+
+        if (user.user_type === "vendor" && user.approval_status !== "approved" && !isAdmin) {
           navigate(createPageUrl("VendorPending"));
           return;
         }
 
-        if (user.user_type !== "vendor" && user.email !== "pateld0514@gmail.com") {
+        if (user.user_type !== "vendor" && !isAdmin) {
           navigate(createPageUrl("Home"));
           return;
         }
@@ -52,11 +54,14 @@ export default function VendorDashboard() {
           if (vendors && vendors.length > 0) {
             setVendor(vendors[0]);
           }
-        } else if (user.email === "pateld0514@gmail.com") {
-          // Admin viewing vendor side without a vendor profile
-          const allVendors = await base44.entities.Vendor.list();
-          if (allVendors.length > 0) {
-            setVendor(allVendors[0]);
+        } else {
+          const isAdminCheck = user.email === "pateld0514@gmail.com" || user.role === "admin";
+          if (isAdminCheck) {
+            // Admin viewing vendor side without a vendor profile
+            const allVendors = await base44.entities.Vendor.list();
+            if (allVendors.length > 0) {
+              setVendor(allVendors[0]);
+            }
           }
         }
       } catch (error) {
