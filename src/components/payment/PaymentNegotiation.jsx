@@ -66,54 +66,58 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const [calculationError, setCalculationError] = React.useState(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
 
-  // Recalculate totals whenever values change using BACKEND validation
+  // Fix #39: Debounce the calculateProposal API call to avoid excessive requests
   useEffect(() => {
-    const recalc = async () => {
-      if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
-        setTotals({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0, salesTax: 0, stripeFee: 0 });
-        setCalculationError(null);
-        return;
-      }
-
-      setIsCalculating(true);
-      setCalculationError(null);
-      try {
-        const response = await base44.functions.invoke('calculateProposal', {
-          bookingId: booking.id,
-          agreedPrice: parseFloat(agreedPrice),
-          additionalFees: additionalFees.filter(f => f.name && f.amount),
-          serviceDescription: serviceDescription,
-          clientState: booking.client_state
-        });
-
-        if (response.data?.success) {
-          const calc = response.data.calculation;
-          setTotals({
-            price: calc.base_price,
-            additionalTotal: calc.additional_total,
-            subtotal: calc.subtotal,
-            baseEventAmount: calc.base_event_amount,
-            platformFeeAmount: calc.platform_fee_amount,
-            salesTax: calc.sales_tax_amount,
-            salesTaxRate: calc.sales_tax_rate,
-            taxLabel: calc.tax_label,
-            stripeFee: calc.stripe_fee,
-            totalAmount: calc.total_amount_charged,
-            vendorPayout: calc.vendor_payout,
-            finalFeePercent: calc.platform_fee_percent,
-            appliedDiscount: calc.discount_applied || 0,
-            discountSource: calc.discount_applied > 0 ? 'referral_perk' : ''
-          });
+    const debounceTimer = setTimeout(() => {
+      const recalc = async () => {
+        if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
+          setTotals({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0, salesTax: 0, stripeFee: 0 });
+          setCalculationError(null);
+          return;
         }
-      } catch (error) {
-        console.error('Failed to calculate proposal:', error);
-        setCalculationError('Failed to calculate totals. Please try again.');
-        toast.error('Failed to calculate totals');
-      } finally {
-        setIsCalculating(false);
-      }
-    };
-    recalc();
+
+        setIsCalculating(true);
+        setCalculationError(null);
+        try {
+          const response = await base44.functions.invoke('calculateProposal', {
+            bookingId: booking.id,
+            agreedPrice: parseFloat(agreedPrice),
+            additionalFees: additionalFees.filter(f => f.name && f.amount),
+            serviceDescription: serviceDescription,
+            clientState: booking.client_state || null // Fix #12: handle null client_state
+          });
+
+          if (response.data?.success) {
+            const calc = response.data.calculation;
+            setTotals({
+              price: calc.base_price,
+              additionalTotal: calc.additional_total,
+              subtotal: calc.subtotal,
+              baseEventAmount: calc.base_event_amount,
+              platformFeeAmount: calc.platform_fee_amount,
+              salesTax: calc.sales_tax_amount,
+              salesTaxRate: calc.sales_tax_rate,
+              taxLabel: calc.tax_label,
+              stripeFee: calc.stripe_fee_amount, // Fix #1, #7, #18: use standardized field name
+              totalAmount: calc.total_amount_charged,
+              vendorPayout: calc.vendor_payout,
+              finalFeePercent: calc.platform_fee_percent,
+              appliedDiscount: calc.discount_applied || 0,
+              discountSource: calc.discount_applied > 0 ? 'referral_perk' : ''
+            });
+          }
+        } catch (error) {
+          console.error('Failed to calculate proposal:', error);
+          setCalculationError('Failed to calculate totals. Please try again.');
+          toast.error('Failed to calculate totals');
+        } finally {
+          setIsCalculating(false);
+        }
+      };
+      recalc();
+    }, 500); // Fix #39: 500ms debounce delay
+
+    return () => clearTimeout(debounceTimer);
   }, [agreedPrice, additionalFees, serviceDescription, booking.id]);
 
   const addFee = () => {
@@ -154,9 +158,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       <CardContent className="p-6 space-y-6">
         {/* Service Price */}
         <div>
-          <Label>Service Price</Label>
+          <Label htmlFor="service-price">Service Price</Label>
           <Input
+            id="service-price"
             type="number"
+            aria-label="Service Price in USD" // Fix #20: add aria-label
+            min="0"
+            step="0.01"
             value={agreedPrice}
             onChange={(e) => setAgreedPrice(e.target.value)}
             className="border-2 border-gray-300 text-lg font-bold"
@@ -167,8 +175,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
         {/* Service Description */}
         <div>
-          <Label>Service Description</Label>
+          <Label htmlFor="service-description">Service Description</Label>
           <Textarea
+            id="service-description"
+            aria-label="Service Description" // Fix #20: add aria-label
             value={serviceDescription}
             onChange={(e) => setServiceDescription(e.target.value)}
             className="border-2 border-gray-300 h-24"
@@ -184,10 +194,11 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               <Label>Additional Fees (Travel, Hotel, etc.)</Label>
               <Button
                 type="button"
-                size="sm"
+                size="default" // Fix #24: increase touch target from sm to default (44px)
                 variant="outline"
                 onClick={addFee}
                 className="border-2 border-black"
+                aria-label="Add additional fee" // Fix #20: aria-label
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Fee
@@ -199,6 +210,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
                   <div className="flex-1 space-y-2">
                     <Input
                       placeholder="Fee name (e.g., Travel)"
+                      aria-label={`Fee ${index + 1} name`} // Fix #20: aria-label
                       value={fee.name}
                       onChange={(e) => updateFee(index, 'name', e.target.value)}
                       className="border-2 border-gray-300"
@@ -206,12 +218,16 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
                     <Input
                       type="number"
                       placeholder="Amount"
+                      aria-label={`Fee ${index + 1} amount in USD`} // Fix #20: aria-label
+                      min="0" // Fix #14: add min="0"
+                      step="0.01"
                       value={fee.amount}
-                      onChange={(e) => updateFee(index, 'amount', e.target.value)}
+                      onChange={(e) => updateFee(index, 'amount', Math.max(0, parseFloat(e.target.value) || 0))} // Fix #14: validate no negative
                       className="border-2 border-gray-300"
                     />
                     <Input
                       placeholder="Description (optional)"
+                      aria-label={`Fee ${index + 1} description`} // Fix #20: aria-label
                       value={fee.description}
                       onChange={(e) => updateFee(index, 'description', e.target.value)}
                       className="border-2 border-gray-300"
@@ -223,6 +239,8 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
                     variant="ghost"
                     onClick={() => removeFee(index)}
                     className="text-red-600"
+                    aria-label={`Remove fee ${index + 1}`} // Fix #20: aria-label
+                    tabIndex={0} // Fix #35: add tabIndex for keyboard navigation
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -283,17 +301,17 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-blue-600 pt-2 border-t border-gray-300">
+          <div className="flex justify-between text-sm text-blue-800 pt-2 border-t border-gray-300"> {/* Fix #37: darken color for better contrast */}
             <span>EVNT Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
             <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
           </div>
           {totals.salesTax > 0 && (
-            <div className="flex justify-between text-sm text-blue-600">
+            <div className="flex justify-between text-sm text-blue-800"> {/* Fix #37: darken color */}
               <span>{totals.taxLabel || 'Sales Tax'}:</span>
               <span className="font-bold">-${totals.salesTax.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm text-blue-600">
+          <div className="flex justify-between text-sm text-blue-800"> {/* Fix #37: darken color */}
             <span>Stripe Processing Fee:</span>
             <span className="font-bold">-${totals.stripeFee?.toFixed(2) || '0.00'}</span>
           </div>
