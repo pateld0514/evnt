@@ -18,18 +18,34 @@ Deno.serve(async (req) => {
     };
 
     // 1. Run post-launch validation
-    const validationResult = await base44.asServiceRole.functions.invoke('postLaunchValidation', {});
-    healthReport.checks.validation = {
-      status: validationResult.data.report.summary.overall_status,
-      details: validationResult.data.report.summary
-    };
+    let validationResult;
+    try {
+      validationResult = await base44.functions.invoke('postLaunchValidation', {});
+      healthReport.checks.validation = {
+        status: validationResult.data.report.summary.overall_status,
+        details: validationResult.data.report.summary
+      };
+    } catch (error) {
+      healthReport.checks.validation = {
+        status: 'error',
+        error: error.message
+      };
+    }
 
     // 2. Run edge case monitor
-    const edgeCaseResult = await base44.asServiceRole.functions.invoke('edgeCaseMonitor', {});
-    healthReport.checks.edge_cases = {
-      status: edgeCaseResult.data.summary.overall_health,
-      details: edgeCaseResult.data.summary
-    };
+    let edgeCaseResult;
+    try {
+      edgeCaseResult = await base44.functions.invoke('edgeCaseMonitor', {});
+      healthReport.checks.edge_cases = {
+        status: edgeCaseResult.data.summary.overall_health,
+        details: edgeCaseResult.data.summary
+      };
+    } catch (error) {
+      healthReport.checks.edge_cases = {
+        status: 'error',
+        error: error.message
+      };
+    }
 
     // 3. Check if migration needed
     const bookings = await base44.asServiceRole.entities.Booking.list();
@@ -49,10 +65,10 @@ Deno.serve(async (req) => {
     };
 
     // 4. Overall platform status
-    const hasErrors = validationResult.data.report.summary.total_errors > 0 || 
-                     edgeCaseResult.data.summary.total_critical > 0;
-    const hasWarnings = validationResult.data.report.summary.total_warnings > 0 || 
-                       edgeCaseResult.data.summary.total_warnings > 0;
+    const hasErrors = (validationResult?.data?.report?.summary?.total_errors || 0) > 0 || 
+                     (edgeCaseResult?.data?.summary?.total_critical || 0) > 0;
+    const hasWarnings = (validationResult?.data?.report?.summary?.total_warnings || 0) > 0 || 
+                       (edgeCaseResult?.data?.summary?.total_warnings || 0) > 0;
 
     if (hasErrors) {
       healthReport.platform_status = 'degraded';
@@ -69,14 +85,14 @@ Deno.serve(async (req) => {
     // 5. Compile all critical items
     const criticalItems = [];
     
-    if (validationResult.data.report.errors.length > 0) {
+    if (validationResult?.data?.report?.errors?.length > 0) {
       criticalItems.push(...validationResult.data.report.errors.map(e => ({
         source: 'validation',
         ...e
       })));
     }
 
-    if (edgeCaseResult.data.alerts.critical.length > 0) {
+    if (edgeCaseResult?.data?.alerts?.critical?.length > 0) {
       criticalItems.push(...edgeCaseResult.data.alerts.critical.map(a => ({
         source: 'edge_cases',
         ...a
