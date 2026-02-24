@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
@@ -151,8 +152,9 @@ Deno.serve(async (req) => {
             <p>View details at: ${req.headers.get('origin')}/VendorDashboard</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="font-size: 12px; color: #666;">
-              <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-              <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a>
+             <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+             <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
+             <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
             </p>
             <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
           </div>
