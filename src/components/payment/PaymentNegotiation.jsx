@@ -68,12 +68,27 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     const additionalTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
     const agreedAmount = price + additionalTotal; // This is what client agrees to pay (before tax)
     
-    // Get dynamic fee calculation considering tier discounts
+    // Get dynamic fee calculation considering tier discounts AND referral perks
     let finalFeePercent = platformFeePercent;
     let platformFeeAmount = (agreedAmount * finalFeePercent) / 100;
+    let appliedDiscount = 0;
+    let discountSource = '';
     
     try {
-      // Call calculateDynamicFee to get the actual fee with discounts applied
+      // Check for active referral rewards
+      const rewards = await base44.entities.ReferralReward.filter({ 
+        referrer_email: booking.client_email,
+        status: 'earned'
+      });
+      
+      if (rewards.length > 0) {
+        // Apply reward as percentage discount on agreed price
+        const rewardDiscount = rewards[0].reward_amount || 0;
+        appliedDiscount = rewardDiscount;
+        discountSource = 'referral_perk';
+      }
+      
+      // Call calculateDynamicFee to get the actual fee with tier discounts applied
       const feeCalc = await base44.functions.invoke('calculateDynamicFee', {
         vendor_id: booking.vendor_id,
         client_email: booking.client_email,
@@ -168,19 +183,22 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     
     const salesTax = salesTaxRate > 0 ? agreedAmount * salesTaxRate : 0;
     
+    // Apply discount to agreed amount
+    const discountedAmount = Math.max(0, agreedAmount - appliedDiscount);
+    
     // Calculate Stripe processing fee (2.9% + $0.30) - comes from client's payment
-    const stripeFee = (agreedAmount * 0.029) + 0.30;
+    const stripeFee = (discountedAmount * 0.029) + 0.30;
     
     // CRITICAL: fee, tax, and Stripe fee all come FROM the agreed price (deducted from vendor payout)
     const totalDeductions = platformFeeAmount + salesTax + stripeFee; // Total amount EVNT keeps
-    const vendorPayout = agreedAmount - totalDeductions; // Vendor receives: agreed price - fee - tax - stripe fee
-    const totalAmount = agreedAmount; // Client pays: just the agreed price (fee & tax & stripe fee already factored in)
+    const vendorPayout = discountedAmount - totalDeductions; // Vendor receives: agreed price - discount - fee - tax - stripe fee
+    const totalAmount = discountedAmount; // Client pays: agreed price - discount
 
     return { 
       price, 
       additionalTotal, 
       subtotal: agreedAmount,
-      baseEventAmount: agreedAmount,
+      baseEventAmount: discountedAmount,
       platformFeeAmount, 
       salesTax,
       salesTaxRate,
@@ -188,7 +206,9 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       stripeFee,
       totalAmount, 
       vendorPayout, 
-      finalFeePercent
+      finalFeePercent,
+      appliedDiscount,
+      discountSource
     };
   };
 
@@ -402,6 +422,12 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Agreed Service Price:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
+          {totals.appliedDiscount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>✨ Referral Perk Discount:</span>
+              <span className="font-bold">-${totals.appliedDiscount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
