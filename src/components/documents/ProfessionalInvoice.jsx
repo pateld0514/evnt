@@ -92,7 +92,7 @@ export default function ProfessionalInvoice({ booking }) {
 
             <tr className="border-b border-gray-300">
               <td className="py-3 px-4 text-sm text-blue-600">Stripe Processing Fee:</td>
-              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.stripe_fee_amount?.toFixed(2) || '0.00'}</td>
+              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.stripe_fee || booking.stripe_fee_amount)?.toFixed(2) || '0.00'}</td>
             </tr>
 
             <tr className="border-t-2 border-black">
