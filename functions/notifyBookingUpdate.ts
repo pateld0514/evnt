@@ -136,13 +136,18 @@ Deno.serve(async (req) => {
     }
 
     // Professional email template wrapper
-    const wrapEmail = (content, preheader) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
+    // Provide client/vendor email dynamically
+    const getEmailLink = (recipientEmail) => {
+     return `https://evnt.com/unsubscribe?email=${encodeURIComponent(recipientEmail || 'noreply@evnt.com')}`;
+    };
+
+    const wrapEmail = (content, preheader, recipientEmail) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
     body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f3f4f6; }
     .preheader { display: none; max-height: 0; overflow: hidden; }
     .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
@@ -155,28 +160,28 @@ Deno.serve(async (req) => {
     .highlight-box { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 24px; margin: 24px 0; }
     .button { display: inline-block; padding: 16px 32px; background: #000000; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 20px 0; }
     .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 2px solid #e5e7eb; color: #9ca3af; font-size: 13px; }
-  </style>
-</head>
-<body>
-  <div class="preheader">${preheader}</div>
-  <div class="container">
+    </style>
+    </head>
+    <body>
+    <div class="preheader">${preheader}</div>
+    <div class="container">
     <div class="header">
-      <div class="logo-icon">E</div>
-      <div class="logo-text">EVNT</div>
+     <div class="logo-icon">E</div>
+     <div class="logo-text">EVNT</div>
     </div>
     ${content}
     <div class="footer">
-      <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
-      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
-        <a href="https://evnt.com/unsubscribe" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-        <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-        <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
-      </p>
+     <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
+     <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
+     <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
+       <a href="${getEmailLink(recipientEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+       <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
+       <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
+     </p>
     </div>
-  </div>
-</body>
-</html>
+    </div>
+    </body>
+    </html>
     `;
 
     // Send to client
@@ -198,7 +203,7 @@ Deno.serve(async (req) => {
       to: booking.client_email,
       from_name: "EVNT",
       subject: statusNotif.client.emailSubject,
-      body: wrapEmail(clientContent, statusNotif.client.message)
+      body: wrapEmail(clientContent, statusNotif.client.message, booking.client_email)
     });
 
     await base44.asServiceRole.entities.Notification.create({
@@ -229,7 +234,7 @@ Deno.serve(async (req) => {
       to: vendorEmail,
       from_name: "EVNT",
       subject: statusNotif.vendor.emailSubject,
-      body: wrapEmail(vendorContent, statusNotif.vendor.message)
+      body: wrapEmail(vendorContent, statusNotif.vendor.message, vendorEmail)
     });
 
     await base44.asServiceRole.entities.Notification.create({
