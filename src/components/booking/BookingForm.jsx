@@ -97,13 +97,33 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       return;
     }
 
+    // Extract state from location for tax calculation
+    let clientState = null;
+    if (formData.location) {
+      try {
+        const stateResponse = await base44.functions.invoke('extractStateFromLocation', {
+          location: formData.location
+        });
+        if (stateResponse.data?.state) {
+          clientState = stateResponse.data.state;
+        }
+      } catch (error) {
+        console.warn('Failed to extract state, using user profile state:', error);
+      }
+    }
+
+    // Fallback to user's profile state if available
+    if (!clientState && currentUser.state) {
+      clientState = currentUser.state;
+    }
+
     const bookingData = {
       event_id: formData.event_id || null,
       vendor_id: vendor.id,
       vendor_name: vendor.business_name,
       client_email: currentUser.email,
       client_name: currentUser.full_name,
-      client_state: formData.location?.toUpperCase().includes('MD') || formData.location?.toLowerCase().includes('maryland') ? 'MD' : null,
+      client_state: clientState,
       event_type: formData.event_type,
       event_date: formData.event_date,
       guest_count: formData.guest_count ? parseInt(formData.guest_count) : null,

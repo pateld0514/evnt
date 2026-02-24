@@ -236,9 +236,39 @@ export default function VendorRegistrationPage() {
       return;
     }
 
+    // Verify Stripe account is ready to accept payments
+    try {
+      const statusResponse = await base44.functions.invoke('checkStripeAccountStatus', {});
+      const status = statusResponse.data;
+      
+      if (!status.charges_enabled || !status.details_submitted) {
+        toast.error("Please complete your Stripe account setup before submitting. Click 'Connect Stripe Account' again to finish.");
+        return;
+      }
+    } catch (error) {
+      console.error('Stripe verification failed:', error);
+      toast.error("Could not verify Stripe account status. Please try again.");
+      return;
+    }
+
     setLoading(true);
     try {
       const user = await base44.auth.me();
+      
+      // Extract state from location for tax purposes
+      let vendorState = null;
+      if (formData.location) {
+        try {
+          const stateResponse = await base44.functions.invoke('extractStateFromLocation', {
+            location: formData.location
+          });
+          if (stateResponse.data?.state) {
+            vendorState = stateResponse.data.state;
+          }
+        } catch (error) {
+          console.warn('Failed to extract state:', error);
+        }
+      }
       
       // Format custom category
       const finalCategory = formData.category === "custom" 
@@ -278,6 +308,7 @@ export default function VendorRegistrationPage() {
         user_type: "vendor",
         phone: formData.phone,
         location: formData.location,
+        state: vendorState,
         approval_status: "pending",
         stripe_account_id: formData.stripe_account_id || null,
         onboarding_complete: true,

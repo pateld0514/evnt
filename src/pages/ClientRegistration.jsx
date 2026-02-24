@@ -61,8 +61,24 @@ export default function ClientRegistrationPage() {
     try {
       const currentUser = await base44.auth.me();
       
+      // Extract state from location for tax purposes
+      let userState = null;
+      if (formData.location) {
+        try {
+          const stateResponse = await base44.functions.invoke('extractStateFromLocation', {
+            location: formData.location
+          });
+          if (stateResponse.data?.state) {
+            userState = stateResponse.data.state;
+          }
+        } catch (error) {
+          console.warn('Failed to extract state:', error);
+        }
+      }
+      
       await base44.auth.updateMe({
         ...formData,
+        state: userState,
         user_type: "client",
         onboarding_complete: true,
         referred_by: referralCode || null
