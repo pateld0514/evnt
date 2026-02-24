@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DollarSign, RefreshCw, XCircle, AlertCircle, CheckCircle, Clock, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -29,6 +30,7 @@ export default function AdminTransactionsPage() {
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [refundAmount, setRefundAmount] = useState("");
   const [refundReason, setRefundReason] = useState("");
+  const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
 
   // Verify admin access
   const { data: currentUser } = useQuery({
@@ -484,6 +486,35 @@ export default function AdminTransactionsPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Delete All Transactions Confirmation */}
+      <AlertDialog open={deleteAllConfirmOpen} onOpenChange={setDeleteAllConfirmOpen}>
+        <AlertDialogContent className="border-4 border-black">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-black text-red-600">Delete All Transactions?</AlertDialogTitle>
+            <AlertDialogDescription className="text-lg text-gray-700 mt-2">
+              This will permanently delete ALL {bookings.length} bookings and {payouts.length} payouts. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-sm text-red-800">
+            <strong>Warning:</strong> All transaction history will be lost.
+          </div>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel className="border-2 border-gray-300 font-bold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                deleteAllTransactionsMutation.mutate();
+                setDeleteAllConfirmOpen(false);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold border-2 border-red-600"
+            >
+              Delete All
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+      </div>
+      );
+      }
