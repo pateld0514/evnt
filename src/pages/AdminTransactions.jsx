@@ -182,21 +182,19 @@ export default function AdminTransactionsPage() {
           </p>
         </div>
         {bookings.length > 0 && (
-          <div className="flex justify-center">
-            <Button
-              onClick={() => {
-                if (confirm(`Are you sure you want to delete ALL ${bookings.length} bookings and ${payouts.length} payouts? This cannot be undone!`)) {
-                  deleteAllTransactionsMutation.mutate();
-                }
-              }}
-              disabled={deleteAllTransactionsMutation.isPending}
-              variant="outline"
-              className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
-            >
-              <XCircle className="w-4 h-4 mr-2" />
-              Delete All Transactions
-            </Button>
-          </div>
+        <div className="flex justify-center">
+          <Button
+            onClick={() => {
+              setDeleteAllConfirmOpen(true);
+            }}
+            disabled={deleteAllTransactionsMutation.isPending}
+            variant="outline"
+            className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Delete All Transactions
+          </Button>
+        </div>
         )}
       </div>
 

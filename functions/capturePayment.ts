@@ -9,6 +9,15 @@ Deno.serve(async (req) => {
   
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      console.error(`[${requestId}] UNAUTHORIZED: No authenticated user`);
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log(`[${requestId}] User authenticated:`, user.email);
+
     // Retrieve booking FIRST to get persisted idempotency key
     const { bookingId } = await req.json();
     
@@ -36,17 +45,6 @@ Deno.serve(async (req) => {
     }
     
     console.log(`[${requestId}] Idempotency Key:`, { persisted: idempotencyKey, request: requestId });
-  
-  try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      console.error(`[${requestId}] UNAUTHORIZED: No authenticated user`);
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    console.log(`[${requestId}] User authenticated:`, user.email);
 
     console.log(`[${requestId}] Booking found:`, {
       status: booking.status,
