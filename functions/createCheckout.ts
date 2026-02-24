@@ -167,8 +167,10 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    // Calculate Stripe processing fee (2.9% + $0.30)
-    const stripeFeeCents = Math.round(totalCents * 0.029) + 30;
+    // Use pre-calculated Stripe fee from negotiation to ensure consistency
+    // If not available (legacy bookings), calculate it
+    const stripeFeeAmount = booking.stripe_fee_amount || ((booking.total_amount_charged * 0.029) + 0.30);
+    const stripeFeeCents = Math.round(stripeFeeAmount * 100);
     
     console.log(`[${requestId}] Payment breakdown (cents):`, {
       agreed_price: baseAmountCents,
@@ -233,7 +235,8 @@ Deno.serve(async (req) => {
           sales_tax_amount: (booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0).toString(),
           total_amount: booking.total_amount_charged.toString(),
           vendor_payout: booking.vendor_payout.toString(),
-          stripe_fee: (stripeFeeCents / 100).toString(),
+          stripe_fee_calculated: stripeFeeAmount.toString(),
+          stripe_fee_saved: (booking.stripe_fee_amount || 0).toString(),
           request_id: requestId
         },
         description: `${booking.event_type} on ${booking.event_date}`,
