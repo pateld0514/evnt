@@ -126,15 +126,15 @@ Deno.serve(async (req) => {
 
     const salesTax = salesTaxRate > 0 ? discountedAmount * salesTaxRate : 0;
 
-    // Calculate Stripe processing fee (2.9% + $0.30) - standardized field name
-    const stripeFeeAmount = (discountedAmount * 0.029) + 0.30;
+    // Calculate Stripe processing fee (2.9% + $0.30) - standardized field name - Fix #15: consistent rounding
+    const stripeFeeAmount = Math.round((discountedAmount * 0.029 + 0.30) * 100) / 100;
 
     // Calculate vendor payout: discounted amount - all deductions
     const totalDeductions = platformFeeAmount + salesTax + stripeFeeAmount;
     const vendorPayout = discountedAmount - totalDeductions;
     const totalAmount = discountedAmount; // Client pays the discounted agreed price
 
-    // Return validated financial breakdown with standardized field names
+    // Return validated financial breakdown with standardized field names - Fix #1: ensure stripe_fee_amount returned
     return Response.json({
       success: true,
       calculation: {
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         sales_tax_amount: parseFloat(salesTax.toFixed(2)),
         tax_label: taxLabel,
         state_abbreviation: stateAbbr || null,
-        stripe_fee_amount: parseFloat(stripeFeeAmount.toFixed(2)),
+        stripe_fee_amount: stripeFeeAmount, // Fix #1: standardized name, no fallback needed
         total_amount_charged: parseFloat(totalAmount.toFixed(2)),
         vendor_payout: parseFloat(vendorPayout.toFixed(2)),
         service_description: serviceDescription || null
