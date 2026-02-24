@@ -61,15 +61,19 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Use pre-calculated tax rate from proposal (already determined during negotiation)
-    const salesTaxRate = booking.sales_tax_rate || 0;
-    
-    if (!booking.sales_tax_rate && booking.location) {
-      console.warn(`[${requestId}] WARNING: Booking missing pre-calculated sales_tax_rate. Using location fallback.`);
+    // Verify tax rate is pre-calculated (CRITICAL)
+    if (!booking.sales_tax_rate && booking.sales_tax_rate !== 0) {
+      console.error(`[${requestId}] CRITICAL: Missing sales_tax_rate. Booking must have tax calculated during proposal.`);
+      return Response.json({ 
+        error: 'Tax calculation incomplete. Please recalculate proposal.' 
+      }, { status: 400 });
     }
     
-    console.log(`[${requestId}] Tax calculation:`, {
+    const salesTaxRate = booking.sales_tax_rate;
+    
+    console.log(`[${requestId}] Tax validation:`, {
       location: booking.location,
+      client_state: booking.client_state,
       pre_calculated_rate: booking.sales_tax_rate,
       applied_rate: salesTaxRate
     });
@@ -134,9 +138,14 @@ Deno.serve(async (req) => {
     }
 
     // Calculate amounts in cents - must match booking record exactly
+    // NO FALLBACKS to deprecated fields
     const baseAmountCents = Math.round(booking.base_event_amount * 100);
     const platformFeeCents = Math.round(booking.platform_fee_amount * 100);
-    const salesTaxAmount = booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0;
+    const salesTaxAmount = booking.sales_tax_amount;
+    if (salesTaxAmount === undefined || salesTaxAmount === null) {
+      console.error(`[${requestId}] CRITICAL: sales_tax_amount is missing`);
+      return Response.json({ error: 'Tax amount not calculated' }, { status: 400 });
+    }
     const taxCents = Math.round(salesTaxAmount * 100);
     const totalCents = Math.round(booking.total_amount_charged * 100);
 
@@ -156,9 +165,14 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    // Use pre-calculated Stripe fee from negotiation to ensure consistency
-    // If not available (legacy bookings), calculate it
-    const stripeFeeAmount = booking.stripe_fee || booking.stripe_fee_amount || ((booking.total_amount_charged * 0.029) + 0.30);
+    // CRITICAL: Use only standardized stripe_fee_amount field
+    if (!booking.stripe_fee_amount && booking.stripe_fee_amount !== 0) {
+      console.error(`[${requestId}] CRITICAL: Missing stripe_fee_amount. Must be calculated during proposal.`);
+      return Response.json({ 
+        error: 'Stripe fee not calculated. Please recalculate proposal.' 
+      }, { status: 400 });
+    }
+    const stripeFeeAmount = booking.stripe_fee_amount;
     const stripeFeeCents = Math.round(stripeFeeAmount * 100);
     
     console.log(`[${requestId}] Payment breakdown (cents):`, {
@@ -221,10 +235,10 @@ Deno.serve(async (req) => {
           base_event_amount: booking.base_event_amount.toString(),
           platform_fee_amount: booking.platform_fee_amount.toString(),
           platform_fee_percent: booking.platform_fee_percent.toString(),
-          sales_tax_amount: (booking.sales_tax_amount || booking.maryland_sales_tax_amount || 0).toString(),
-          total_amount: booking.total_amount_charged.toString(),
+          sales_tax_amount: booking.sales_tax_amount.toString(),
+          total_amount_charged: booking.total_amount_charged.toString(),
           vendor_payout: booking.vendor_payout.toString(),
-          stripe_fee: stripeFeeAmount.toString(),
+          stripe_fee_amount: stripeFeeAmount.toString(),
           request_id: requestId
         },
         description: `${booking.event_type} on ${booking.event_date}`,
@@ -282,7 +296,7 @@ Deno.serve(async (req) => {
               value: booking.guest_count ? `${booking.guest_count} guests` : 'Not specified',
             },
           ],
-          footer: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPRICE BREAKDOWN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nService Price: $${booking.base_event_amount.toFixed(2)}${booking.additional_fees && booking.additional_fees.length > 0 ? '\n' + booking.additional_fees.map(f => `  + ${f.name}: $${parseFloat(f.amount).toFixed(2)}`).join('\n') : ''}\n\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nClient Pays Total: $${booking.total_amount_charged.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEVNT Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n${booking.location ? booking.location.split(',').pop().trim() + ' ' : ''}Sales Tax (${(salesTaxAmount > 0 && booking.sales_tax_rate ? (booking.sales_tax_rate * 100).toFixed(1) : booking.maryland_sales_tax_percent || '0')}%): -$${salesTaxAmount.toFixed(2)}` : ''}\nStripe Processing Fee: -$${stripeFeeAmount.toFixed(2)}\n  ────────────────────────────────────\nVendor Receives: $${booking.vendor_payout.toFixed(2)}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPAYMENT PROTECTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✓ Funds held in secure escrow until event completion\n✓ Full refund protection per EVNT terms of service\n✓ Dispute resolution support included\n✓ 24/7 customer service available\n\nQuestions? Contact support@evnt.com\nTerms of Service: evnt.com/terms`,
+          footer: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPRICE BREAKDOWN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nService Price: $${booking.base_event_amount.toFixed(2)}${booking.additional_fees && booking.additional_fees.length > 0 ? '\n' + booking.additional_fees.map(f => `  + ${f.name}: $${parseFloat(f.amount).toFixed(2)}`).join('\n') : ''}\n\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nClient Pays Total: $${booking.total_amount_charged.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEVNT Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n${booking.client_state || 'Sales'} Tax (${(booking.sales_tax_rate * 100).toFixed(1)}%): -$${salesTaxAmount.toFixed(2)}` : ''}\nStripe Processing Fee: -$${stripeFeeAmount.toFixed(2)}\n  ────────────────────────────────────\nVendor Receives: $${booking.vendor_payout.toFixed(2)}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPAYMENT PROTECTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✓ Funds held in secure escrow until event completion\n✓ Full refund protection per EVNT terms of service\n✓ Dispute resolution support included\n✓ 24/7 customer service available\n\nQuestions? Contact support@evnt.com\nTerms of Service: evnt.com/terms`,
           account_tax_ids: [],
           rendering_options: {
             amount_tax_display: 'include_inclusive_tax',
