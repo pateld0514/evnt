@@ -172,6 +172,19 @@ export default function SwipePage() {
         }
       }
       
+      // Fix: Validate price inputs are non-negative numbers
+      let minPriceValid = true;
+      let maxPriceValid = true;
+      if (filters.minPrice) {
+        const minVal = parseFloat(filters.minPrice);
+        minPriceValid = !isNaN(minVal) && minVal >= 0;
+      }
+      if (filters.maxPrice) {
+        const maxVal = parseFloat(filters.maxPrice);
+        maxPriceValid = !isNaN(maxVal) && maxVal >= 0;
+      }
+      if (!minPriceValid || !maxPriceValid) return false;
+      
       return isApproved && profileComplete && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       const tierA = getVendorTier(a.id);
