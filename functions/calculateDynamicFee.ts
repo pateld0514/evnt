@@ -20,24 +20,45 @@ Deno.serve(async (req) => {
       ? parseFloat(feeSettings[0].setting_value) 
       : 10;
 
-    // Get vendor tier discount
-    const vendorTiers = await base44.asServiceRole.entities.VendorTier.filter({ vendor_id });
-    const vendorDiscount = vendorTiers.length > 0 ? vendorTiers[0].fee_discount_percent : 0;
+    // Get vendor tier discount - Fix #11: add null checks and error handling
+    let vendorDiscount = 0;
+    try {
+      const vendorTiers = await base44.asServiceRole.entities.VendorTier.filter({ vendor_id });
+      vendorDiscount = vendorTiers && vendorTiers.length > 0 ? vendorTiers[0].fee_discount_percent : 0;
+    } catch (error) {
+      console.warn('[calculateDynamicFee] Failed to fetch vendor tier:', error);
+    }
 
-    // Get client tier discount
-    const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ client_email });
-    const clientDiscount = clientTiers.length > 0 ? clientTiers[0].discount_percent : 0;
+    // Get client tier discount - Fix #11: add null checks and error handling
+    let clientDiscount = 0;
+    try {
+      const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ client_email });
+      clientDiscount = clientTiers && clientTiers.length > 0 ? clientTiers[0].discount_percent : 0;
+    } catch (error) {
+      console.warn('[calculateDynamicFee] Failed to fetch client tier:', error);
+    }
 
     // Calculate final fee percentage - apply HIGHER discount only (no stacking)
     // Business rule: Loyalty discounts don't stack; customer gets best discount available
     const higherDiscount = Math.max(vendorDiscount, clientDiscount);
     const finalFeePercent = Math.max(baseFeePercent - higherDiscount, 0); // Minimum 0% fee
 
+    // Fix #6: Validate unusually high discounts
+    if (higherDiscount > baseFeePercent * 1.5) {
+      console.warn('[calculateDynamicFee] Unusually high discount applied', { 
+        higherDiscount, 
+        baseFeePercent,
+        booking_amount 
+      });
+    }
+
+    // Fix #17: Improve logging with discount source
     console.log(`[calculateDynamicFee] Fee calculation:`, {
       base_fee: baseFeePercent,
       vendor_discount: vendorDiscount,
       client_discount: clientDiscount,
       applied_discount: higherDiscount,
+      discount_source: vendorDiscount >= clientDiscount ? 'vendor_tier' : (clientDiscount > 0 ? 'client_tier' : 'none'),
       final_fee: finalFeePercent,
       note: 'Using highest discount (no stacking)'
     });
