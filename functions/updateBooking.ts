@@ -24,10 +24,9 @@ Deno.serve(async (req) => {
     }
 
     // Security: Verify user can modify this booking
-    const isAdmin = user.email === 'pateld0514@gmail.com' || user.role === 'admin';
+    const isAdmin = user.role === 'admin';
     const isClient = booking.client_email === user.email;
-    const isVendor = booking.created_by === user.email || 
-                     (user.vendor_id && booking.vendor_id === user.vendor_id);
+    const isVendor = user.vendor_id && booking.vendor_id === user.vendor_id;
 
     if (!isAdmin && !isClient && !isVendor) {
       return Response.json({ 

@@ -49,7 +49,7 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
-        const isAdmin = currentUser.email === "pateld0514@gmail.com" || currentUser.role === "admin";
+        const isAdmin = currentUser.role === "admin";
         
         if (!currentUser.onboarding_complete && !isAdmin) {
           navigate(createPageUrl("Onboarding"));
