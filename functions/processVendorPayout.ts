@@ -107,9 +107,22 @@ Deno.serve(async (req) => {
         throw new Error('Payment capture failed');
       }
 
+      // CREATE ACTUAL STRIPE TRANSFER TO VENDOR ACCOUNT
+      const transfer = await stripe.transfers.create({
+        amount: Math.round(netAmount * 100), // Convert to cents
+        currency: 'usd',
+        destination: vendor.stripe_account_id,
+        transfer_group: `payout-${booking.id}`,
+        metadata: {
+          booking_id: booking.id,
+          client_email: booking.client_email,
+          event_type: booking.event_type
+        }
+      });
+
       // Update payout record with success
       await base44.asServiceRole.entities.VendorPayout.update(payoutRecord.id, {
-        stripe_transfer_id: paymentIntent.id,
+        stripe_transfer_id: transfer.id,
         status: 'completed',
         payout_date: new Date().toISOString()
       });
@@ -119,19 +132,30 @@ Deno.serve(async (req) => {
         payment_status: 'paid'
       });
 
-      // Send notification to vendor
+      // Get vendor's user email for reliable delivery (not contact_email)
+      const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
+      const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email;
+
+      // Send notification to vendor with proper email
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: vendor.contact_email,
+        from_name: 'EVNT',
+        to: vendorEmail,
         subject: '💰 Payment Released - Payout Processed',
         body: `
-          <h2>Payment Released!</h2>
-          <p>The payment for your completed booking has been released from escrow.</p>
-          <p><strong>Booking:</strong> ${booking.event_type} with ${booking.client_name}</p>
-          <p><strong>Amount:</strong> $${netAmount.toFixed(2)}</p>
-          <p>The funds will be transferred to your bank account within 1-3 business days.</p>
-          <p>View details at: ${req.headers.get('origin')}/VendorDashboard</p>
-          <br>
-          <p>Best regards,<br>The EVNT Team</p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2>Payment Released!</h2>
+            <p>The payment for your completed booking has been released from escrow.</p>
+            <p><strong>Booking:</strong> ${booking.event_type} with ${booking.client_name}</p>
+            <p><strong>Amount:</strong> $${netAmount.toFixed(2)}</p>
+            <p>The funds will be transferred to your bank account within 1-3 business days.</p>
+            <p>View details at: ${req.headers.get('origin')}/VendorDashboard</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">
+              <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+              <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a>
+            </p>
+            <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
+          </div>
         `,
       });
 

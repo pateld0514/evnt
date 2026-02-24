@@ -109,7 +109,7 @@ export default function ProfessionalContract({ booking, vendor }) {
           </p>
 
           <p className="mb-2">
-            <strong>Total Amount Due:</strong> ${booking.total_amount?.toFixed(2)}
+            <strong>Total Amount Due:</strong> ${booking.total_amount_charged?.toFixed(2)}
           </p>
 
           <p>
