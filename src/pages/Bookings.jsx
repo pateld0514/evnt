@@ -461,7 +461,7 @@ export default function BookingsPage() {
                       >
                         View Details
                       </Button>
-                      {!isVendor && (booking.status === "completed" || booking.status === "accepted") && !reviews.find(r => r.booking_id === booking.id) && (
+                      {!isVendor && booking.status === "completed" && !reviews.find(r => r.booking_id === booking.id) && (
                         <Button
                           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold"
                           onClick={(e) => {
@@ -629,10 +629,10 @@ export default function BookingsPage() {
                               <span className="font-bold">-${selectedBooking.sales_tax_amount.toFixed(2)}</span>
                             </div>
                           )}
-                          {((selectedBooking.stripe_fee_amount || selectedBooking.stripe_fee) > 0) && (
+                          {(selectedBooking.stripe_fee_amount > 0) && (
                             <div className="flex justify-between text-blue-600">
                               <span>Stripe Processing Fee:</span>
-                              <span className="font-bold">-${(selectedBooking.stripe_fee_amount || selectedBooking.stripe_fee).toFixed(2)}</span>
+                              <span className="font-bold">-${selectedBooking.stripe_fee_amount.toFixed(2)}</span>
                             </div>
                           )}
                           {selectedBooking.vendor_payout > 0 && (
