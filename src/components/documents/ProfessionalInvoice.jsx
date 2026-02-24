@@ -81,12 +81,20 @@ export default function ProfessionalInvoice({ booking }) {
               <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.platform_fee_amount?.toFixed(2)}</td>
             </tr>
 
-            {(booking.sales_tax_amount) > 0 && (
+            {booking.sales_tax_amount > 0 && (
               <tr className="border-b border-gray-300">
                 <td className="py-3 px-4 text-sm text-blue-600">
-                  {booking.client_state ? booking.client_state + ' ' : ''}Sales Tax ({(booking.sales_tax_rate * 100)?.toFixed(1)}%):
+                  {(() => {
+                    // Use client_state if available; validate tax rate is set
+                    const state = booking.client_state;
+                    const taxPercent = booking.sales_tax_rate ? (booking.sales_tax_rate * 100).toFixed(1) : '0.0';
+                    if (!state) {
+                      console.warn('[ProfessionalInvoice] Warning: client_state missing, tax label may be incomplete');
+                    }
+                    return `${state || 'Sales'} Tax (${taxPercent}%):`;
+                  })()}
                 </td>
-                <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.sales_tax_amount)?.toFixed(2)}</td>
+                <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.sales_tax_amount.toFixed(2)}</td>
               </tr>
             )}
 
