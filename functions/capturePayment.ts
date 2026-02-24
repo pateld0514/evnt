@@ -7,6 +7,10 @@ Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] === CAPTURE PAYMENT REQUEST START ===`);
   
+  // Add idempotency key from request headers to prevent double-charges
+  const idempotencyKey = req.headers.get('Idempotency-Key') || requestId;
+  console.log(`[${requestId}] Idempotency Key:`, idempotencyKey);
+  
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -79,9 +83,12 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Capture the payment
+    // Capture the payment with idempotency
     console.log(`[${requestId}] Capturing payment...`);
-    const capturedIntent = await stripe.paymentIntents.capture(booking.payment_intent_id);
+    const capturedIntent = await stripe.paymentIntents.capture(
+     booking.payment_intent_id,
+     { idempotency_key: idempotencyKey }
+    );
     
     console.log(`[${requestId}] Payment captured successfully:`, {
       amount: capturedIntent.amount / 100,

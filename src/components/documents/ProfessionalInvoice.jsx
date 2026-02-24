@@ -81,18 +81,18 @@ export default function ProfessionalInvoice({ booking }) {
               <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.platform_fee_amount?.toFixed(2)}</td>
             </tr>
 
-            {(booking.sales_tax_amount || booking.maryland_sales_tax_amount) > 0 && (
+            {(booking.sales_tax_amount) > 0 && (
               <tr className="border-b border-gray-300">
                 <td className="py-3 px-4 text-sm text-blue-600">
-                  {booking.location ? booking.location.split(',').pop().trim() + ' ' : ''}Sales Tax ({((booking.sales_tax_rate || booking.maryland_sales_tax_percent / 100) * 100)?.toFixed(1)}%):
+                  {booking.client_state ? booking.client_state + ' ' : ''}Sales Tax ({(booking.sales_tax_rate * 100)?.toFixed(1)}%):
                 </td>
-                <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.sales_tax_amount || booking.maryland_sales_tax_amount)?.toFixed(2)}</td>
+                <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.sales_tax_amount)?.toFixed(2)}</td>
               </tr>
             )}
 
             <tr className="border-b border-gray-300">
               <td className="py-3 px-4 text-sm text-blue-600">Stripe Processing Fee:</td>
-              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.stripe_fee || booking.stripe_fee_amount)?.toFixed(2) || '0.00'}</td>
+              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.stripe_fee_amount || 0)?.toFixed(2)}</td>
             </tr>
 
             <tr className="border-t-2 border-black">

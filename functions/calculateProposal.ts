@@ -44,10 +44,20 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
-    // Calculate totals
+    // Calculate totals with validation
     const price = parseFloat(agreedPrice);
+    if (price <= 0) {
+      return Response.json({ error: 'Agreed price must be greater than 0' }, { status: 400 });
+    }
+    
     const fees = additionalFees || [];
-    const additionalTotal = fees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
+    const additionalTotal = fees.reduce((sum, fee) => {
+      const amount = parseFloat(fee.amount) || 0;
+      if (amount < 0) {
+        throw new Error(`Invalid fee amount: ${fee.name} cannot be negative`);
+      }
+      return sum + amount;
+    }, 0);
     const agreedAmount = price + additionalTotal;
 
     // Get platform fee settings
