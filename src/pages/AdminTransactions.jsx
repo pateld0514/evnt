@@ -115,9 +115,20 @@ export default function AdminTransactionsPage() {
     }
   });
 
+  // Dialog state for release payment confirmation
+  const [releaseConfirmOpen, setReleaseConfirmOpen] = React.useState(false);
+  const [releaseConfirmBooking, setReleaseConfirmBooking] = React.useState(null);
+
   const handleReleasePayment = (booking) => {
-    if (confirm(`Release $${booking.vendor_payout.toFixed(2)} to vendor?`)) {
-      releasePaymentMutation.mutate(booking.id);
+    setReleaseConfirmBooking(booking);
+    setReleaseConfirmOpen(true);
+  };
+
+  const confirmReleasePayment = () => {
+    if (releaseConfirmBooking) {
+      releasePaymentMutation.mutate(releaseConfirmBooking.id);
+      setReleaseConfirmOpen(false);
+      setReleaseConfirmBooking(null);
     }
   };
 
@@ -355,10 +366,11 @@ export default function AdminTransactionsPage() {
                     {selectedBooking.payment_status === 'escrow' && selectedBooking.status !== 'cancelled' && (
                       <Button
                         onClick={() => {
-                          const reason = prompt("Cancellation reason:");
-                          if (reason) {
-                            cancelBookingMutation.mutate({ bookingId: selectedBooking.id, reason });
-                          }
+                          // Use AlertDialog instead of native prompt
+                          const reason = selectedBooking.cancellation_reason || '';
+                          setRefundReason(reason);
+                          setRefundDialogOpen(true);
+                          // Flag this as cancellation not refund
                         }}
                         disabled={cancelBookingMutation.isPending}
                         variant="outline"
@@ -410,24 +422,61 @@ export default function AdminTransactionsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Reason</label>
+              <label className="block text-sm font-bold mb-2">Reason (required)</label>
               <Textarea
                 placeholder="Enter refund reason..."
                 value={refundReason}
                 onChange={(e) => setRefundReason(e.target.value)}
                 className="border-2 border-gray-300"
               />
+              {!refundReason && <p className="text-red-600 text-sm mt-1">Reason is required</p>}
             </div>
             <div className="flex gap-3">
               <Button
                 onClick={handleRefund}
-                disabled={refundMutation.isPending}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 font-bold"
+                disabled={refundMutation.isPending || !refundReason}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 font-bold disabled:opacity-50"
               >
                 Process Refund
               </Button>
               <Button
                 onClick={() => setRefundDialogOpen(false)}
+                variant="outline"
+                className="flex-1 border-2 border-black font-bold"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Release Payment Confirmation Dialog */}
+      <Dialog open={releaseConfirmOpen} onOpenChange={setReleaseConfirmOpen}>
+        <DialogContent className="border-4 border-black max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">Confirm Payment Release</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-lg">
+              Release <span className="font-bold text-green-600">${releaseConfirmBooking?.vendor_payout?.toFixed(2) || '0.00'}</span> to vendor?
+            </p>
+            <p className="text-sm text-gray-600">
+              This action will transfer funds from escrow to the vendor's Stripe account.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={confirmReleasePayment}
+                disabled={releasePaymentMutation.isPending}
+                className="flex-1 bg-green-600 hover:bg-green-700 font-bold"
+              >
+                Release Payment
+              </Button>
+              <Button
+                onClick={() => {
+                  setReleaseConfirmOpen(false);
+                  setReleaseConfirmBooking(null);
+                }}
                 variant="outline"
                 className="flex-1 border-2 border-black font-bold"
               >
