@@ -179,12 +179,16 @@ export default function BookingsPage() {
       }
       
       const updated = await base44.entities.Booking.update(bookingId, data);
+      
+      // Send notifications in background (don't await to prevent blocking)
       if (booking && data.status && oldStatus !== data.status) {
-        await notifyBookingStatusChange({...booking, ...data}, oldStatus, data.status);
+        base44.functions.invoke('notifyBookingUpdate', {
+          booking: {...booking, ...data},
+          oldStatus,
+          newStatus: data.status
+        }).catch(err => console.warn('Notification failed:', err));
       }
-      if (data.vendor_response && booking) {
-        await notifyVendorResponse({...booking, ...data});
-      }
+      
       return updated;
     },
     onSuccess: () => {
