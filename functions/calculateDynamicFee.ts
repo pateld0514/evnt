@@ -28,9 +28,19 @@ Deno.serve(async (req) => {
     const clientTiers = await base44.asServiceRole.entities.ClientTier.filter({ client_email });
     const clientDiscount = clientTiers.length > 0 ? clientTiers[0].discount_percent : 0;
 
-    // Calculate final fee percentage - only apply the higher discount, don't stack
+    // Calculate final fee percentage - apply HIGHER discount only (no stacking)
+    // Business rule: Loyalty discounts don't stack; customer gets best discount available
     const higherDiscount = Math.max(vendorDiscount, clientDiscount);
     const finalFeePercent = Math.max(baseFeePercent - higherDiscount, 0); // Minimum 0% fee
+
+    console.log(`[calculateDynamicFee] Fee calculation:`, {
+      base_fee: baseFeePercent,
+      vendor_discount: vendorDiscount,
+      client_discount: clientDiscount,
+      applied_discount: higherDiscount,
+      final_fee: finalFeePercent,
+      note: 'Using highest discount (no stacking)'
+    });
 
     // Calculate amounts
     const platformFeeAmount = (booking_amount * finalFeePercent) / 100;

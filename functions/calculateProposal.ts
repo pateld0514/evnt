@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     const additionalTotal = fees.reduce((sum, fee) => {
       const amount = parseFloat(fee.amount) || 0;
       if (amount < 0) {
-        throw new Error(`Invalid fee amount: ${fee.name} cannot be negative`);
+        throw new Error(`Fee "${fee.name}" has invalid negative amount: ${amount}`);
       }
       return sum + amount;
     }, 0);
@@ -126,15 +126,15 @@ Deno.serve(async (req) => {
 
     const salesTax = salesTaxRate > 0 ? discountedAmount * salesTaxRate : 0;
 
-    // Calculate Stripe processing fee (2.9% + $0.30)
-    const stripeFee = (discountedAmount * 0.029) + 0.30;
+    // Calculate Stripe processing fee (2.9% + $0.30) - standardized field name
+    const stripeFeeAmount = (discountedAmount * 0.029) + 0.30;
 
     // Calculate vendor payout: discounted amount - all deductions
-    const totalDeductions = platformFeeAmount + salesTax + stripeFee;
+    const totalDeductions = platformFeeAmount + salesTax + stripeFeeAmount;
     const vendorPayout = discountedAmount - totalDeductions;
     const totalAmount = discountedAmount; // Client pays the discounted agreed price
 
-    // Return validated financial breakdown
+    // Return validated financial breakdown with standardized field names
     return Response.json({
       success: true,
       calculation: {
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         sales_tax_amount: parseFloat(salesTax.toFixed(2)),
         tax_label: taxLabel,
         state_abbreviation: stateAbbr || null,
-        stripe_fee: parseFloat(stripeFee.toFixed(2)),
+        stripe_fee_amount: parseFloat(stripeFeeAmount.toFixed(2)),
         total_amount_charged: parseFloat(totalAmount.toFixed(2)),
         vendor_payout: parseFloat(vendorPayout.toFixed(2)),
         service_description: serviceDescription || null
