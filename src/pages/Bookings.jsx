@@ -26,6 +26,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const statusConfig = {
   pending: { label: "Pending Review", color: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: Clock },
@@ -53,6 +62,8 @@ export default function BookingsPage() {
   const [bookingToReview, setBookingToReview] = useState(null);
   const [negotiationOpen, setNegotiationOpen] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
 
   const isVendor = currentUser?.user_type === "vendor" || currentUser?.demo_mode === "vendor";
 
