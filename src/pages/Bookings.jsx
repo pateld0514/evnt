@@ -610,7 +610,7 @@ export default function BookingsPage() {
                           </div>
                           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
                             <span>Client Pays Total:</span>
-                            <span className="text-green-600">${selectedBooking.total_amount_charged?.toFixed(2) || selectedBooking.total_amount?.toFixed(2)}</span>
+                            <span className="text-green-600">${selectedBooking.total_amount_charged?.toFixed(2)}</span>
                           </div>
                           {selectedBooking.platform_fee_amount > 0 && (
                             <div className="flex justify-between pt-2 border-t border-gray-300 text-blue-600">
@@ -618,16 +618,16 @@ export default function BookingsPage() {
                               <span className="font-bold">-${selectedBooking.platform_fee_amount.toFixed(2)}</span>
                             </div>
                           )}
-                          {(selectedBooking.sales_tax_amount || selectedBooking.maryland_sales_tax_amount) > 0 && (
+                          {selectedBooking.sales_tax_amount > 0 && (
                             <div className="flex justify-between text-blue-600">
                               <span>{(() => {
-                                const state = selectedBooking.client_state || (selectedBooking.location ? selectedBooking.location.split(',').pop().trim() : 'Maryland');
+                                const state = selectedBooking.client_state || (selectedBooking.location ? selectedBooking.location.split(',').pop().trim() : 'Unknown');
                                 const taxRate = selectedBooking.sales_tax_rate 
                                   ? (selectedBooking.sales_tax_rate * 100).toFixed(1)
-                                  : selectedBooking.maryland_sales_tax_percent;
+                                  : '0.0';
                                 return `${state} Sales Tax (${taxRate}%)`;
                               })()}:</span>
-                              <span className="font-bold">-${(selectedBooking.sales_tax_amount || selectedBooking.maryland_sales_tax_amount).toFixed(2)}</span>
+                              <span className="font-bold">-${selectedBooking.sales_tax_amount.toFixed(2)}</span>
                             </div>
                           )}
                           {((selectedBooking.stripe_fee_amount || selectedBooking.stripe_fee) > 0) && (

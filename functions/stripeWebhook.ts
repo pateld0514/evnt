@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
                   <p style="margin-top: 12px; font-size: 14px; color: #666;">Deductions from this amount:</p>
                   <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
                     <li>EVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</li>
-                    ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li>Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
+                    ${booking.sales_tax_amount ? `<li>Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</li>` : ''}
                     <li>Stripe Processing Fee: $${(booking.stripe_fee_amount || 0).toFixed(2)}</li>
                   </ul>
                 </div>
@@ -281,7 +281,7 @@ Deno.serve(async (req) => {
                 <div class="banner">
                   <p style="margin-bottom: 12px;"><strong>Service Price:</strong> $${(booking.base_event_amount || 0).toFixed(2)}</p>
                    ${booking.platform_fee_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">EVNT Platform Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</p>` : ''}
-                   ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</p>` : ''}
+                    ${booking.sales_tax_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</p>` : ''}
                    <p style="margin-top: 12px; font-size: 18px;"><strong>Total Paid:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
                 </div>
 
