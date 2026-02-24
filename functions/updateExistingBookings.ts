@@ -1,11 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const STATE_TAX_RATES = {
-  MD: 0.06,
-  NM: 0.0951,
-  CA: 0.0725,
-  NY: 0.04,
-  TX: 0.0625,
+  "MD": 0.06,
+  "NM": 0.0951,
+  "CA": 0.0725,
+  "NY": 0.04,
+  "TX": 0.0625,
 };
 
 Deno.serve(async (req) => {
