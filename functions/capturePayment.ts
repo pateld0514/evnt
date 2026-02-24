@@ -7,9 +7,35 @@ Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
   console.log(`[${requestId}] === CAPTURE PAYMENT REQUEST START ===`);
   
-  // Add idempotency key from request headers to prevent double-charges
-  const idempotencyKey = req.headers.get('Idempotency-Key') || requestId;
-  console.log(`[${requestId}] Idempotency Key:`, idempotencyKey);
+  try {
+    const base44 = createClientFromRequest(req);
+    // Retrieve booking FIRST to get persisted idempotency key
+    const { bookingId } = await req.json();
+    
+    if (!bookingId) {
+      console.error(`[${requestId}] VALIDATION ERROR: Missing booking ID`);
+      return Response.json({ error: 'Booking ID required' }, { status: 400 });
+    }
+
+    const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+    const booking = bookings[0];
+
+    if (!booking) {
+      console.error(`[${requestId}] NOT FOUND: Booking ${bookingId}`);
+      return Response.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    // Use persisted idempotency key from booking if available; if missing, generate and persist it
+    let idempotencyKey = booking.idempotency_key;
+    if (!idempotencyKey) {
+      idempotencyKey = requestId;
+      // Persist the idempotency key to prevent duplicate retries
+      await base44.asServiceRole.entities.Booking.update(bookingId, {
+        idempotency_key: idempotencyKey
+      });
+    }
+    
+    console.log(`[${requestId}] Idempotency Key:`, { persisted: idempotencyKey, request: requestId });
   
   try {
     const base44 = createClientFromRequest(req);
@@ -21,22 +47,6 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[${requestId}] User authenticated:`, user.email);
-    const { bookingId } = await req.json();
-    console.log(`[${requestId}] Booking ID:`, bookingId);
-    
-    if (!bookingId) {
-      console.error(`[${requestId}] VALIDATION ERROR: Missing booking ID`);
-      return Response.json({ error: 'Booking ID required' }, { status: 400 });
-    }
-
-    // Fetch booking
-    const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
-    const booking = bookings[0];
-
-    if (!booking) {
-      console.error(`[${requestId}] NOT FOUND: Booking ${bookingId} does not exist`);
-      return Response.json({ error: 'Booking not found' }, { status: 404 });
-    }
 
     console.log(`[${requestId}] Booking found:`, {
       status: booking.status,
@@ -68,11 +78,12 @@ Deno.serve(async (req) => {
     });
 
     if (paymentIntent.status === 'succeeded') {
-      console.log(`[${requestId}] Payment already captured`);
+      console.log(`[${requestId}] Payment already captured (idempotent response)`);
       return Response.json({ 
         success: true,
         message: 'Payment already captured',
-        already_captured: true
+        already_captured: true,
+        idempotent: true
       });
     }
 
@@ -83,11 +94,11 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Capture the payment with idempotency
-    console.log(`[${requestId}] Capturing payment...`);
+    // Capture the payment with persisted idempotency key
+    console.log(`[${requestId}] Capturing payment with idempotency key:`, idempotencyKey);
     const capturedIntent = await stripe.paymentIntents.capture(
-     booking.payment_intent_id,
-     { idempotency_key: idempotencyKey }
+      booking.payment_intent_id,
+      { idempotency_key: idempotencyKey }
     );
     
     console.log(`[${requestId}] Payment captured successfully:`, {
@@ -95,9 +106,10 @@ Deno.serve(async (req) => {
       status: capturedIntent.status
     });
 
-    // Update booking payment status
+    // Update booking payment status and confirm idempotency key is persisted
     await base44.asServiceRole.entities.Booking.update(bookingId, {
       payment_status: 'paid',
+      idempotency_key: idempotencyKey // Ensure persisted
     });
 
     console.log(`[${requestId}] === CAPTURE PAYMENT REQUEST SUCCESS ===`);
@@ -105,7 +117,8 @@ Deno.serve(async (req) => {
     return Response.json({ 
       success: true,
       message: 'Payment captured successfully',
-      amount: capturedIntent.amount / 100
+      amount: capturedIntent.amount / 100,
+      idempotency_key: idempotencyKey
     });
 
   } catch (error) {
