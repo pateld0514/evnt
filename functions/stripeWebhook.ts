@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
             if (vendor) {
               // Get vendor's user email for reliable delivery
               const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
-              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email || vendor.created_by;
+              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : (vendor.contact_email || vendor.created_by);
 
               const vendorEmailContent = `
                 <div class="content">
@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
             if (vendor) {
               // Get vendor's user email for reliable delivery
               const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
-              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email || vendor.created_by;
+              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : (vendor.contact_email || vendor.created_by);
 
               const vendorPaymentContent = `
                 <div class="content">
