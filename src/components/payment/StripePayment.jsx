@@ -41,29 +41,20 @@ export default function StripePayment({ booking, onSuccess }) {
 
   const processPaymentMutation = useMutation({
     mutationFn: async () => {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate payment intent ID (in real implementation, this would come from Stripe)
-      const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Update booking with payment information
-      await base44.entities.Booking.update(booking.id, {
-        payment_status: "paid",
-        payment_intent_id: paymentIntentId,
-        status: "confirmed",
-        invoice_number: `INV-${Date.now()}`,
-        contract_signed_client: true,
-        contract_signed_date: new Date().toISOString()
+      // Call backend to create Stripe Checkout Session
+      const response = await base44.functions.invoke('createCheckout', {
+        booking_id: booking.id
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['bookings']);
-      toast.success("Payment successful! Booking confirmed.");
-      onSuccess();
+      
+      if (!response.data?.checkout_url) {
+        throw new Error('Failed to create checkout session');
+      }
+      
+      // Redirect to Stripe Checkout
+      window.location.href = response.data.checkout_url;
     },
     onError: (error) => {
-      toast.error("Payment failed. Please try again.");
+      toast.error(error.message || "Failed to initiate payment. Please try again.");
       console.error(error);
     },
   });
@@ -123,12 +114,18 @@ export default function StripePayment({ booking, onSuccess }) {
                 </>
               )}
               <div className="flex justify-between text-blue-600">
-                <span>Platform Fee ({booking.platform_fee_percent}%):</span>
-                <span className="font-bold">${booking.platform_fee_amount?.toFixed(2)}</span>
+                <span>Platform Fee ({booking.platform_fee_percent || 10}%):</span>
+                <span className="font-bold">${booking.platform_fee_amount?.toFixed(2) || '0.00'}</span>
               </div>
+              {booking.sales_tax_rate > 0 && (
+                <div className="flex justify-between text-orange-600">
+                  <span>Sales Tax ({(booking.sales_tax_rate * 100).toFixed(1)}%):</span>
+                  <span className="font-bold">${booking.sales_tax_amount?.toFixed(2) || '0.00'}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
                 <span>Total Amount:</span>
-                <span className="text-green-600">${booking.total_amount?.toFixed(2)}</span>
+                <span className="text-green-600">${booking.total_amount_charged?.toFixed(2) || booking.agreed_price?.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -182,19 +179,11 @@ export default function StripePayment({ booking, onSuccess }) {
 
           {/* Security Notice */}
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 flex items-start gap-2">
-            <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-green-900">
-              <p className="font-bold mb-1">Secure Escrow Payment</p>
-              <p>Your payment is held securely until the event is completed. The vendor will be paid after successful service delivery.</p>
-            </div>
+          <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-green-900">
+           <p className="font-bold mb-1">Secure Escrow Payment</p>
+           <p>Your payment is held securely in escrow until the event is completed. The vendor will be paid after successful service delivery.</p>
           </div>
-
-          {/* Demo Notice */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-900">
-              <strong>Demo Mode:</strong> This is a demonstration. No actual charges will be made. Use any card number to test.
-            </p>
           </div>
 
           {/* Submit Button */}
@@ -211,7 +200,7 @@ export default function StripePayment({ booking, onSuccess }) {
             ) : (
               <>
                 <CheckCircle className="w-5 h-5 mr-2" />
-                Pay ${booking.total_amount?.toFixed(2)} Now
+                Pay ${(booking.total_amount_charged || booking.agreed_price)?.toFixed(2)} Now
               </>
             )}
           </Button>
