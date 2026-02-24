@@ -576,15 +576,21 @@ export default function BookingsPage() {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600">Service Price:</span>
-                            <span className="font-bold">${selectedBooking.base_event_amount.toFixed(2)}</span>
+                            <span className="font-bold">${(selectedBooking.agreed_price || selectedBooking.base_event_amount).toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between">
+                          {selectedBooking.additional_fees && selectedBooking.additional_fees.length > 0 && selectedBooking.additional_fees.map((fee, idx) => (
+                            <div key={idx} className="flex justify-between text-gray-600">
+                              <span className="pl-4">+ {fee.name}:</span>
+                              <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between pt-2 border-t-2 border-gray-300">
                             <span className="text-gray-600">Agreed Service Price:</span>
                             <span className="font-bold">${selectedBooking.base_event_amount.toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between pt-2 border-t-2 border-gray-300">
-                            <span className="text-gray-900 font-bold">Client Pays Total:</span>
-                            <span className="font-bold text-green-600 text-lg">${selectedBooking.total_amount_charged?.toFixed(2) || selectedBooking.total_amount?.toFixed(2)}</span>
+                          <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
+                            <span>Client Pays Total:</span>
+                            <span className="text-green-600">${selectedBooking.total_amount_charged?.toFixed(2) || selectedBooking.total_amount?.toFixed(2)}</span>
                           </div>
                           {selectedBooking.platform_fee_amount > 0 && (
                             <div className="flex justify-between pt-2 border-t border-gray-300 text-blue-600">
@@ -592,22 +598,26 @@ export default function BookingsPage() {
                               <span className="font-bold">-${selectedBooking.platform_fee_amount.toFixed(2)}</span>
                             </div>
                           )}
-                          {selectedBooking.maryland_sales_tax_amount > 0 && (
+                          {(selectedBooking.sales_tax_amount || selectedBooking.maryland_sales_tax_amount) > 0 && (
                             <div className="flex justify-between text-blue-600">
-                              <span>{selectedBooking.client_state || 'Maryland'} Sales Tax ({selectedBooking.maryland_sales_tax_percent}%):</span>
-                              <span className="font-bold">-${selectedBooking.maryland_sales_tax_amount.toFixed(2)}</span>
+                              <span>{(() => {
+                                const state = selectedBooking.client_state || (selectedBooking.location ? selectedBooking.location.split(',').pop().trim() : 'Maryland');
+                                const taxRate = selectedBooking.sales_tax_rate ? (selectedBooking.sales_tax_rate * 100).toFixed(1) : selectedBooking.maryland_sales_tax_percent;
+                                return `${state} Sales Tax (${taxRate}%)`;
+                              })()}:</span>
+                              <span className="font-bold">-${(selectedBooking.sales_tax_amount || selectedBooking.maryland_sales_tax_amount).toFixed(2)}</span>
                             </div>
                           )}
-                          {selectedBooking.stripe_fee && (
+                          {(selectedBooking.stripe_fee || selectedBooking.stripe_fee_amount) > 0 && (
                             <div className="flex justify-between text-blue-600">
                               <span>Stripe Processing Fee:</span>
-                              <span className="font-bold">-${selectedBooking.stripe_fee.toFixed(2)}</span>
+                              <span className="font-bold">-${(selectedBooking.stripe_fee || selectedBooking.stripe_fee_amount).toFixed(2)}</span>
                             </div>
                           )}
                           {selectedBooking.vendor_payout > 0 && (
-                            <div className="flex justify-between pt-2 border-t border-gray-300">
-                              <span className="text-gray-800 font-bold">{isVendor ? 'You Receive' : 'Vendor Receives'}:</span>
-                              <span className="font-bold">${selectedBooking.vendor_payout.toFixed(2)}</span>
+                            <div className="flex justify-between font-bold text-gray-800 pt-2 border-t border-gray-300">
+                              <span>{isVendor ? 'You Receive' : 'Vendor Receives'}:</span>
+                              <span>${selectedBooking.vendor_payout.toFixed(2)}</span>
                             </div>
                           )}
                         </div>
