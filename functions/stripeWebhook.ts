@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
               `;
 
               await base44.asServiceRole.integrations.Core.SendEmail({
-                to: vendor.contact_email,
+                to: vendorEmail,
                 from_name: "EVNT",
                 subject: '🎉 Booking Confirmed - Payment Secured',
                 body: EmailTemplate.wrap(vendorEmailContent, `Payment secured for ${booking.event_type} on ${booking.event_date}`)
