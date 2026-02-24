@@ -63,14 +63,20 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     }
   }, [platformSettings]);
 
+  const [calculationError, setCalculationError] = React.useState(null);
+  const [isCalculating, setIsCalculating] = React.useState(false);
+
   // Recalculate totals whenever values change using BACKEND validation
   useEffect(() => {
     const recalc = async () => {
       if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
         setTotals({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0, salesTax: 0, stripeFee: 0 });
+        setCalculationError(null);
         return;
       }
 
+      setIsCalculating(true);
+      setCalculationError(null);
       try {
         const response = await base44.functions.invoke('calculateProposal', {
           bookingId: booking.id,
@@ -101,6 +107,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         }
       } catch (error) {
         console.error('Failed to calculate proposal:', error);
+        setCalculationError('Failed to calculate totals. Please try again.');
+        toast.error('Failed to calculate totals');
+      } finally {
+        setIsCalculating(false);
       }
     };
     recalc();
@@ -222,6 +232,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           </div>
         )}
 
+        {calculationError && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-900">{calculationError}</p>
+          </div>
+        )}
+
         {!isVendor && additionalFees.length > 0 && (
           <div>
             <Label>Additional Fees</Label>
@@ -333,10 +350,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={submitProposalMutation.isPending}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              disabled={submitProposalMutation.isPending || isCalculating || calculationError || !agreedPrice || parseFloat(agreedPrice) <= 0}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold disabled:opacity-50"
             >
-              {isVendor ? "Send Proposal" : "Accept & Continue to Payment"}
+              {isCalculating ? "Calculating..." : isVendor ? "Send Proposal" : "Accept & Continue to Payment"}
             </Button>
           </div>
         </div>
