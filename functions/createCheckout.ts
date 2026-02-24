@@ -188,14 +188,21 @@ Deno.serve(async (req) => {
     // Create Stripe Checkout Session with manual capture (escrow)
     console.log(`[${requestId}] Creating Stripe Checkout Session...`);
     
-    // Build line items - show detailed breakdown
+    // Build comprehensive line items breakdown
+    const additionalFeesText = booking.additional_fees && booking.additional_fees.length > 0
+      ? '\n\nADDITIONAL SERVICES:\n' + booking.additional_fees.map(fee => 
+          `• ${fee.name}: $${parseFloat(fee.amount).toFixed(2)}${fee.description ? ' - ' + fee.description : ''}`
+        ).join('\n')
+      : '';
+
     const lineItems = [
       {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${booking.event_type} Event Services`,
-            description: `Professional ${booking.event_type.toLowerCase()} services provided by ${booking.vendor_name}\n\nEvent Date: ${booking.event_date}\nLocation: ${booking.location || 'To be determined'}\n${booking.service_description ? '\n' + booking.service_description : ''}`,
+            name: `${booking.event_type} Event - ${booking.vendor_name}`,
+            description: `EVNT MARKETPLACE BOOKING\n━━━━━━━━━━━━━━━━━━━━━━━━\n\nEVENT DETAILS:\n• Type: ${booking.event_type}\n• Date: ${booking.event_date}\n• Location: ${booking.location || 'To be determined'}\n• Client: ${booking.client_name || booking.client_email}\n\nSERVICE PROVIDER:\n• Vendor: ${booking.vendor_name}\n${booking.service_description ? '• Services: ' + booking.service_description : '• Professional event services'}${additionalFeesText}\n\nPAYMENT PROTECTION:\n• Secure escrow until event completion\n• Full refund protection per EVNT policies\n• 24/7 customer support`,
+            images: [],
           },
           unit_amount: baseAmountCents,
         },
@@ -241,23 +248,35 @@ Deno.serve(async (req) => {
       },
       custom_text: {
         submit: {
-          message: '🔒 Secure Payment via EVNT - Funds held in escrow until event completion',
+          message: 'Complete your secure booking with EVNT. Your payment will be held safely in escrow and only released to the vendor upon successful event completion. By proceeding, you agree to EVNT Terms of Service.',
         },
         shipping_address: {
-          message: 'Event location address',
+          message: 'Please confirm your event location address for vendor coordination and service delivery.',
         },
         after_submit: {
-          message: 'Thank you! You will receive a confirmation email with booking details and receipt. Your vendor will contact you shortly to finalize arrangements.',
+          message: 'Payment Successful! 🎉\n\nYour booking is now confirmed and protected by EVNT escrow. You will receive:\n• Detailed booking confirmation via email\n• Professional invoice and service agreement\n• Vendor contact information\n\nYour vendor will reach out within 24 hours to coordinate event details. Thank you for trusting EVNT!',
         },
       },
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: `Professional ${booking.event_type} Event Services`,
+          description: `EVNT Marketplace - ${booking.event_type} Event Services`,
           custom_fields: [
+            {
+              name: 'Booking Reference',
+              value: `EVNT-${bookingId.substring(0, 8).toUpperCase()}`,
+            },
             {
               name: 'Service Provider',
               value: booking.vendor_name,
+            },
+            {
+              name: 'Client Name',
+              value: booking.client_name || booking.client_email,
+            },
+            {
+              name: 'Event Type',
+              value: booking.event_type,
             },
             {
               name: 'Event Date',
@@ -268,12 +287,15 @@ Deno.serve(async (req) => {
               value: booking.location || 'To be determined',
             },
             {
-              name: 'Service Description',
-              value: booking.service_description || 'Professional event services',
+              name: 'Guest Count',
+              value: booking.guest_count ? `${booking.guest_count} guests` : 'Not specified',
             },
           ],
-          footer: `PAYMENT BREAKDOWN\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n\nDEDUCTIONS FROM AGREED PRICE:\n- EVNT Platform Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n- Sales Tax: -$${salesTaxAmount.toFixed(2)}` : ''}\n- Payment Processing Fee: -$${(stripeFeeCents / 100).toFixed(2)}\n\nVendor Net Payment: $${booking.vendor_payout.toFixed(2)}\n\nAll fees and taxes are included in the agreed price. Funds held in secure escrow until event completion.`,
+          footer: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPAYMENT BREAKDOWN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n${booking.additional_fees && booking.additional_fees.length > 0 ? '\nAdditional Services:\n' + booking.additional_fees.map(f => `  • ${f.name}: $${parseFloat(f.amount).toFixed(2)}`).join('\n') + '\n' : ''}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nTOTAL YOU PAY: $${booking.total_amount_charged.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nFEE ALLOCATION (Deducted from agreed price):\n  EVNT Platform Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n  State Sales Tax: -$${salesTaxAmount.toFixed(2)}` : ''}\n  Payment Processing Fee: -$${(stripeFeeCents / 100).toFixed(2)}\n  ────────────────────────────────────\n  Vendor Receives: $${booking.vendor_payout.toFixed(2)}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPAYMENT PROTECTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✓ Funds held in secure escrow until event completion\n✓ Full refund protection per EVNT terms of service\n✓ Dispute resolution support included\n✓ 24/7 customer service available\n\nQuestions? Contact support@evnt.com\nTerms of Service: evnt.com/terms`,
           account_tax_ids: [],
+          rendering_options: {
+            amount_tax_display: 'include_inclusive_tax',
+          },
         },
       },
       metadata: {
