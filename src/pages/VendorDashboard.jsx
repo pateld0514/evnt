@@ -89,7 +89,9 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
-    staleTime: 30 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
     refetchInterval: 30000,
   });
 
@@ -102,7 +104,8 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: vendorSwipes = [] } = useQuery({
@@ -114,7 +117,8 @@ export default function VendorDashboard() {
     },
     enabled: !!vendor?.id,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const generateAIInsights = async () => {
