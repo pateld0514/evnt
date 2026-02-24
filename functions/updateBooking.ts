@@ -35,8 +35,24 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
+    // CRITICAL: Check for stale data (optimistic locking)
+    // If expectedUpdatedDate provided in updates, verify it matches current booking
+    if (updates.expectedUpdatedDate && booking.updated_date !== updates.expectedUpdatedDate) {
+      console.error(`[updateBooking] STALE DATA DETECTED:`, {
+        booking_id: bookingId,
+        expected: updates.expectedUpdatedDate,
+        actual: booking.updated_date
+      });
+      return Response.json({ 
+        error: 'Booking was modified by another user. Please refresh and try again.' 
+      }, { status: 409 });
+    }
+
+    // Remove expectedUpdatedDate from actual updates (it's for validation only)
+    const { expectedUpdatedDate, ...safeUpdates } = updates;
+
     // Update the booking
-    await base44.asServiceRole.entities.Booking.update(bookingId, updates);
+    await base44.asServiceRole.entities.Booking.update(bookingId, safeUpdates);
 
     return Response.json({ 
       success: true, 
