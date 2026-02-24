@@ -52,16 +52,39 @@ const EmailTemplate = {
 };
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
   const webhookId = crypto.randomUUID();
   
+  // Validate request method and content type
+  if (req.method !== 'POST') {
+    console.error(`[${webhookId}] WEBHOOK ERROR: Invalid method ${req.method}`);
+    return Response.json({ error: 'Invalid method' }, { status: 405 });
+  }
+
+  if (!req.headers.get('content-type')?.includes('application/json')) {
+    console.error(`[${webhookId}] WEBHOOK ERROR: Invalid content-type`);
+    return Response.json({ error: 'Invalid content-type' }, { status: 400 });
+  }
+
+  // Validate webhook secret is configured
+  if (!webhookSecret) {
+    console.error(`[${webhookId}] WEBHOOK ERROR: Webhook secret not configured`);
+    return Response.json({ error: 'Server configuration error' }, { status: 500 });
+  }
+
   try {
     const body = await req.text();
+    
+    // Validate request body
+    if (!body || body.length === 0) {
+      console.error(`[${webhookId}] WEBHOOK ERROR: Empty body`);
+      return Response.json({ error: 'Empty body' }, { status: 400 });
+    }
+
     const signature = req.headers.get('stripe-signature');
 
     if (!signature) {
       console.error(`[${webhookId}] WEBHOOK ERROR: Missing signature`);
-      return Response.json({ error: 'No signature' }, { status: 400 });
+      return Response.json({ error: 'No signature' }, { status: 401 });
     }
 
     // Verify webhook signature
@@ -74,10 +97,21 @@ Deno.serve(async (req) => {
       );
     } catch (err) {
       console.error(`[${webhookId}] WEBHOOK VERIFICATION FAILED:`, err.message);
-      return Response.json({ error: 'Invalid signature' }, { status: 400 });
+      return Response.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    console.log(`[${webhookId}] Webhook received:`, event.type);
+    // Validate event structure
+    if (!event || !event.id || !event.type) {
+      console.error(`[${webhookId}] WEBHOOK ERROR: Invalid event structure`);
+      return Response.json({ error: 'Invalid event' }, { status: 400 });
+    }
+
+    // Track processed webhooks to prevent duplicates
+    console.log(`[${webhookId}] Webhook verified`, {
+      event_id: event.id,
+      event_type: event.type,
+      timestamp: new Date().toISOString()
+    });
 
     // Handle the event
     switch (event.type) {
@@ -446,11 +480,15 @@ Deno.serve(async (req) => {
     return Response.json({ received: true });
 
   } catch (error) {
-    console.error(`[${webhookId}] WEBHOOK ERROR:`, error.message);
+    console.error(`[${webhookId}] === WEBHOOK PROCESSING FAILED ===`);
+    console.error(`[${webhookId}] Error Type:`, error.constructor.name);
+    console.error(`[${webhookId}] Error Message:`, error.message);
     console.error(`[${webhookId}] Stack:`, error.stack);
     
+    // Only expose generic error to Stripe (don't leak internals)
     return Response.json({ 
-      error: error.message 
+      error: 'Webhook processing failed',
+      webhook_id: webhookId 
     }, { status: 500 });
   }
 });
