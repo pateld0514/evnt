@@ -168,6 +168,11 @@ Deno.serve(async (req) => {
     <div class="footer">
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
       <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
+      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
+        <a href="https://evnt.com/unsubscribe" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+        <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
+        <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
+      </p>
     </div>
   </div>
 </body>

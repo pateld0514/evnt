@@ -70,7 +70,7 @@ export default function ServiceAgreement({ booking, vendor }) {
       </div>
 
       {/* Signatures */}
-      <div className="grid grid-cols-2 gap-8 pt-8 border-t-2 border-gray-300">
+      <div className="grid grid-cols-2 gap-8 pt-8 border-t-2 border-gray-300 mb-12">
         <div>
           <p className="text-2xl mb-2" style={{ fontFamily: 'cursive' }}>{booking.client_name}</p>
           <div className="border-t border-black pt-2">
@@ -85,6 +85,16 @@ export default function ServiceAgreement({ booking, vendor }) {
             <p className="text-xs text-gray-500">Digitally signed via EVNT</p>
           </div>
         </div>
+      </div>
+
+      {/* Legal Compliance Footer */}
+      <div className="text-center border-t-2 border-gray-300 pt-6 text-xs text-gray-600">
+        <p style={{ margin: '8px 0' }}>© {new Date().getFullYear()} EVNT, Inc. All rights reserved.</p>
+        <p style={{ margin: '4px 0' }}>
+          <a href="https://evnt.com/privacy" style={{ color: '#0066cc', textDecoration: 'none' }}>Privacy Policy</a> | 
+          <a href="https://evnt.com/terms" style={{ color: '#0066cc', textDecoration: 'none', marginLeft: '8px' }}>Terms of Service</a> | 
+          <a href="https://evnt.com/contact" style={{ color: '#0066cc', textDecoration: 'none', marginLeft: '8px' }}>Contact Us</a>
+        </p>
       </div>
     </div>
   );
