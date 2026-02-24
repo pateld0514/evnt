@@ -286,20 +286,20 @@ export default function SavedPage() {
                     {vendor.business_name}
                   </h3>
                   
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-700 text-sm mb-4 line-clamp-2">
                     {vendor.description}
                   </p>
 
                   <div className="space-y-2 mb-4">
                     {vendor.location && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
                         <MapPin className="w-4 h-4" />
                         {vendor.location}
                       </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <Button
                       variant="outline"
                       size="sm"

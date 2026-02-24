@@ -260,7 +260,7 @@ export default function Layout({ children, currentPageName }) {
                     }`}
                   >
                     <Icon className={`w-6 h-6 ${isActive ? "fill-white" : ""}`} />
-                    <span className="text-[10px] font-bold leading-tight">{item.name}</span>
+                    <span className="text-xs font-bold leading-tight">{item.name}</span>
                     {showBadge && (
                       <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-4 min-w-[16px] flex items-center justify-center px-1 rounded-full text-[10px] font-bold">
                         {item.badge}

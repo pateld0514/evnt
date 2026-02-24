@@ -212,9 +212,9 @@ export const EmailTemplate = {
         <div class="logo-text" style="display: inline-block; font-size: 24px; color: #000000; vertical-align: middle;">EVNT</div>
       </div>
       <div class="footer-links">
-        <a href="#" class="footer-link">About</a>
-        <a href="#" class="footer-link">Help Center</a>
-        <a href="#" class="footer-link">Contact</a>
+        <a href="https://joinevnt.com/About" class="footer-link">About</a>
+        <a href="https://joinevnt.com/Terms" class="footer-link">Terms</a>
+        <a href="mailto:info@joinevnt.com" class="footer-link">Contact</a>
       </div>
       <p class="footer-text">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
       <p class="footer-text">Making event planning simple and delightful.</p>

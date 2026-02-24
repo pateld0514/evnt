@@ -185,26 +185,26 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
                 {vendor.business_name}
               </h2>
               
-              <p className="text-sm md:text-base text-gray-600 mb-2.5 line-clamp-2 leading-snug">
+              <p className="text-sm md:text-base text-gray-700 mb-2.5 line-clamp-2 leading-snug">
                 {vendor.description}
               </p>
 
               <div className="flex flex-wrap gap-1 md:gap-1.5">
                 {vendor.location && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                    <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    <MapPin className="w-4 h-4" />
                     <span className="hidden sm:inline">{vendor.location}</span>
                   </Badge>
                 )}
                 {avgRating && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                    <Star className="w-3 h-3 md:w-3.5 md:h-3.5 fill-yellow-400 text-yellow-400" />
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     {avgRating}
                   </Badge>
                 )}
                 {vendor.price_range && (
                   <Badge variant="outline" className="flex items-center gap-0.5 md:gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                    <DollarSign className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    <DollarSign className="w-4 h-4" />
                     {vendor.price_range}
                   </Badge>
                 )}
@@ -214,7 +214,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
                   </Badge>
                 )}
                 <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                  <Award className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                  <Award className="w-4 h-4" />
                   <span className="hidden sm:inline">{completedBookings} events</span>
                   <span className="sm:hidden">{completedBookings}</span>
                 </Badge>
@@ -258,7 +258,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
                       {url.includes('video') || url.endsWith('.mp4') || url.endsWith('.mov') ? (
                         <video src={url} className="w-full h-full object-cover rounded-lg border-2 border-black" controls />
                       ) : (
-                        <img src={url} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover rounded-lg border-2 border-black" />
+                        <img src={url} alt={`${vendor.business_name} portfolio - event photo ${idx + 1}`} className="w-full h-full object-cover rounded-lg border-2 border-black" />
                       )}
                     </div>
                   ))}
@@ -310,7 +310,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
                   <DollarSign className="w-5 h-5 text-black mt-0.5" />
                   <div>
                     <p className="font-bold">Price Range</p>
-                    <p className="text-gray-600">{vendor.price_range}</p>
+                    <p className="text-gray-700">{vendor.price_range}</p>
                   </div>
                 </div>
               )}

@@ -285,7 +285,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
               )}
             </div>
             <p className="text-3xl font-black text-black">{bookings.length}</p>
-            <p className="text-sm text-gray-600 font-medium">Total Bookings</p>
+            <p className="text-sm text-gray-700 font-medium">Total Bookings</p>
             {pendingBookings > 0 && (
               <p className="text-xs text-red-600 font-bold mt-1">{pendingBookings} pending</p>
             )}
@@ -301,7 +301,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
               )}
             </div>
             <p className="text-3xl font-black text-black">{messages.length}</p>
-            <p className="text-sm text-gray-600 font-medium">Messages</p>
+            <p className="text-sm text-gray-700 font-medium">Messages</p>
             {unreadMessages > 0 && (
               <p className="text-xs text-red-600 font-bold mt-1">{unreadMessages} unread</p>
             )}
@@ -314,7 +314,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
               <TrendingUp className="w-8 h-8 text-black" />
             </div>
             <p className="text-3xl font-black text-black">{bookings.filter(b => b.status === "completed").length}</p>
-            <p className="text-sm text-gray-600 font-medium">Completed Events</p>
+            <p className="text-sm text-gray-700 font-medium">Completed Events</p>
           </CardContent>
         </Card>
 
@@ -324,7 +324,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
               <Heart className="w-8 h-8 text-black" />
             </div>
             <p className="text-3xl font-black text-black">{bookings.filter(b => b.status === "accepted").length}</p>
-            <p className="text-sm text-gray-600 font-medium">Accepted Bookings</p>
+            <p className="text-sm text-gray-700 font-medium">Accepted Bookings</p>
           </CardContent>
         </Card>
         </div>
@@ -343,7 +343,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
                     <div>
                       <p className="font-bold">{booking.client_name}</p>
-                      <p className="text-sm text-gray-600">{booking.event_type}</p>
+                      <p className="text-sm text-gray-700">{booking.event_type}</p>
                     </div>
                     <Badge className={
                       booking.status === "pending" ? "bg-yellow-100 text-yellow-800 border-yellow-300" :
@@ -376,7 +376,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
           <CardContent className="p-6">
             <div className="space-y-4">
               {vendor.image_url && (
-                <img src={vendor.image_url} alt="Profile" className="w-full h-32 object-cover rounded-lg border-2 border-gray-300" />
+                <img src={vendor.image_url} alt={`${vendor.business_name} profile photo`} className="w-full h-32 object-cover rounded-lg border-2 border-gray-300" />
               )}
               <div>
                 <p className="text-sm text-gray-500 font-medium">Business Name</p>
@@ -429,8 +429,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
                   <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
                 <p className="text-3xl font-black text-black">${vendorRevenue.toLocaleString()}</p>
-                <p className="text-sm text-gray-600 font-medium">Your Revenue</p>
-                <p className="text-xs text-gray-500 mt-1">100% of agreed price</p>
+                <p className="text-sm text-gray-700 font-medium">Net Revenue After Fees</p>
+                <p className="text-xs text-gray-500 mt-1">After EVNT fee & taxes</p>
               </CardContent>
             </Card>
 
@@ -440,7 +440,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                 </div>
                 <p className="text-3xl font-black text-black">${avgBookingValue.toFixed(0)}</p>
-                <p className="text-sm text-gray-600 font-medium">Avg Booking Value</p>
+                <p className="text-sm text-gray-700 font-medium">Avg Booking Value</p>
               </CardContent>
             </Card>
 
@@ -450,7 +450,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                   <BarChart3 className="w-8 h-8 text-purple-600" />
                 </div>
                 <p className="text-3xl font-black text-black">{conversionRate}%</p>
-                <p className="text-sm text-gray-600 font-medium">Conversion Rate</p>
+                <p className="text-sm text-gray-700 font-medium">Conversion Rate</p>
               </CardContent>
             </Card>
           </div>
