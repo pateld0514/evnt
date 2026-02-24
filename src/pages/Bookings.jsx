@@ -164,7 +164,7 @@ export default function BookingsPage() {
   });
 
   const updateBookingMutation = useMutation({
-    mutationFn: async ({ bookingId, data, oldStatus }) => {
+    mutationFn: async ({ bookingId, data, oldStatus, expectedUpdatedDate }) => {
       const booking = bookings.find(b => b.id === bookingId);
       if (!booking) {
         throw new Error("Booking not found");
@@ -176,6 +176,11 @@ export default function BookingsPage() {
       
       if (!isVendorBooking && !isClientBooking) {
         throw new Error("Unauthorized: You can only update your own bookings");
+      }
+      
+      // Add optimistic locking: verify booking hasn't changed since we fetched it
+      if (expectedUpdatedDate && booking.updated_date !== expectedUpdatedDate) {
+        throw new Error("Booking was modified by another user. Please refresh and try again.");
       }
       
       const updated = await base44.entities.Booking.update(bookingId, data);
@@ -198,6 +203,8 @@ export default function BookingsPage() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update booking");
+      // Refetch bookings to ensure we have latest state
+      refetch();
     },
   });
 
@@ -206,7 +213,8 @@ export default function BookingsPage() {
     updateBookingMutation.mutate({
       bookingId,
       data: { status: newStatus, vendor_response: vendorResponse },
-      oldStatus: booking?.status
+      oldStatus: booking?.status,
+      expectedUpdatedDate: booking?.updated_date
     });
   };
 
@@ -258,7 +266,8 @@ export default function BookingsPage() {
     updateBookingMutation.mutate({
       bookingId,
       data: { status: "cancelled" },
-      oldStatus: booking?.status
+      oldStatus: booking?.status,
+      expectedUpdatedDate: booking?.updated_date
     });
   };
 
