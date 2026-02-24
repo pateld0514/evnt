@@ -11,6 +11,10 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     const isAdmin = user?.role === 'admin';
     
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     const payload = await req.json();
     
     const booking_id = payload.booking_id || payload.data?.id;
@@ -30,6 +34,7 @@ Deno.serve(async (req) => {
     } else {
       // Direct call - require admin auth
       if (!isAdmin) {
+        console.error('Unauthorized processVendorPayout attempt', { user_id: user.id, email: user.email });
         return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
       }
       if (!payload.booking_id) {

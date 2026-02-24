@@ -28,9 +28,10 @@ Deno.serve(async (req) => {
     // Verify authorization
     const isVendor = user.vendor_id && booking.vendor_id === user.vendor_id;
     const isClient = booking.client_email === user.email;
-    const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
+    const isAdmin = user.role === "admin";
 
     if (!isVendor && !isClient && !isAdmin) {
+      console.error('Unauthorized updateProposal attempt', { user_id: user.id, email: user.email, booking_id: bookingId });
       return Response.json({ 
         error: 'Forbidden: Cannot modify this booking' 
       }, { status: 403 });
@@ -64,7 +65,7 @@ Deno.serve(async (req) => {
       sales_tax_amount: calc.sales_tax_amount,
       sales_tax_rate: calc.sales_tax_rate,
       client_state: calc.state_abbreviation,
-      stripe_fee_amount: calc.stripe_fee,
+      stripe_fee_amount: calc.stripe_fee_amount,
       vendor_payout: calc.vendor_payout,
       total_amount_charged: calc.total_amount_charged,
       currency: 'USD',
