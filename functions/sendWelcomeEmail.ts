@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
     .preheader { display: none; max-height: 0; overflow: hidden; }
     .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
     .header { background: linear-gradient(135deg, #000000 0%, #1f2937 100%); padding: 40px 30px; text-align: center; }
-    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #000000; margin-bottom: 12px; }
+    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: table; margin: 0 auto 12px; font-size: 32px; font-weight: 900; color: #000000; }
+    .logo-icon-inner { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; }
     .logo-text { font-size: 40px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
     .content { padding: 40px 30px; }
     .title { font-size: 24px; font-weight: 900; color: #000000; margin: 0 0 20px 0; }
@@ -49,13 +50,15 @@ Deno.serve(async (req) => {
   <div class="preheader">${preheader}</div>
   <div class="container">
     <div class="header">
-      <div class="logo-icon">E</div>
-      <div class="logo-text">EVNT</div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center">
+        <div class="logo-icon"><span class="logo-icon-inner">E</span></div>
+        <div class="logo-text">EVNT</div>
+      </td></tr></table>
     </div>
     ${content}
     <div class="footer">
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 8px 0;">Questions? Email <a href="mailto:info@joinevnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">info@joinevnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
+      <p style="margin: 8px 0;">Questions? Email us at <a href="mailto:info@joinevnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">info@joinevnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
     </div>
   </div>
 </body>

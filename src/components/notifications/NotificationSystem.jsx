@@ -31,8 +31,8 @@ export async function sendNotification({ recipientEmail, type, title, message, l
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
     .container { max-width: 500px; margin: 0 auto; }
     .header { background: #000; color: #fff; padding: 20px; text-align: center; }
-    .logo { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-    .logo-text { color: #000; font-size: 24px; font-weight: 900; }
+    .logo { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: table; margin: 0 auto 10px; }
+    .logo-text { color: #000; font-size: 24px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
     .brand { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
     .content { padding: 30px 20px; background: #fff; }
     .title { font-size: 20px; font-weight: 900; margin: 0 0 15px 0; color: #000; }
@@ -51,7 +51,8 @@ export async function sendNotification({ recipientEmail, type, title, message, l
       <p class="message">${message}</p>
     </div>
     <div class="footer">
-      <p>EVNT Management</p>
+      <p style="margin: 5px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
+      <p style="margin: 5px 0;">Questions? Email <a href="mailto:info@joinevnt.com" style="color: #000; font-weight: 600; text-decoration: none;">info@joinevnt.com</a></p>
     </div>
   </div>
 </body>

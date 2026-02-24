@@ -14,7 +14,8 @@ const EmailTemplate = {
     .preheader { display: none; max-height: 0; overflow: hidden; }
     .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
     .header { background: linear-gradient(135deg, #000000 0%, #1f2937 100%); padding: 40px 30px; text-align: center; }
-    .logo { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .logo { display: table; margin: 0 auto 16px; text-align: center; }
+    .logo-wrapper { display: table-cell; vertical-align: middle; }
     .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #000000; }
     .logo-text { font-size: 40px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
     .tagline { color: #9ca3af; font-size: 14px; margin: 0; font-weight: 500; }
@@ -39,16 +40,18 @@ const EmailTemplate = {
   <div class="preheader">${preheader}</div>
   <div class="email-container">
     <div class="header">
-      <div class="logo">
-        <div class="logo-icon">E</div>
-        <div class="logo-text">EVNT</div>
-      </div>
-      <p class="tagline">Event Planning Made Simple</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center">
+        <div class="logo">
+          <span class="logo-wrapper"><span class="logo-icon">E</span></span>
+          <span class="logo-wrapper"><span class="logo-text">EVNT</span></span>
+        </div>
+        <p class="tagline">Event Planning Made Simple</p>
+      </td></tr></table>
     </div>
     ${content}
     <div class="footer">
       <p class="footer-text">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p class="footer-text">Questions? Email us at <a href="mailto:support@evnt.com" style="color: #000000;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000;">609-442-3524</a></p>
+      <p class="footer-text">Questions? Email us at <a href="mailto:info@joinevnt.com" style="color: #000000; font-weight: 600;">info@joinevnt.com</a> or text <a href="tel:6094423524" style="color: #000000; font-weight: 600;">609-442-3524</a></p>
     </div>
   </div>
 </body>

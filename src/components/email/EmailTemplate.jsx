@@ -35,9 +35,9 @@ export const EmailTemplate = {
       text-align: center;
     }
     .logo {
-      display: block;
-      text-align: center;
+      display: table;
       margin: 0 auto 16px;
+      text-align: center;
     }
     .logo > * {
       display: inline-block;
@@ -219,8 +219,8 @@ export const EmailTemplate = {
       <p class="footer-text">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
       <p class="footer-text">Making event planning simple and delightful.</p>
       <p class="footer-text" style="margin-top: 20px;">
-        Questions? Email us at <a href="mailto:info@joinevnt.com" style="color: #000000;">info@joinevnt.com</a><br/>
-        or text us at <a href="tel:6094423524" style="color: #000000;">609-442-3524</a>
+        Questions? Email us at <a href="mailto:info@joinevnt.com" style="color: #000000; font-weight: 600;">info@joinevnt.com</a><br/>
+        or text us at <a href="tel:6094423524" style="color: #000000; font-weight: 600;">609-442-3524</a>
       </p>
     </div>
   </div>
