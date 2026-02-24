@@ -5,14 +5,12 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin-only check
     if (!user || (user.email !== "pateld0514@gmail.com" && user.role !== "admin")) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const { dryRun = false } = await req.json().catch(() => ({ dryRun: false }));
 
-    // State tax rates
     const stateTaxRates = {
       'AL': 0.04, 'AK': 0.00, 'AZ': 0.056, 'AR': 0.065, 'CA': 0.0725,
       'CO': 0.029, 'CT': 0.0635, 'DE': 0.00, 'FL': 0.06, 'GA': 0.04,
@@ -50,18 +48,15 @@ Deno.serve(async (req) => {
       try {
         const updateData = {};
 
-        // Calculate stripe fee if missing
         if ((booking.stripe_fee === null || booking.stripe_fee === undefined) && booking.total_amount_charged) {
           const stripeFee = (booking.total_amount_charged * 0.029) + 0.30;
           updateData.stripe_fee = Math.round(stripeFee * 100) / 100;
         }
 
-        // Calculate sales tax rate if missing
         if ((booking.sales_tax_rate === null || booking.sales_tax_rate === undefined) && booking.client_state) {
           updateData.sales_tax_rate = stateTaxRates[booking.client_state] || 0;
         }
 
-        // Calculate sales tax amount if missing
         if ((!booking.sales_tax_amount && !booking.maryland_sales_tax_amount) && booking.agreed_price && updateData.sales_tax_rate) {
           updateData.sales_tax_amount = Math.round(booking.agreed_price * updateData.sales_tax_rate * 100) / 100;
         }
@@ -71,7 +66,7 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.Booking.update(booking.id, updateData);
             migrationResults.migrated++;
           } else {
-            migrationResults.migrated++; // Count what would be migrated
+            migrationResults.migrated++;
           }
         } else {
           migrationResults.skipped++;
