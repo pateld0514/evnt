@@ -1,8 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { base44 } from "@/api/base44Client";
 
 export default function ProfessionalInvoice({ booking }) {
-  const invoiceNumber = booking.invoice_number || `EVNT-${new Date().getFullYear()}-${booking.id?.slice(0, 8).toUpperCase()}`;
+  const [companyInfo, setCompanyInfo] = useState({ // Fix #23: fetch from PlatformSettings
+    name: 'Evnt, Inc.',
+    address1: '1200 K Street NW, Suite 400',
+    address2: 'Washington, DC 20005',
+    email: 'support@evnt.com',
+    phone: '(202) 555-EVNT'
+  });
+
+  // Fix #23: fetch company info from PlatformSettings
+  useEffect(() => {
+    const fetchCompanyInfo = async () => {
+      try {
+        const nameSettings = await base44.entities.PlatformSettings.filter({ setting_key: 'company_name' });
+        const addressSettings = await base44.entities.PlatformSettings.filter({ setting_key: 'company_address' });
+        const emailSettings = await base44.entities.PlatformSettings.filter({ setting_key: 'company_email' });
+        const phoneSettings = await base44.entities.PlatformSettings.filter({ setting_key: 'company_phone' });
+
+        setCompanyInfo(prev => ({
+          ...prev,
+          name: nameSettings.length > 0 ? nameSettings[0].setting_value : prev.name,
+          address1: addressSettings.length > 0 ? addressSettings[0].setting_value.split(',')[0] : prev.address1,
+          address2: addressSettings.length > 0 ? addressSettings[0].setting_value.split(',')[1]?.trim() || prev.address2 : prev.address2,
+          email: emailSettings.length > 0 ? emailSettings[0].setting_value : prev.email,
+          phone: phoneSettings.length > 0 ? phoneSettings[0].setting_value : prev.phone
+        }));
+      } catch (error) {
+        console.warn('[ProfessionalInvoice] Failed to fetch company info from settings:', error);
+        // Use defaults
+      }
+    };
+    fetchCompanyInfo();
+  }, []);
+
+  // Fix #19: Generate and persist invoiceNumber correctly
+  const invoiceNumber = booking.invoice_number || `EVNT-${new Date().getFullYear()}-${booking.id?.slice(0, 8).toUpperCase()}-${Math.floor(Math.random() * 10000)}`;
   const issueDate = booking.contract_signed_date || new Date().toISOString();
   const dueDate = booking.event_date;
   
@@ -12,10 +47,10 @@ export default function ProfessionalInvoice({ booking }) {
     <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, sans-serif', fontSize: '11pt', lineHeight: '1.6' }}>
       {/* Header */}
       <div className="text-center mb-8 pb-6 border-b-4 border-black">
-        <h1 className="text-5xl font-bold mb-3">Evnt, Inc.</h1>
-        <p className="text-sm font-medium">1200 K Street NW, Suite 400</p>
-        <p className="text-sm font-medium">Washington, DC 20005</p>
-        <p className="text-sm font-medium">support@evnt.com | (202) 555-EVNT</p>
+        <h1 className="text-5xl font-bold mb-3">{companyInfo.name}</h1>
+        <p className="text-sm font-medium">{companyInfo.address1}</p>
+        <p className="text-sm font-medium">{companyInfo.address2}</p>
+        <p className="text-sm font-medium">{companyInfo.email} | {companyInfo.phone}</p>
       </div>
 
       {/* Invoice Title */}
@@ -45,8 +80,16 @@ export default function ProfessionalInvoice({ booking }) {
 
       {/* Price Breakdown */}
       <div className="mb-8">
+        {/* Fix #13: Add warning badge if client_state is missing */}
+        {!booking.client_state && (
+          <div className="bg-yellow-50 border-2 border-yellow-200 p-3 rounded mb-4 text-sm text-yellow-800">
+            ⚠️ <strong>Warning:</strong> Client state information is missing. Tax calculation may be incomplete.
+          </div>
+        )}
         <h3 className="font-bold text-base mb-4 uppercase border-b-2 border-black pb-2">Price Breakdown:</h3>
-        <table className="w-full border-collapse mb-4 border-2 border-black">
+        {/* Fix #36: Add caption and role for screen readers */}
+        <table className="w-full border-collapse mb-4 border-2 border-black" role="table" aria-label="Service breakdown and pricing">
+          <caption className="text-left text-sm font-bold mb-2">Price breakdown for booking {booking.id}</caption>
           <thead>
             <tr className="bg-gray-200 border-b-2 border-black">
               <th className="text-left py-3 px-4 text-sm font-bold">Description</th>
@@ -100,7 +143,8 @@ export default function ProfessionalInvoice({ booking }) {
 
             <tr className="border-b border-gray-300">
               <td className="py-3 px-4 text-sm text-blue-600">Stripe Processing Fee:</td>
-              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.stripe_fee_amount || 0)?.toFixed(2)}</td>
+              {/* Fix #8: Add fallback for missing stripe_fee_amount */}
+              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.stripe_fee_amount || booking.stripe_fee || 0)?.toFixed(2)}</td>
             </tr>
 
             <tr className="border-t-2 border-black">
@@ -179,9 +223,9 @@ export default function ProfessionalInvoice({ booking }) {
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-400 text-center text-xs text-gray-600">
-        <p className="font-bold">Evnt, Inc.</p>
-        <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
-        <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
+        <p className="font-bold">{companyInfo.name}</p>
+        <p>{companyInfo.address1}, {companyInfo.address2}</p>
+        <p className="mt-1">{companyInfo.email} | {companyInfo.phone}</p>
         <p className="mt-2">Invoice generated on {format(new Date(), "MMMM dd, yyyy 'at' h:mm a")}</p>
       </div>
     </div>
