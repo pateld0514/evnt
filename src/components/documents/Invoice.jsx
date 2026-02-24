@@ -2,12 +2,14 @@ import React from "react";
 import { format } from "date-fns";
 
 export default function Invoice({ booking }) {
-  const performanceAmount = booking.service_amount || booking.budget || 1000;
-  const overtimeAmount = 100;
-  const platformFee = Math.round((performanceAmount + overtimeAmount) * 0.10);
-  const totalAmount = performanceAmount + overtimeAmount + platformFee;
-  const invoiceNumber = booking.invoice_number || `${booking.id?.slice(0, 4)}-${Math.floor(Math.random() * 9999)}`;
-  const status = booking.status === "accepted" || booking.status === "completed" ? "PAID IN FULL" : "PENDING";
+  const baseAmount = booking.agreed_price || booking.budget || 0;
+  const additionalFeesTotal = booking.additional_fees ? booking.additional_fees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0) : 0;
+  const platformFee = booking.platform_fee_amount || 0;
+  const salesTax = booking.sales_tax_amount || 0;
+  const stripeFee = booking.stripe_fee_amount || 0;
+  const totalAmount = booking.total_amount_charged || (baseAmount + additionalFeesTotal + platformFee + salesTax + stripeFee);
+  const invoiceNumber = booking.invoice_number || `INV-${booking.id?.slice(0, 8)}`;
+  const status = booking.payment_status === "paid" ? "PAID" : booking.status === "completed" ? "COMPLETED" : "PENDING";
 
   return (
     <div className="bg-white p-12 max-w-4xl mx-auto print:p-8">
@@ -50,37 +52,61 @@ export default function Invoice({ booking }) {
             </tr>
           </thead>
           <tbody>
-            {/* Performance Package */}
+            {/* Service Amount */}
             <tr className="border-b border-gray-200">
               <td className="py-4">
-                <p className="font-bold text-lg mb-1">Performance Package (4 Hours)</p>
-                <p className="text-gray-500 text-sm">Includes Sound & Lighting setup</p>
+                <p className="font-bold text-lg mb-1">{booking.service_description || `${booking.event_type} Service`}</p>
+                <p className="text-gray-500 text-sm">Base service amount</p>
               </td>
-              <td className="text-right font-bold text-lg">${performanceAmount.toLocaleString()}.00</td>
+              <td className="text-right font-bold text-lg">${baseAmount.toFixed(2)}</td>
             </tr>
 
-            {/* Overtime Protection */}
-            <tr className="border-b border-gray-200">
-              <td className="py-4">
-                <p className="font-bold text-lg mb-1">Overtime Protection (1 Hour)</p>
-                <p className="text-gray-500 text-sm">Contingency hold</p>
-              </td>
-              <td className="text-right font-bold text-lg">${overtimeAmount.toLocaleString()}.00</td>
-            </tr>
+            {/* Additional Fees */}
+            {booking.additional_fees && booking.additional_fees.map((fee, idx) => (
+              <tr key={idx} className="border-b border-gray-200">
+                <td className="py-4">
+                  <p className="font-bold text-lg mb-1">{fee.name}</p>
+                  {fee.description && <p className="text-gray-500 text-sm">{fee.description}</p>}
+                </td>
+                <td className="text-right font-bold text-lg">${parseFloat(fee.amount).toFixed(2)}</td>
+              </tr>
+            ))}
 
             {/* Platform Fee */}
-            <tr className="border-b-2 border-gray-800">
+            <tr className="border-b border-gray-200">
               <td className="py-4">
-                <p className="font-bold text-lg mb-1">Platform & Trust Fee</p>
-                <p className="text-gray-500 text-sm">Includes Payment Processing & Escrow (10%)</p>
+                <p className="font-bold text-lg mb-1">Platform Fee</p>
+                <p className="text-gray-500 text-sm">{booking.platform_fee_percent}% + Payment Processing</p>
               </td>
-              <td className="text-right font-bold text-lg">${platformFee.toLocaleString()}.00</td>
+              <td className="text-right font-bold text-lg">${platformFee.toFixed(2)}</td>
             </tr>
+
+            {/* Sales Tax */}
+            {salesTax > 0 && (
+              <tr className="border-b border-gray-200">
+                <td className="py-4">
+                  <p className="font-bold text-lg mb-1">Sales Tax</p>
+                  <p className="text-gray-500 text-sm">{(booking.sales_tax_rate * 100).toFixed(1)}%</p>
+                </td>
+                <td className="text-right font-bold text-lg">${salesTax.toFixed(2)}</td>
+              </tr>
+            )}
+
+            {/* Stripe Processing Fee */}
+            {stripeFee > 0 && (
+              <tr className="border-b-2 border-gray-800">
+                <td className="py-4">
+                  <p className="font-bold text-lg mb-1">Payment Processing</p>
+                  <p className="text-gray-500 text-sm">Card processing fee (2.9% + $0.30)</p>
+                </td>
+                <td className="text-right font-bold text-lg">${stripeFee.toFixed(2)}</td>
+              </tr>
+            )}
 
             {/* Total */}
             <tr>
-              <td className="py-4 text-xl font-bold">Total</td>
-              <td className="text-right text-2xl font-black">${totalAmount.toLocaleString()}.00</td>
+              <td className="py-4 text-xl font-bold">Total Amount Due</td>
+              <td className="text-right text-2xl font-black">${totalAmount.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -88,10 +114,15 @@ export default function Invoice({ booking }) {
 
       {/* Payment Info */}
       <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="font-bold text-lg mb-3">Payment Information:</h3>
-        <p className="text-gray-700 leading-relaxed">
-          Payment secured via Stripe Connect. Funds are held in escrow by EVNT Platform until 24 hours after the event completion date ({format(new Date(booking.event_date), "MMM dd, yyyy")}).
+        <h3 className="font-bold text-lg mb-3">Payment & Escrow Information:</h3>
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Payment is secured via Stripe and held in escrow by EVNT until 24 hours after the event date ({format(new Date(booking.event_date), "MMM dd, yyyy")}). Once the event is marked as complete, payment is automatically released to the vendor.
         </p>
+        {booking.vendor_payout > 0 && (
+          <p className="text-gray-700 leading-relaxed">
+            <strong>Vendor receives:</strong> ${booking.vendor_payout.toFixed(2)} (after platform fees and taxes)
+          </p>
+        )}
       </div>
     </div>
   );
