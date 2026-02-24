@@ -569,7 +569,7 @@ export default function BookingsPage() {
                       <p className="text-lg font-bold">${selectedBooking.budget}</p>
                     </div>
                   )}
-                  {selectedBooking.base_event_amount && (
+                  {selectedBooking.base_event_amount && selectedBooking.status !== "negotiating" && selectedBooking.status !== "pending" && (
                     <div className="col-span-2">
                       <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
                         <p className="text-sm font-bold text-gray-700 mb-3">Price Breakdown</p>
