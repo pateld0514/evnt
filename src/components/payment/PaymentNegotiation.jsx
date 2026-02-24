@@ -40,14 +40,48 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     }
   }, [platformSettings]);
 
-  // Recalculate totals whenever values change
+  // Recalculate totals whenever values change using BACKEND validation
   useEffect(() => {
     const recalc = async () => {
-      const newTotals = await calculateTotals();
-      setTotals(newTotals);
+      if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
+        setTotals({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0, salesTax: 0, stripeFee: 0 });
+        return;
+      }
+
+      try {
+        const response = await base44.functions.invoke('calculateProposal', {
+          bookingId: booking.id,
+          agreedPrice: parseFloat(agreedPrice),
+          additionalFees: additionalFees.filter(f => f.name && f.amount),
+          serviceDescription: serviceDescription,
+          clientState: booking.client_state
+        });
+
+        if (response.data?.success) {
+          const calc = response.data.calculation;
+          setTotals({
+            price: calc.base_price,
+            additionalTotal: calc.additional_total,
+            subtotal: calc.subtotal,
+            baseEventAmount: calc.base_event_amount,
+            platformFeeAmount: calc.platform_fee_amount,
+            salesTax: calc.sales_tax_amount,
+            salesTaxRate: calc.sales_tax_rate,
+            taxLabel: calc.tax_label,
+            stripeFee: calc.stripe_fee,
+            totalAmount: calc.total_amount_charged,
+            vendorPayout: calc.vendor_payout,
+            finalFeePercent: calc.platform_fee_percent,
+            appliedDiscount: calc.discount_applied || 0,
+            discountSource: calc.discount_applied > 0 ? 'referral_perk' : ''
+          });
+        }
+      } catch (error) {
+        console.error('Failed to calculate proposal:', error);
+      }
     };
     recalc();
-  }, [agreedPrice, additionalFees, platformFeePercent, booking.vendor_id, booking.client_email]);
+  }, [agreedPrice, additionalFees, serviceDescription, booking.id]);
 
   const addFee = () => {
     setAdditionalFees([...additionalFees, { name: "", amount: 0, description: "" }]);
@@ -63,157 +97,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     setAdditionalFees(updated);
   };
 
-  const calculateTotals = async () => {
-    const price = parseFloat(agreedPrice) || 0;
-    const additionalTotal = additionalFees.reduce((sum, fee) => sum + (parseFloat(fee.amount) || 0), 0);
-    const agreedAmount = price + additionalTotal; // This is what client agrees to pay (before tax)
-    
-    // Get dynamic fee calculation considering tier discounts AND referral perks
-    let finalFeePercent = platformFeePercent;
-    let platformFeeAmount = (agreedAmount * finalFeePercent) / 100;
-    let appliedDiscount = 0;
-    let discountSource = '';
-    
-    try {
-      // Check for active referral rewards
-      const rewards = await base44.entities.ReferralReward.filter({ 
-        referrer_email: booking.client_email,
-        status: 'earned'
-      });
-      
-      if (rewards.length > 0) {
-        // Apply reward as percentage discount on agreed price
-        const rewardDiscount = rewards[0].reward_amount || 0;
-        appliedDiscount = rewardDiscount;
-        discountSource = 'referral_perk';
-      }
-      
-      // Call calculateDynamicFee to get tier discounts (but will recalculate on discounted amount)
-      const feeCalc = await base44.functions.invoke('calculateDynamicFee', {
-        vendor_id: booking.vendor_id,
-        client_email: booking.client_email,
-        booking_amount: agreedAmount
-      });
-      
-      if (feeCalc.data && feeCalc.data.final_fee_percent !== undefined) {
-        finalFeePercent = feeCalc.data.final_fee_percent;
-      }
-    } catch (error) {
-      console.warn('Could not calculate dynamic fee, using base fee', error);
-    }
-    
-    // Apply discount to agreed amount FIRST
-    const discountedAmount = Math.max(0, agreedAmount - appliedDiscount);
-    
-    // NOW calculate fees on the DISCOUNTED amount
-    platformFeeAmount = (discountedAmount * finalFeePercent) / 100;
-    
-    // State sales tax rates (2026 data - combined state + avg local rates)
-    const stateTaxRates = {
-      'AL': { rate: 0.0946, name: 'Alabama' },
-      'AK': { rate: 0.0182, name: 'Alaska' },
-      'AZ': { rate: 0.0852, name: 'Arizona' },
-      'AR': { rate: 0.0946, name: 'Arkansas' },
-      'CA': { rate: 0.0899, name: 'California' },
-      'CO': { rate: 0.0789, name: 'Colorado' },
-      'CT': { rate: 0.0635, name: 'Connecticut' },
-      'DE': { rate: 0, name: 'Delaware' },
-      'FL': { rate: 0.0698, name: 'Florida' },
-      'GA': { rate: 0.0749, name: 'Georgia' },
-      'HI': { rate: 0.0450, name: 'Hawaii' },
-      'ID': { rate: 0.0603, name: 'Idaho' },
-      'IL': { rate: 0.0896, name: 'Illinois' },
-      'IN': { rate: 0.0700, name: 'Indiana' },
-      'IA': { rate: 0.0694, name: 'Iowa' },
-      'KS': { rate: 0.0869, name: 'Kansas' },
-      'KY': { rate: 0.0600, name: 'Kentucky' },
-      'LA': { rate: 0.1011, name: 'Louisiana' },
-      'ME': { rate: 0.0550, name: 'Maine' },
-      'MD': { rate: 0.0600, name: 'Maryland' },
-      'MA': { rate: 0.0625, name: 'Massachusetts' },
-      'MI': { rate: 0.0600, name: 'Michigan' },
-      'MN': { rate: 0.0814, name: 'Minnesota' },
-      'MS': { rate: 0.0706, name: 'Mississippi' },
-      'MO': { rate: 0.0844, name: 'Missouri' },
-      'MT': { rate: 0, name: 'Montana' },
-      'NE': { rate: 0.0698, name: 'Nebraska' },
-      'NV': { rate: 0.0824, name: 'Nevada' },
-      'NH': { rate: 0, name: 'New Hampshire' },
-      'NJ': { rate: 0.0660, name: 'New Jersey' },
-      'NM': { rate: 0.0767, name: 'New Mexico' },
-      'NY': { rate: 0.0854, name: 'New York' },
-      'NC': { rate: 0.0700, name: 'North Carolina' },
-      'ND': { rate: 0.0709, name: 'North Dakota' },
-      'OH': { rate: 0.0729, name: 'Ohio' },
-      'OK': { rate: 0.0906, name: 'Oklahoma' },
-      'OR': { rate: 0, name: 'Oregon' },
-      'PA': { rate: 0.0634, name: 'Pennsylvania' },
-      'RI': { rate: 0.0700, name: 'Rhode Island' },
-      'SC': { rate: 0.0749, name: 'South Carolina' },
-      'SD': { rate: 0.0611, name: 'South Dakota' },
-      'TN': { rate: 0.0961, name: 'Tennessee' },
-      'TX': { rate: 0.0820, name: 'Texas' },
-      'UT': { rate: 0.0742, name: 'Utah' },
-      'VT': { rate: 0.0639, name: 'Vermont' },
-      'VA': { rate: 0.0577, name: 'Virginia' },
-      'WA': { rate: 0.0951, name: 'Washington' },
-      'WV': { rate: 0.0659, name: 'West Virginia' },
-      'WI': { rate: 0.0572, name: 'Wisconsin' },
-      'WY': { rate: 0.0556, name: 'Wyoming' },
-      'DC': { rate: 0.0600, name: 'District of Columbia' }
-    };
-    
-    // Detect state from location
-    const location = (booking.location || '').toUpperCase();
-    let salesTaxRate = 0;
-    let taxLabel = '';
-    
-    // Try to match state abbreviation or full name
-    // First try to find state abbreviation after comma or as separate word
-    const stateMatch = location.match(/,\s*([A-Z]{2})(?:\s|$)/) || location.match(/\b([A-Z]{2})(?:\s|$)/);
-    if (stateMatch && stateTaxRates[stateMatch[1]]) {
-      const abbr = stateMatch[1];
-      salesTaxRate = stateTaxRates[abbr].rate;
-      taxLabel = `${stateTaxRates[abbr].name} Sales Tax (${(stateTaxRates[abbr].rate * 100).toFixed(1)}%)`;
-    } else {
-      // Fall back to checking for full state name
-      for (const [abbr, data] of Object.entries(stateTaxRates)) {
-        if (location.includes(data.name.toUpperCase())) {
-          salesTaxRate = data.rate;
-          taxLabel = `${data.name} Sales Tax (${(data.rate * 100).toFixed(1)}%)`;
-          break;
-        }
-      }
-    }
-    
-    // Calculate tax on DISCOUNTED amount
-    const salesTax = salesTaxRate > 0 ? discountedAmount * salesTaxRate : 0;
-    
-    // Calculate Stripe processing fee (2.9% + $0.30) - comes from client's payment
-    const stripeFee = (discountedAmount * 0.029) + 0.30;
-    
-    // CRITICAL: fee, tax, and Stripe fee all come FROM the agreed price (deducted from vendor payout)
-    const totalDeductions = platformFeeAmount + salesTax + stripeFee; // Total amount EVNT keeps
-    const vendorPayout = discountedAmount - totalDeductions; // Vendor receives: agreed price - discount - fee - tax - stripe fee
-    const totalAmount = discountedAmount; // Client pays: agreed price - discount
 
-    return { 
-      price, 
-      additionalTotal, 
-      subtotal: agreedAmount,
-      baseEventAmount: discountedAmount,
-      platformFeeAmount, 
-      salesTax,
-      salesTaxRate,
-      taxLabel,
-      stripeFee,
-      totalAmount, 
-      vendorPayout, 
-      finalFeePercent,
-      appliedDiscount,
-      discountSource
-    };
-  };
 
 
 
