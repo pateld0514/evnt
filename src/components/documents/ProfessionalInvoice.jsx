@@ -43,9 +43,9 @@ export default function ProfessionalInvoice({ booking }) {
         <p className="text-sm"><strong>Event Type:</strong> {booking.event_type}</p>
       </div>
 
-      {/* Description of Charges */}
+      {/* Price Breakdown */}
       <div className="mb-8">
-        <h3 className="font-bold text-base mb-4 uppercase border-b-2 border-black pb-2">Description of Charges:</h3>
+        <h3 className="font-bold text-base mb-4 uppercase border-b-2 border-black pb-2">Price Breakdown:</h3>
         <table className="w-full border-collapse mb-4 border-2 border-black">
           <thead>
             <tr className="bg-gray-200 border-b-2 border-black">
@@ -54,45 +54,50 @@ export default function ProfessionalInvoice({ booking }) {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-400">
-              <td className="py-4 px-4">
-                <p className="font-bold text-base">Event Service Provided by Vendor: {booking.vendor_name}</p>
-                <p className="text-sm text-gray-600 mt-1">{booking.service_description || `${booking.event_type} services`}</p>
-              </td>
-              <td className="text-right px-4 font-semibold text-base">${booking.agreed_price?.toFixed(2)}</td>
+            <tr className="border-b border-gray-300">
+              <td className="py-3 px-4 text-sm">Service Price:</td>
+              <td className="text-right px-4 text-sm font-semibold">${booking.agreed_price?.toFixed(2)}</td>
             </tr>
             
             {booking.additional_fees && booking.additional_fees.map((fee, idx) => (
-              <tr key={idx} className="border-b border-gray-400">
-                <td className="py-4 px-4">
-                  <p className="font-bold">{fee.name}</p>
-                  {fee.description && <p className="text-sm text-gray-600 mt-1">{fee.description}</p>}
-                </td>
-                <td className="text-right px-4 font-semibold">${parseFloat(fee.amount)?.toFixed(2)}</td>
+              <tr key={idx} className="border-b border-gray-300">
+                <td className="py-3 px-4 text-sm pl-8">+ {fee.name}:</td>
+                <td className="text-right px-4 text-sm font-semibold">${parseFloat(fee.amount)?.toFixed(2)}</td>
               </tr>
             ))}
 
-            <tr className="border-b border-gray-400">
-              <td className="py-4 px-4">
-                <p className="font-bold">Service Fee - Evnt Platform</p>
-                <p className="text-sm text-gray-600 mt-1">Platform access, payment processing, and support ({booking.platform_fee_percent}%)</p>
-              </td>
-              <td className="text-right px-4 font-semibold">${booking.platform_fee_amount?.toFixed(2)}</td>
+            <tr className="border-b-2 border-gray-400">
+              <td className="py-3 px-4 text-sm font-bold">Agreed Service Price:</td>
+              <td className="text-right px-4 text-sm font-bold">${booking.base_event_amount?.toFixed(2)}</td>
             </tr>
 
             <tr className="border-t-2 border-black bg-gray-100">
-              <td className="py-3 px-4 text-right font-bold text-base">Subtotal:</td>
-              <td className="text-right px-4 font-bold text-base">${subtotal.toFixed(2)}</td>
+              <td className="py-4 px-4 text-base font-bold">Client Pays Total:</td>
+              <td className="text-right px-4 text-base font-bold text-green-600">${booking.total_amount_charged?.toFixed(2)}</td>
             </tr>
-            
-            <tr className="bg-gray-100">
-              <td className="py-2 px-4 text-right text-sm">Applicable taxes:</td>
-              <td className="text-right px-4 text-sm">$0.00</td>
+
+            <tr className="border-b border-gray-300">
+              <td className="py-3 px-4 text-sm text-blue-600">EVNT Fee ({booking.platform_fee_percent?.toFixed(1)}%):</td>
+              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.platform_fee_amount?.toFixed(2)}</td>
             </tr>
-            
-            <tr className="border-t-2 border-black bg-black text-white">
-              <td className="py-4 px-4 text-right text-xl font-bold">TOTAL AMOUNT DUE:</td>
-              <td className="text-right px-4 text-xl font-bold">${booking.total_amount?.toFixed(2)}</td>
+
+            {(booking.sales_tax_amount || booking.maryland_sales_tax_amount) > 0 && (
+              <tr className="border-b border-gray-300">
+                <td className="py-3 px-4 text-sm text-blue-600">
+                  {booking.location ? booking.location.split(',').pop().trim() + ' ' : ''}Sales Tax ({((booking.sales_tax_rate || booking.maryland_sales_tax_percent / 100) * 100)?.toFixed(1)}%):
+                </td>
+                <td className="text-right px-4 text-sm font-semibold text-blue-600">-${(booking.sales_tax_amount || booking.maryland_sales_tax_amount)?.toFixed(2)}</td>
+              </tr>
+            )}
+
+            <tr className="border-b border-gray-300">
+              <td className="py-3 px-4 text-sm text-blue-600">Stripe Processing Fee:</td>
+              <td className="text-right px-4 text-sm font-semibold text-blue-600">-${booking.stripe_fee_amount?.toFixed(2) || '0.00'}</td>
+            </tr>
+
+            <tr className="border-t-2 border-black">
+              <td className="py-4 px-4 text-base font-bold">Vendor Receives:</td>
+              <td className="text-right px-4 text-base font-bold">${booking.vendor_payout?.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
