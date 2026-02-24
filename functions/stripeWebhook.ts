@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
                   <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
                     <li>EVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</li>
                     ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<li>Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</li>` : ''}
-                    <li>Stripe Processing Fee: $${(booking.stripe_fee || booking.stripe_fee_amount || 0).toFixed(2)}</li>
+                    <li>Stripe Processing Fee: $${(booking.stripe_fee_amount || 0).toFixed(2)}</li>
                   </ul>
                 </div>
 
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
                   <h2>Payment Breakdown</h2>
                   <div class="banner">
                     <p><strong>Client Paid Total:</strong> $${booking.total_amount_charged.toFixed(2)}</p>
-                    <p style="margin-top: 12px; font-size: 14px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 18px; font-weight: 900;">$${booking.vendor_payout.toFixed(2)}</span></p>
+                    <p style="margin-top: 12px; font-size: 14px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 18px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
                     <p style="margin-top: 8px; font-size: 13px; color: #666;">After platform fees, taxes, and processing costs</p>
                   </div>
 
@@ -245,10 +245,10 @@ Deno.serve(async (req) => {
 
                 <h2>Payment Summary</h2>
                 <div class="banner">
-                  <p style="margin-bottom: 12px;"><strong>Service Price:</strong> $${booking.base_event_amount.toFixed(2)}</p>
-                  ${booking.platform_fee_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">EVNT Platform Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</p>` : ''}
-                  ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</p>` : ''}
-                  <p style="margin-top: 12px; font-size: 18px;"><strong>Total Paid:</strong> $${booking.total_amount_charged.toFixed(2)}</p>
+                  <p style="margin-bottom: 12px;"><strong>Service Price:</strong> $${(booking.base_event_amount || 0).toFixed(2)}</p>
+                   ${booking.platform_fee_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">EVNT Platform Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</p>` : ''}
+                   ${(booking.sales_tax_amount || booking.maryland_sales_tax_amount) ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${(booking.sales_tax_amount || booking.maryland_sales_tax_amount).toFixed(2)}</p>` : ''}
+                   <p style="margin-top: 12px; font-size: 18px;"><strong>Total Paid:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
                 </div>
 
                 <p>Your vendor will contact you soon to finalize event details.</p>
@@ -290,8 +290,8 @@ Deno.serve(async (req) => {
 
                   <h2>Payment Breakdown</h2>
                   <div class="banner">
-                    <p><strong>Client Paid Total:</strong> $${booking.total_amount_charged.toFixed(2)}</p>
-                    <p style="margin-top: 12px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 20px; font-weight: 900;">$${booking.vendor_payout.toFixed(2)}</span></p>
+                    <p><strong>Client Paid Total:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
+                     <p style="margin-top: 12px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 20px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
                   </div>
 
                   <p>Funds will be transferred to your connected Stripe account after the event is marked as completed.</p>
