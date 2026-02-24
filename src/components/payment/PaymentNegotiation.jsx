@@ -450,9 +450,9 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Stripe Processing Fee:</span>
             <span className="font-bold">-${totals.stripeFee?.toFixed(2) || '0.00'}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm font-bold text-gray-800 pt-2 border-t border-gray-300">
             <span>Vendor Receives:</span>
-            <span className="font-bold">${totals.vendorPayout.toFixed(2)}</span>
+            <span>${totals.vendorPayout.toFixed(2)}</span>
           </div>
         </div>
 
