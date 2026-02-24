@@ -130,8 +130,8 @@ export default function AdminTransactionsPage() {
   };
 
   const bookingsInEscrow = bookings.filter(b => b.payment_status === 'escrow');
-  const totalEscrow = bookingsInEscrow.reduce((sum, b) => sum + (b.total_amount || b.agreed_price || 0), 0);
-  const totalPaid = bookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + (b.total_amount || b.agreed_price || 0), 0);
+  const totalEscrow = bookingsInEscrow.reduce((sum, b) => sum + (b.total_amount_charged || b.agreed_price || 0), 0);
+  const totalPaid = bookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + (b.total_amount_charged || b.agreed_price || 0), 0);
   const totalRefunded = bookings.filter(b => b.payment_status === 'refunded' || b.payment_status === 'partially_refunded').reduce((sum, b) => sum + (b.refund_amount || 0), 0);
 
   if (!isAdmin) {
@@ -266,7 +266,7 @@ export default function AdminTransactionsPage() {
                       <span>•</span>
                       <span>{format(new Date(booking.event_date), "MMM d, yyyy")}</span>
                       <span>•</span>
-                      <span className="font-bold">${(booking.total_amount || booking.agreed_price || 0).toFixed(2)}</span>
+                      <span className="font-bold">${(booking.total_amount_charged || booking.agreed_price || 0).toFixed(2)}</span>
                       {payout && <span>• Payout: ${payout.net_amount.toFixed(2)}</span>}
                     </div>
                   </div>
@@ -306,7 +306,7 @@ export default function AdminTransactionsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Total Amount</p>
-                    <p className="text-lg font-bold">${(selectedBooking.total_amount || selectedBooking.agreed_price || 0).toFixed(2)}</p>
+                    <p className="text-lg font-bold">${(selectedBooking.total_amount_charged || selectedBooking.agreed_price || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Vendor Payout</p>
@@ -403,7 +403,7 @@ export default function AdminTransactionsPage() {
               <Input
                 type="number"
                 step="0.01"
-                placeholder={`Full amount: $${selectedBooking?.total_amount?.toFixed(2) || '0.00'}`}
+                placeholder={`Full amount: $${selectedBooking?.total_amount_charged?.toFixed(2) || '0.00'}`}
                 value={refundAmount}
                 onChange={(e) => setRefundAmount(e.target.value)}
                 className="border-2 border-gray-300"
