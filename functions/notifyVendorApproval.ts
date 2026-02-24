@@ -80,13 +80,13 @@ Deno.serve(async (req) => {
         ` : ''}
         <p class="message">
           You're welcome to reapply in the future. If you have questions about this decision, 
-          please contact us at <a href="mailto:support@evnt.com" style="color: #000000; font-weight: 600;">support@evnt.com</a>.
+          please contact us at <a href="mailto:info@joinevnt.com" style="color: #000000; font-weight: 600;">info@joinevnt.com</a>.
         </p>
       `}
     </div>
     <div class="footer">
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a></p>
+      <p style="margin: 8px 0;">Questions? Email <a href="mailto:info@joinevnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">info@joinevnt.com</a></p>
     </div>
   </div>
 </body>

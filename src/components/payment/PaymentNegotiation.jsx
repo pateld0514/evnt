@@ -215,64 +215,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
     };
   };
 
-  const submitProposalMutation = useMutation({
-    mutationFn: async (data) => {
-      console.log('Mutation started:', { isVendor, bookingId: booking.id });
-      
-      // Update booking first
-      const updated = await base44.entities.Booking.update(booking.id, data);
-      console.log('Booking updated:', updated);
-      
-      // If client is accepting, redirect to Stripe Checkout
-      if (!isVendor) {
-        console.log('Client accepting - creating checkout...');
-        const response = await base44.functions.invoke('createCheckout', { 
-          bookingId: booking.id 
-        });
-        
-        console.log('Checkout response:', response);
-        
-        if (response.data?.url) {
-          console.log('Redirecting to:', response.data.url);
-          // Close dialog before redirect
-          if (onClose) onClose();
-          // Direct redirect without delay
-          window.location.href = response.data.url;
-          return updated;
-        } else {
-          console.error('No URL in response:', response);
-          throw new Error('No checkout URL received from server');
-        }
-      }
-      
-      return updated;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['bookings']);
-      
-      if (isVendor) {
-        toast.success("Proposal sent to client!");
-        if (onClose) onClose();
-      }
-    },
-    onError: (error) => {
-      console.error('Payment mutation error:', error);
-      const errorData = error.response?.data || error.data;
-      let errorMsg = error.message || 'Failed to process payment. Please try again.';
-      
-      if (errorData?.error) {
-        errorMsg = errorData.error;
-      }
-      
-      if (errorData?.vendor_not_connected) {
-        errorMsg = '⚠️ Vendor Payment Setup Required\n\nThis vendor has not yet connected their payment account. Please contact them to complete setup before proceeding.';
-      } else if (errorData?.vendor_setup_incomplete) {
-        errorMsg = '⚠️ Vendor Setup Incomplete\n\nThe vendor needs to complete their Stripe onboarding before you can pay. They have been notified.';
-      }
-      
-      toast.error(errorMsg, { duration: 8000 });
-    },
-  });
+
 
   const handleSubmit = async () => {
     if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
