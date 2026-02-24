@@ -27,10 +27,9 @@ Deno.serve(async (req) => {
     }
 
     // Only admins can issue refunds
-    const isAdmin = user.email === 'pateld0514@gmail.com' || user.role === 'admin';
-    
-    if (!isAdmin) {
-      return Response.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+    if (!user || user.role !== 'admin') {
+      console.error('Unauthorized refundBooking attempt', { user_id: user?.id, email: user?.email });
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     // Can only refund if payment was captured
@@ -40,12 +39,19 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Enforce payment_intent_id requirement (Fix #29)
     if (!booking.payment_intent_id) {
-      return Response.json({ error: 'No payment intent found' }, { status: 400 });
+      return Response.json({ error: 'Payment intent ID missing - cannot process refund' }, { status: 400 });
     }
 
-    // Determine refund amount (if not specified, full refund)
-    const refundAmount = amount || booking.total_amount || booking.agreed_price;
+    // Determine refund amount (if not specified, full refund) - Fix #2: use total_amount_charged
+    const refundAmount = amount || booking.total_amount_charged || booking.agreed_price;
+    
+    // Validate refund amount - Fix #16
+    if (!refundAmount || refundAmount <= 0) {
+      return Response.json({ error: 'Refund amount must be greater than 0' }, { status: 400 });
+    }
+    
     const refundInCents = Math.round(refundAmount * 100);
 
     // If payment is still in escrow (not captured), cancel instead
@@ -56,21 +62,33 @@ Deno.serve(async (req) => {
         status: 'cancelled',
         payment_status: 'cancelled',
         refund_reason: reason || 'Cancelled before capture',
+        refund_approved_by: user.email // Fix #33: log admin approval
       });
 
-      // Notify client
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: booking.client_email,
-        subject: '💰 Booking Cancelled - Authorization Released',
-        body: `
-          <h2>Booking Cancelled</h2>
-          <p>Your booking with ${booking.vendor_name} has been cancelled.</p>
-          <p>The payment authorization of $${refundAmount.toFixed(2)} has been released.</p>
-          ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-          <br>
-          <p>Best regards,<br>The EVNT Team</p>
-        `,
-      });
+      // Notify client - Fix #9, #30, #31: proper email template
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          from_name: 'EVNT',
+          to: booking.client_email,
+          subject: '💰 Booking Cancelled - Authorization Released',
+          body: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <h2>Booking Cancelled</h2>
+              <p>Your booking with ${booking.vendor_name} has been cancelled.</p>
+              <p>The payment authorization of <strong>$${refundAmount.toFixed(2)}</strong> has been released.</p>
+              ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <p style="font-size: 12px; color: #666;">
+                <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+                <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a>
+              </p>
+              <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error('[refundBooking] Failed to send cancellation email:', emailError);
+      }
 
       return Response.json({ 
         success: true, 
@@ -79,72 +97,113 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Process actual refund for captured payments
+    // Process actual refund for captured payments - Fix #25: use 'other' instead of requested_by_customer
     const refund = await stripe.refunds.create({
       payment_intent: booking.payment_intent_id,
       amount: refundInCents,
-      reason: reason || 'requested_by_customer',
+      reason: reason ? 'other' : 'customer_request',
       metadata: {
         booking_id: bookingId,
         refund_reason: reason || 'Admin refund'
       }
     });
 
-    // Determine if full or partial refund
-    const totalPaid = booking.total_amount || booking.agreed_price;
+    // Determine if full or partial refund - Fix #2: use total_amount_charged
+    const totalPaid = booking.total_amount_charged || booking.agreed_price;
     const isFullRefund = refundAmount >= totalPaid;
 
-    // Update booking
+    // Update booking - Fix #33: log admin approval
     await base44.asServiceRole.entities.Booking.update(bookingId, {
       payment_status: isFullRefund ? 'refunded' : 'partially_refunded',
       status: isFullRefund ? 'cancelled' : booking.status,
       refund_amount: refundAmount,
       refund_reason: reason || 'Admin refund',
       refund_date: new Date().toISOString(),
+      refund_approved_by: user.email
     });
 
-    // If vendor payout already processed, we need to reverse it
+    // If vendor payout already processed, we need to reverse it - Fix #5
     const payouts = await base44.asServiceRole.entities.VendorPayout.filter({ 
       booking_id: bookingId,
       status: 'completed'
     });
 
     if (payouts.length > 0) {
-      // Note: In production, you'd reverse the transfer here
-      // This is complex with Stripe Connect - may need to create a reversal
-      console.log('Warning: Vendor already paid out - manual reversal may be needed');
+      try {
+        // Invoke reversal function
+        const reversalResult = await base44.asServiceRole.functions.invoke('reverseVendorTransfer', {
+          payoutId: payouts[0].id,
+          stripeTransferId: payouts[0].stripe_transfer_id,
+          bookingId: bookingId,
+          refundAmount: refundAmount,
+          reason: reason || 'Admin refund'
+        });
+        console.log('[refundBooking] Vendor payout reversed:', { payout_id: payouts[0].id, refund_amount: refundAmount });
+      } catch (reversalError) {
+        console.error('[refundBooking] Failed to reverse vendor transfer:', reversalError);
+        // Log for manual follow-up
+        console.warn(`[refundBooking] MANUAL FOLLOW-UP REQUIRED: Refund issued to client ($${refundAmount.toFixed(2)}) but vendor transfer reversal failed. Payout ID: ${payouts[0].id}`);
+      }
     }
 
-    // Notify client
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: booking.client_email,
-      subject: '💰 Refund Processed',
-      body: `
-        <h2>Refund Issued</h2>
-        <p>A ${isFullRefund ? 'full' : 'partial'} refund has been processed for your booking with ${booking.vendor_name}.</p>
-        <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
-        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-        <p>The funds should appear in your account within 5-10 business days.</p>
-        <br>
-        <p>Best regards,<br>The EVNT Team</p>
-      `,
-    });
-
-    // Notify vendor
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
-    if (vendors.length > 0) {
+    // Notify client - Fix #9, #30, #31: proper email template with branding
+    try {
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: vendors[0].contact_email,
-        subject: '❌ Booking Refunded',
+        from_name: 'EVNT',
+        to: booking.client_email,
+        subject: '💰 Refund Processed',
         body: `
-          <h2>Booking Refund Issued</h2>
-          <p>A ${isFullRefund ? 'full' : 'partial'} refund was issued for booking with ${booking.client_name}.</p>
-          <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
-          ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-          <br>
-          <p>Best regards,<br>The EVNT Team</p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2>Refund Issued</h2>
+            <p>A <strong>${isFullRefund ? 'full' : 'partial'}</strong> refund has been processed for your booking with <strong>${booking.vendor_name}</strong>.</p>
+            <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
+            ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+            <p>The funds should appear in your account within 5-10 business days.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">
+              <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+              <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a>
+            </p>
+            <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
+          </div>
         `,
       });
+    } catch (emailError) {
+      console.error('[refundBooking] Failed to send client refund email:', emailError);
+    }
+
+    // Notify vendor - Fix #21, #27: prefer user email, null check vendor
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    if (vendors.length > 0) {
+      try {
+        // Prefer vendor user email over contact_email - Fix #21
+        const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: booking.vendor_id });
+        const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendors[0].contact_email;
+        
+        if (vendorEmail) {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            from_name: 'EVNT',
+            to: vendorEmail,
+            subject: '❌ Booking Refunded',
+            body: `
+              <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2>Booking Refund Issued</h2>
+                <p>A <strong>${isFullRefund ? 'full' : 'partial'}</strong> refund was issued for booking with <strong>${booking.client_name}</strong>.</p>
+                <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
+                ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                <p style="font-size: 12px; color: #666;">
+                  <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+                  <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a>
+                </p>
+                <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
+              </div>
+            `,
+          });
+        }
+      } catch (emailError) {
+        console.error('[refundBooking] Failed to send vendor refund email:', emailError);
+      }
     }
 
     return Response.json({ 
@@ -156,7 +215,12 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Refund error:', error);
+    // Fix #34: mask PII in logs
+    console.error('[refundBooking] Error:', {
+      message: error.message,
+      booking_id: bookingId,
+      admin_email: user?.email?.replace(/@.*/, '@...') // Mask email
+    });
     return Response.json({ 
       error: error.message || 'Failed to process refund' 
     }, { status: 500 });
