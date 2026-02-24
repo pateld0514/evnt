@@ -266,9 +266,28 @@ export default function BookingsPage() {
     return () => unsubscribe();
   }, [currentUser, queryClient]);
 
-  const filteredBookings = bookings.filter(booking => 
-    selectedStatus === "all" || booking.status === selectedStatus
-  );
+  const filteredBookings = bookings.filter(booking => {
+    if (selectedStatus === "all") return true;
+    
+    // Group related statuses together for better filtering
+    if (selectedStatus === "pending") {
+      return booking.status === "pending";
+    }
+    if (selectedStatus === "negotiating") {
+      return booking.status === "negotiating" || booking.status === "payment_pending";
+    }
+    if (selectedStatus === "confirmed") {
+      return booking.status === "confirmed" || booking.status === "in_progress";
+    }
+    if (selectedStatus === "completed") {
+      return booking.status === "completed";
+    }
+    if (selectedStatus === "cancelled") {
+      return booking.status === "cancelled" || booking.status === "declined";
+    }
+    
+    return booking.status === selectedStatus;
+  });
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
@@ -322,22 +341,43 @@ export default function BookingsPage() {
 
       {/* Status Tabs */}
       <div className="mb-6 md:mb-8 flex justify-center">
-        <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="w-full max-w-3xl">
-          <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-gray-100 border-2 border-black">
+        <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="w-full max-w-4xl">
+          <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-gray-100 border-2 border-black">
             <TabsTrigger value="all" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               All
+              <Badge className="ml-1 md:ml-2 bg-black text-white text-xs px-1.5 py-0.5 data-[state=active]:bg-white data-[state=active]:text-black">
+                {bookings.length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="pending" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Pending
+              New
+              <Badge className="ml-1 md:ml-2 bg-yellow-500 text-white text-xs px-1.5 py-0.5">
+                {bookings.filter(b => b.status === "pending").length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="negotiating" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Price
+              <Badge className="ml-1 md:ml-2 bg-blue-500 text-white text-xs px-1.5 py-0.5">
+                {bookings.filter(b => b.status === "negotiating" || b.status === "payment_pending").length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="confirmed" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
-              Confirmed
+              Active
+              <Badge className="ml-1 md:ml-2 bg-green-500 text-white text-xs px-1.5 py-0.5">
+                {bookings.filter(b => b.status === "confirmed" || b.status === "in_progress").length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="completed" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               Done
+              <Badge className="ml-1 md:ml-2 bg-gray-500 text-white text-xs px-1.5 py-0.5">
+                {bookings.filter(b => b.status === "completed").length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="cancelled" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
+              Closed
+              <Badge className="ml-1 md:ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
+                {bookings.filter(b => b.status === "cancelled" || b.status === "declined").length}
+              </Badge>
             </TabsTrigger>
           </TabsList>
         </Tabs>
