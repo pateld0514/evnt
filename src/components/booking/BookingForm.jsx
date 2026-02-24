@@ -74,7 +74,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
     }
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!currentUser) {
