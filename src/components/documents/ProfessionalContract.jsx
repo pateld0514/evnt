@@ -378,6 +378,9 @@ export default function ProfessionalContract({ booking, vendor }) {
         <p>1200 K Street NW, Suite 400, Washington, DC 20005</p>
         <p className="mt-1">support@evnt.com | (202) 555-EVNT</p>
         <p className="mt-2">Contract ID: {contractNumber}</p>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ccc; font-size: 10px;">
+          <p><a href="https://evnt.com/unsubscribe" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a></p>
+        </div>
       </div>
     </div>
   );

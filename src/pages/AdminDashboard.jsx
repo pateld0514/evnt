@@ -412,7 +412,7 @@ export default function AdminDashboardPage() {
                                   <div key={booking.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-300">
                                     <div>
                                       <p className="font-semibold">{booking.client_name}</p>
-                                      <p className="text-sm text-gray-600">{booking.event_type} - ${booking.total_amount_charged || booking.total_amount}</p>
+                                      <p className="text-sm text-gray-600">{booking.event_type} - ${booking.total_amount_charged || booking.agreed_price || 0}</p>
                                     </div>
                                     <div className="flex gap-2">
                                       <Button
