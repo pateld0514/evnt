@@ -603,7 +603,7 @@ export default function BookingsPage() {
                               <span>{(() => {
                                 const state = selectedBooking.client_state || (selectedBooking.location ? selectedBooking.location.split(',').pop().trim() : 'Maryland');
                                 const taxRate = selectedBooking.sales_tax_rate 
-                                  ? parseFloat((selectedBooking.sales_tax_rate * 100).toFixed(2))
+                                  ? (selectedBooking.sales_tax_rate * 100).toFixed(1)
                                   : selectedBooking.maryland_sales_tax_percent;
                                 return `${state} Sales Tax (${taxRate}%)`;
                               })()}:</span>
