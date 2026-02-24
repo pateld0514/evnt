@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     
     // Authenticate first
     const user = await base44.auth.me();
-    const isAdmin = user?.email === 'pateld0514@gmail.com' || user?.role === 'admin';
+    const isAdmin = user?.role === 'admin';
     
     const payload = await req.json();
     
@@ -71,10 +71,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Vendor Stripe account not verified' }, { status: 400 });
     }
 
-    // Calculate payout amounts
+    // Calculate payout amounts with validation
     const grossAmount = booking.agreed_price || 0;
     const platformFee = booking.platform_fee_amount || 0;
     const netAmount = booking.vendor_payout || (grossAmount - platformFee);
+    
+    if (netAmount <= 0) {
+      return Response.json({ error: 'Invalid payout amount: net amount must be greater than 0' }, { status: 400 });
+    }
 
     // Create payout record as pending
     const payoutRecord = await base44.asServiceRole.entities.VendorPayout.create({
@@ -87,8 +91,12 @@ Deno.serve(async (req) => {
     });
 
     try {
-      // CAPTURE THE PAYMENT INTENT (release from escrow)
-      const paymentIntent = await stripe.paymentIntents.capture(booking.payment_intent_id);
+      // CAPTURE THE PAYMENT INTENT (release from escrow) with idempotency
+      const idempotencyKey = `payout-${booking.id}-${booking.payment_intent_id}`;
+      const paymentIntent = await stripe.paymentIntents.capture(
+        booking.payment_intent_id,
+        { idempotency_key: idempotencyKey }
+      );
 
       if (paymentIntent.status !== 'succeeded') {
         throw new Error('Payment capture failed');
