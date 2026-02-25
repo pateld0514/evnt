@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { validateTransition } from './lib/bookingStateMachine.js';
 
 Deno.serve(async (req) => {
   try {
@@ -31,7 +32,6 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === "admin";
 
     if (!isVendor && !isClient && !isAdmin) {
-      console.error('Unauthorized updateProposal attempt', { user_id: user.id, email: user.email, booking_id: bookingId });
       return Response.json({ 
         error: 'Forbidden: Cannot modify this booking' 
       }, { status: 403 });
@@ -71,6 +71,18 @@ Deno.serve(async (req) => {
       currency: 'USD',
       status: proposalData.newStatus || booking.status
     };
+
+    // CRITICAL: Validate state transition if status is changing
+    if (updateData.status && updateData.status !== booking.status) {
+      try {
+        validateTransition(booking.status, updateData.status);
+      } catch (error) {
+        console.error('[updateProposal] Invalid state transition:', error.message);
+        return Response.json({ 
+          error: error.message 
+        }, { status: 400 });
+      }
+    }
 
     await base44.asServiceRole.entities.Booking.update(bookingId, updateData);
 

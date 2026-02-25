@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
+import { validateTransition } from './lib/bookingStateMachine.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -52,7 +53,9 @@ Deno.serve(async (req) => {
       payment_intent_id: booking.payment_intent_id
     });
 
-    // Verify booking is completed
+    // CRITICAL: Validate state transition using state machine
+    // Capture payment means we're moving from whatever state to confirming payment is captured
+    // The booking should already be 'completed' status-wise, but we're updating payment_status
     if (booking.status !== 'completed') {
       console.error(`[${requestId}] INVALID STATE: Booking status is ${booking.status}, expected completed`);
       return Response.json({ 

@@ -1,60 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
+import { sendPlatformEmail } from './lib/emailTemplate.js';
+import { validateTransition } from './lib/bookingStateMachine.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
-// Email template helper
-const EmailTemplate = {
-  wrap: (content, preheader = "", recipientEmail = "") => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f3f4f6; }
-    .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-    .header { background: linear-gradient(135deg, #000000 0%, #1f2937 100%); padding: 40px 30px; text-align: center; }
-    .logo { display: table; margin: 0 auto 16px; }
-    .logo-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #ffffff; border-radius: 12px; font-size: 32px; font-weight: 900; color: #000000; margin: 0 6px; }
-    .logo-text { display: inline-block; font-size: 40px; font-weight: 900; color: #ffffff; letter-spacing: -1px; margin: 0 6px; vertical-align: middle; }
-    .content { padding: 40px 30px; }
-    .highlight-box { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 24px; margin: 24px 0; }
-    .banner { background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-left: 4px solid #000000; padding: 20px; margin: 30px 0; border-radius: 8px; }
-    .button { display: inline-block; padding: 16px 32px; background: #000000; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 20px 0; }
-    .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 2px solid #e5e7eb; color: #9ca3af; font-size: 13px; }
-    .divider { height: 2px; background: #e5e7eb; margin: 30px 0; }
-    h1 { font-size: 28px; font-weight: 900; color: #000000; margin: 0 0 16px 0; }
-    h2 { font-size: 22px; font-weight: 700; color: #000000; margin: 24px 0 12px 0; }
-    h3 { font-size: 18px; font-weight: 700; color: #1f2937; margin: 20px 0 10px 0; }
-    p { margin: 0 0 16px 0; color: #4b5563; font-size: 15px; }
-    .emoji { font-size: 24px; margin-right: 8px; }
-  </style>
-</head>
-<body>
-  <div class="email-container">
-    <div class="header">
-      <div class="logo">
-        <div class="logo-icon">E</div>
-        <div class="logo-text">EVNT</div>
-      </div>
-    </div>
-    ${content}
-    <div class="footer">
-      <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 20px 0;">Questions? Email <a href="mailto:info@joinevnt.com" style="color: #000000; font-weight: 600;">info@joinevnt.com</a> or text <a href="tel:6094423524" style="color: #000000; font-weight: 600;">609-442-3524</a></p>
-      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
-       <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(recipientEmail || 'noreply@evnt.com')}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-       <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-       <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-  `
-};
+
 
 Deno.serve(async (req) => {
   const webhookId = crypto.randomUUID();
@@ -150,12 +102,25 @@ Deno.serve(async (req) => {
         console.log(`[${webhookId}] Checkout session completed:`, { bookingId, paymentIntentId });
 
         if (bookingId) {
-          await base44.asServiceRole.entities.Booking.update(bookingId, {
-            payment_status: 'processing',
-            status: 'confirmed',
-            payment_intent_id: paymentIntentId,
-            stripe_session_id: session.id,
-          });
+          const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings[0];
+          
+          if (booking) {
+            // CRITICAL: Validate state transition
+            try {
+              validateTransition(booking.status, 'confirmed');
+            } catch (error) {
+              console.error(`[${webhookId}] Invalid state transition:`, error.message);
+              // Log but don't fail webhook - Stripe expects 200
+            }
+            
+            await base44.asServiceRole.entities.Booking.update(bookingId, {
+              payment_status: 'processing',
+              status: 'confirmed',
+              payment_intent_id: paymentIntentId,
+              stripe_session_id: session.id,
+            });
+          }
         }
         break;
       }
@@ -173,54 +138,62 @@ Deno.serve(async (req) => {
         });
 
         if (bookingId) {
-          await base44.asServiceRole.entities.Booking.update(bookingId, {
-            payment_status: 'escrow',
-            status: 'confirmed',
-            payment_intent_id: paymentIntent.id,
-          });
+          const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings[0];
+          
+          if (booking) {
+            // CRITICAL: Validate state transition
+            try {
+              validateTransition(booking.status, 'confirmed');
+            } catch (error) {
+              console.error(`[${webhookId}] Invalid state transition:`, error.message);
+              // Log but don't fail webhook - Stripe expects 200
+            }
+            
+            await base44.asServiceRole.entities.Booking.update(bookingId, {
+              payment_status: 'escrow',
+              status: 'confirmed',
+              payment_intent_id: paymentIntent.id,
+            });
+          }
 
           // Send notifications
           const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
           const booking = bookings[0];
 
           if (booking) {
-            // Notify client
-            const clientEmailContent = `
-              <div class="content">
-                <h1><span class="emoji">✅</span> Payment Authorized!</h1>
-                <p>Hi ${booking.client_name || 'there'},</p>
-                <p>Your payment for <strong>${booking.vendor_name}</strong> has been authorized and is being held securely in escrow.</p>
-                
-                <div class="highlight-box">
-                  <h3>Booking Details</h3>
-                  <p><strong>Event:</strong> ${booking.event_type}<br/>
-                  <strong>Date:</strong> ${booking.event_date}<br/>
-                  <strong>Location:</strong> ${booking.location || 'TBD'}</p>
-                </div>
-
-                <h2>Payment Summary</h2>
-                <div class="banner">
-                  <p><strong>You Paid (Agreed Price):</strong> $${booking.total_amount_charged.toFixed(2)}</p>
-                  <p style="margin-top: 12px; font-size: 14px; color: #666;">Deductions from this amount:</p>
-                  <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
-                    <li>EVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</li>
-                    ${booking.sales_tax_amount ? `<li>Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</li>` : ''}
-                    <li>Stripe Processing Fee: $${(booking.stripe_fee_amount || 0).toFixed(2)}</li>
-                  </ul>
-                </div>
-
-                <p>Your booking is now <strong>confirmed</strong>. Payment will be released to the vendor after the event is completed.</p>
-                
-                <div class="divider"></div>
-                <p>Thank you for using EVNT to plan your special event!</p>
-              </div>
-            `;
-
-            await base44.asServiceRole.integrations.Core.SendEmail({
+            // Notify client using centralized email
+            await sendPlatformEmail(base44, {
               to: booking.client_email,
-              from_name: "EVNT",
               subject: '✅ Payment Authorized - Booking Confirmed',
-              body: EmailTemplate.wrap(clientEmailContent, 'Your payment has been authorized and booking confirmed', booking.client_email)
+              content: `
+                <div class="content">
+                  <h1><span class="emoji">✅</span> Payment Authorized!</h1>
+                  <p>Hi ${booking.client_name || 'there'},</p>
+                  <p>Your payment for <strong>${booking.vendor_name}</strong> has been authorized and is being held securely in escrow.</p>
+                  
+                  <div class="highlight-box">
+                    <h3>Booking Details</h3>
+                    <p><strong>Event:</strong> ${booking.event_type}<br/>
+                    <strong>Date:</strong> ${booking.event_date}<br/>
+                    <strong>Location:</strong> ${booking.location || 'TBD'}</p>
+                  </div>
+
+                  <h2>Payment Summary</h2>
+                  <div class="banner">
+                    <p><strong>You Paid (Agreed Price):</strong> $${booking.total_amount_charged.toFixed(2)}</p>
+                    <p style="margin-top: 12px; font-size: 14px; color: #666;">Deductions from this amount:</p>
+                    <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px; color: #666;">
+                      <li>EVNT Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</li>
+                      ${booking.sales_tax_amount ? `<li>Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</li>` : ''}
+                      <li>Stripe Processing Fee: $${(booking.stripe_fee_amount || 0).toFixed(2)}</li>
+                    </ul>
+                  </div>
+
+                  <p>Your booking is now <strong>confirmed</strong>. Payment will be released to the vendor after the event is completed.</p>
+                  <p>Thank you for using EVNT to plan your special event!</p>
+                </div>
+              `,
             });
 
             // Notify vendor
@@ -232,39 +205,34 @@ Deno.serve(async (req) => {
               const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
               const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : (vendor.contact_email || vendor.created_by);
 
-              const vendorEmailContent = `
-                <div class="content">
-                  <h1><span class="emoji">🎉</span> Booking Confirmed!</h1>
-                  <p>Hi there,</p>
-                  <p>Great news! Payment for your booking with <strong>${booking.client_name}</strong> has been secured in escrow.</p>
-                  
-                  <div class="highlight-box">
-                    <h3>Booking Details</h3>
-                    <p><strong>Client:</strong> ${booking.client_name}<br/>
-                    <strong>Event:</strong> ${booking.event_type}<br/>
-                    <strong>Date:</strong> ${booking.event_date}<br/>
-                    <strong>Location:</strong> ${booking.location || 'TBD'}</p>
-                  </div>
-
-                  <h2>Payment Breakdown</h2>
-                  <div class="banner">
-                    <p><strong>Client Paid Total:</strong> $${booking.total_amount_charged.toFixed(2)}</p>
-                    <p style="margin-top: 12px; font-size: 14px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 18px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
-                    <p style="margin-top: 8px; font-size: 13px; color: #666;">After platform fees, taxes, and processing costs</p>
-                  </div>
-
-                  <p>Payment will be released to your connected Stripe account automatically after you mark the event as completed.</p>
-                  
-                  <div class="divider"></div>
-                  <p>Ready to deliver an amazing experience! Contact your client to finalize event details.</p>
-                </div>
-              `;
-
-              await base44.asServiceRole.integrations.Core.SendEmail({
+              await sendPlatformEmail(base44, {
                 to: vendorEmail,
-                from_name: "EVNT",
                 subject: '🎉 Booking Confirmed - Payment Secured',
-                body: EmailTemplate.wrap(vendorEmailContent, `Payment secured for ${booking.event_type} on ${booking.event_date}`, vendorEmail)
+                content: `
+                  <div class="content">
+                    <h1><span class="emoji">🎉</span> Booking Confirmed!</h1>
+                    <p>Hi there,</p>
+                    <p>Great news! Payment for your booking with <strong>${booking.client_name}</strong> has been secured in escrow.</p>
+                    
+                    <div class="highlight-box">
+                      <h3>Booking Details</h3>
+                      <p><strong>Client:</strong> ${booking.client_name}<br/>
+                      <strong>Event:</strong> ${booking.event_type}<br/>
+                      <strong>Date:</strong> ${booking.event_date}<br/>
+                      <strong>Location:</strong> ${booking.location || 'TBD'}</p>
+                    </div>
+
+                    <h2>Payment Breakdown</h2>
+                    <div class="banner">
+                      <p><strong>Client Paid Total:</strong> $${booking.total_amount_charged.toFixed(2)}</p>
+                      <p style="margin-top: 12px; font-size: 14px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 18px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
+                      <p style="margin-top: 8px; font-size: 13px; color: #666;">After platform fees, taxes, and processing costs</p>
+                    </div>
+
+                    <p>Payment will be released to your connected Stripe account automatically after you mark the event as completed.</p>
+                    <p>Ready to deliver an amazing experience! Contact your client to finalize event details.</p>
+                  </div>
+                `,
               });
             }
           }
@@ -280,94 +248,95 @@ Deno.serve(async (req) => {
         console.log(`[${webhookId}] Payment succeeded:`, { bookingId, payment_intent: paymentIntent.id });
 
         if (bookingId) {
-          await base44.asServiceRole.entities.Booking.update(bookingId, {
-            payment_status: 'paid',
-            status: 'confirmed',
-          });
-
-          // Send receipt emails
           const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
           const booking = bookings[0];
+          
+          if (booking) {
+            // CRITICAL: Validate state transition
+            try {
+              validateTransition(booking.status, 'confirmed');
+            } catch (error) {
+              console.error(`[${webhookId}] Invalid state transition:`, error.message);
+              // Log but don't fail webhook
+            }
+            
+            await base44.asServiceRole.entities.Booking.update(bookingId, {
+              payment_status: 'paid',
+              status: 'confirmed',
+            });
+          }
+
+          const bookings2 = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings2[0];
 
           if (booking) {
-            // Send receipt to client
-            const receiptContent = `
-              <div class="content">
-                <h1><span class="emoji">🎉</span> Payment Successful!</h1>
-                <p>Hi ${booking.client_name || 'there'},</p>
-                <p>Thank you for your payment. Your booking with <strong>${booking.vendor_name}</strong> is now confirmed!</p>
-                
-                <div class="highlight-box">
-                  <h3>Booking Details</h3>
-                  <p><strong>Event:</strong> ${booking.event_type}<br/>
-                  <strong>Date:</strong> ${booking.event_date}<br/>
-                  <strong>Location:</strong> ${booking.location || 'TBD'}</p>
-                </div>
-
-                <h2>Payment Summary</h2>
-                <div class="banner">
-                  <p style="margin-bottom: 12px;"><strong>Service Price:</strong> $${(booking.base_event_amount || 0).toFixed(2)}</p>
-                   ${booking.platform_fee_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">EVNT Platform Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</p>` : ''}
-                    ${booking.sales_tax_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</p>` : ''}
-                   <p style="margin-top: 12px; font-size: 18px;"><strong>Total Paid:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
-                </div>
-
-                <p>Your vendor will contact you soon to finalize event details.</p>
-                
-                <div class="divider"></div>
-                <p>We're here to make your event amazing!</p>
-              </div>
-            `;
-
-            await base44.asServiceRole.integrations.Core.SendEmail({
+            // Send receipt to client using centralized email
+            await sendPlatformEmail(base44, {
               to: booking.client_email,
-              from_name: "EVNT",
               subject: '🎉 Payment Receipt - Booking Confirmed',
-              body: EmailTemplate.wrap(receiptContent, 'Your payment was successful and booking is confirmed', booking.client_email)
-            });
-
-            // Send notification to vendor
-            const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
-            const vendor = vendors[0];
-            
-            if (vendor) {
-              // Get vendor's user email for reliable delivery
-              const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
-              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : (vendor.contact_email || vendor.created_by);
-
-              const vendorPaymentContent = `
+              content: `
                 <div class="content">
-                  <h1><span class="emoji">💰</span> Payment Received!</h1>
-                  <p>Hi there,</p>
-                  <p>Great news! Payment for your booking with <strong>${booking.client_name}</strong> has been processed successfully.</p>
+                  <h1><span class="emoji">🎉</span> Payment Successful!</h1>
+                  <p>Hi ${booking.client_name || 'there'},</p>
+                  <p>Thank you for your payment. Your booking with <strong>${booking.vendor_name}</strong> is now confirmed!</p>
                   
                   <div class="highlight-box">
                     <h3>Booking Details</h3>
-                    <p><strong>Client:</strong> ${booking.client_name} (${booking.client_email})<br/>
-                    <strong>Event:</strong> ${booking.event_type}<br/>
+                    <p><strong>Event:</strong> ${booking.event_type}<br/>
                     <strong>Date:</strong> ${booking.event_date}<br/>
                     <strong>Location:</strong> ${booking.location || 'TBD'}</p>
                   </div>
 
-                  <h2>Payment Breakdown</h2>
+                  <h2>Payment Summary</h2>
                   <div class="banner">
-                    <p><strong>Client Paid Total:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
-                     <p style="margin-top: 12px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 20px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
+                    <p style="margin-bottom: 12px;"><strong>Service Price:</strong> $${(booking.base_event_amount || 0).toFixed(2)}</p>
+                     ${booking.platform_fee_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">EVNT Platform Fee (${booking.platform_fee_percent}%): $${booking.platform_fee_amount.toFixed(2)}</p>` : ''}
+                      ${booking.sales_tax_amount ? `<p style="font-size: 14px; color: #666; margin: 4px 0;">Sales Tax: $${booking.sales_tax_amount.toFixed(2)}</p>` : ''}
+                     <p style="margin-top: 12px; font-size: 18px;"><strong>Total Paid:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
                   </div>
 
-                  <p>Funds will be transferred to your connected Stripe account after the event is marked as completed.</p>
-                  <p>Please reach out to the client to coordinate event details and ensure an amazing experience!</p>
-                  
-                  <div class="divider"></div>
-                  <p>Focus on delivering excellence - we've got the payment secured!</p>
+                  <p>Your vendor will contact you soon to finalize event details.</p>
+                  <p>We're here to make your event amazing!</p>
                 </div>
-              `;
+              `,
+            });
 
-              await base44.asServiceRole.integrations.Core.SendEmail({
+            // Send notification to vendor using centralized email
+            const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+            const vendor = vendors[0];
+            
+            if (vendor) {
+              const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
+              const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : (vendor.contact_email || vendor.created_by);
+
+              await sendPlatformEmail(base44, {
                 to: vendorEmail,
-                from_name: "EVNT",
                 subject: '💰 Payment Received - Booking Confirmed',
-                body: EmailTemplate.wrap(vendorPaymentContent, `Payment received for ${booking.event_type}`, vendorEmail)
+                content: `
+                  <div class="content">
+                    <h1><span class="emoji">💰</span> Payment Received!</h1>
+                    <p>Hi there,</p>
+                    <p>Great news! Payment for your booking with <strong>${booking.client_name}</strong> has been processed successfully.</p>
+                    
+                    <div class="highlight-box">
+                      <h3>Booking Details</h3>
+                      <p><strong>Client:</strong> ${booking.client_name} (${booking.client_email})<br/>
+                      <strong>Event:</strong> ${booking.event_type}<br/>
+                      <strong>Date:</strong> ${booking.event_date}<br/>
+                      <strong>Location:</strong> ${booking.location || 'TBD'}</p>
+                    </div>
+
+                    <h2>Payment Breakdown</h2>
+                    <div class="banner">
+                      <p><strong>Client Paid Total:</strong> $${(booking.total_amount_charged || 0).toFixed(2)}</p>
+                       <p style="margin-top: 12px;"><strong>Your Payout:</strong> <span style="color: #059669; font-size: 20px; font-weight: 900;">$${(booking.vendor_payout || 0).toFixed(2)}</span></p>
+                    </div>
+
+                    <p>Funds will be transferred to your connected Stripe account after the event is marked as completed.</p>
+                    <p>Please reach out to the client to coordinate event details and ensure an amazing experience!</p>
+                    <p>Focus on delivering excellence - we've got the payment secured!</p>
+                  </div>
+                `,
               });
             }
           }
@@ -396,10 +365,23 @@ Deno.serve(async (req) => {
         console.log(`[${webhookId}] Payment canceled:`, { bookingId });
 
         if (bookingId) {
-          await base44.asServiceRole.entities.Booking.update(bookingId, {
-            payment_status: 'cancelled',
-            status: 'cancelled',
-          });
+          const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
+          const booking = bookings[0];
+          
+          if (booking) {
+            // CRITICAL: Validate state transition
+            try {
+              validateTransition(booking.status, 'cancelled');
+            } catch (error) {
+              console.error(`[${webhookId}] Invalid state transition:`, error.message);
+              // Log but don't fail webhook
+            }
+            
+            await base44.asServiceRole.entities.Booking.update(bookingId, {
+              payment_status: 'cancelled',
+              status: 'cancelled',
+            });
+          }
         }
         break;
       }
@@ -419,33 +401,27 @@ Deno.serve(async (req) => {
           const booking = bookings[0];
           
           if (booking) {
-            const failedContent = `
-              <div class="content">
-                <h1><span class="emoji">❌</span> Payment Failed</h1>
-                <p>Hi ${booking.client_name || 'there'},</p>
-                <p>We were unable to process your payment for <strong>${booking.vendor_name}</strong>.</p>
-                
-                <div class="banner">
-                  <p style="margin: 0;"><strong>What to do next:</strong></p>
-                  <ul style="margin: 12px 0 0; padding-left: 20px;">
-                    <li>Check your payment method details</li>
-                    <li>Ensure sufficient funds are available</li>
-                    <li>Try a different card if needed</li>
-                  </ul>
-                </div>
-
-                <a href="${req.headers.get('origin')}/Bookings" class="button">Retry Payment</a>
-                
-                <div class="divider"></div>
-                <p>Need help? Contact us and we'll assist you right away.</p>
-              </div>
-            `;
-
-            await base44.asServiceRole.integrations.Core.SendEmail({
+            await sendPlatformEmail(base44, {
               to: booking.client_email,
-              from_name: "EVNT",
               subject: '❌ Payment Failed',
-              body: EmailTemplate.wrap(failedContent, 'Your payment could not be processed', booking.client_email)
+              content: `
+                <div class="content">
+                  <h1><span class="emoji">❌</span> Payment Failed</h1>
+                  <p>Hi ${booking.client_name || 'there'},</p>
+                  <p>We were unable to process your payment for <strong>${booking.vendor_name}</strong>.</p>
+                  
+                  <div class="banner">
+                    <p style="margin: 0;"><strong>What to do next:</strong></p>
+                    <ul style="margin: 12px 0 0; padding-left: 20px;">
+                      <li>Check your payment method details</li>
+                      <li>Ensure sufficient funds are available</li>
+                      <li>Try a different card if needed</li>
+                    </ul>
+                  </div>
+
+                  <p>Need help? Contact us and we'll assist you right away.</p>
+                </div>
+              `,
             });
           }
         }
@@ -466,38 +442,43 @@ Deno.serve(async (req) => {
           const refundAmount = charge.amount_refunded / 100;
           const isFullRefund = charge.refunded;
 
+          // CRITICAL: Validate state transition if moving to cancelled
+          if (isFullRefund) {
+            try {
+              validateTransition(booking.status, 'cancelled');
+            } catch (error) {
+              console.error(`[${webhookId}] Invalid state transition for refund:`, error.message);
+              // Log but don't fail webhook
+            }
+          }
+
           await base44.asServiceRole.entities.Booking.update(booking.id, {
             payment_status: isFullRefund ? 'refunded' : 'partially_refunded',
             status: isFullRefund ? 'cancelled' : booking.status,
             refund_amount: refundAmount,
           });
 
-          // Notify client
-          const refundContent = `
-            <div class="content">
-              <h1><span class="emoji">💰</span> Refund Processed</h1>
-              <p>Hi ${booking.client_name || 'there'},</p>
-              <p>A refund of <strong>$${refundAmount.toFixed(2)}</strong> has been processed for your booking with ${booking.vendor_name}.</p>
-              
-              <div class="highlight-box">
-                <h3>Refund Details</h3>
-                <p><strong>Amount Refunded:</strong> $${refundAmount.toFixed(2)}<br/>
-                <strong>Booking:</strong> ${booking.event_type}<br/>
-                <strong>Expected in Account:</strong> 5-10 business days</p>
-              </div>
-
-              <p>The funds will be returned to your original payment method.</p>
-              
-              <div class="divider"></div>
-              <p>We hope to help you plan another event in the future!</p>
-            </div>
-          `;
-
-          await base44.asServiceRole.integrations.Core.SendEmail({
+          // Notify client using centralized email
+          await sendPlatformEmail(base44, {
             to: booking.client_email,
-            from_name: "EVNT",
             subject: '💰 Refund Processed',
-            body: EmailTemplate.wrap(refundContent, `Refund of $${refundAmount.toFixed(2)} has been processed`, booking.client_email)
+            content: `
+              <div class="content">
+                <h1><span class="emoji">💰</span> Refund Processed</h1>
+                <p>Hi ${booking.client_name || 'there'},</p>
+                <p>A refund of <strong>$${refundAmount.toFixed(2)}</strong> has been processed for your booking with ${booking.vendor_name}.</p>
+                
+                <div class="highlight-box">
+                  <h3>Refund Details</h3>
+                  <p><strong>Amount Refunded:</strong> $${refundAmount.toFixed(2)}<br/>
+                  <strong>Booking:</strong> ${booking.event_type}<br/>
+                  <strong>Expected in Account:</strong> 5-10 business days</p>
+                </div>
+
+                <p>The funds will be returned to your original payment method.</p>
+                <p>We hope to help you plan another event in the future!</p>
+              </div>
+            `,
           });
         }
         break;

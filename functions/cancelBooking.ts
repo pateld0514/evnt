@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 import { sendPlatformEmail } from './lib/emailTemplate.js';
+import { validateTransition } from './lib/bookingStateMachine.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -40,6 +41,21 @@ Deno.serve(async (req) => {
     if (booking.payment_status === 'paid') {
       return Response.json({ 
         error: 'Cannot cancel - payment already captured. Please request a refund instead.' 
+      }, { status: 400 });
+    }
+
+    // CRITICAL: Validate state transition using state machine
+    try {
+      validateTransition(booking.status, 'cancelled');
+    } catch (error) {
+      console.error('[cancelBooking] Invalid state transition:', {
+        booking_id: bookingId,
+        current: booking.status,
+        requested: 'cancelled',
+        error: error.message
+      });
+      return Response.json({ 
+        error: error.message 
       }, { status: 400 });
     }
 

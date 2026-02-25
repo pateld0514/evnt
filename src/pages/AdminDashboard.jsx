@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
   const approvedVendors = vendors.filter(v => v.approval_status === "approved");
   const rejectedVendors = vendors.filter(v => v.approval_status === "rejected");
   
-  const clientUsers = allUsers.filter(u => u.user_type === "client" && u.email !== "pateld0514@gmail.com");
+  const clientUsers = allUsers.filter(u => u.user_type === "client");
   const vendorUsers = allUsers.filter(u => u.user_type === "vendor");
 
   if (!currentUser) {
