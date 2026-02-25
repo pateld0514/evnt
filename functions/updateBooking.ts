@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
     }
 
     // Security: Verify user can modify this booking
+    // CRITICAL: Admin check uses ONLY role-based authorization
     const isAdmin = user.role === 'admin';
     const isClient = booking.client_email === user.email;
     const isVendor = user.vendor_id && booking.vendor_id === user.vendor_id;

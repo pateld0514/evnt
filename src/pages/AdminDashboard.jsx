@@ -32,9 +32,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const checkAdmin = async () => {
       const user = await base44.auth.me();
-      const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
       
-      if (!isAdmin) {
+      // CRITICAL: Admin check uses ONLY role-based authorization
+      if (user.role !== 'admin') {
         navigate(createPageUrl("Home"));
         return;
       }

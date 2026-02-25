@@ -61,6 +61,16 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // CRITICAL: Validate vendor payout is positive
+    if (booking.vendor_payout !== undefined && booking.vendor_payout < 0) {
+      console.error(`[${requestId}] INVALID DATA: Negative vendor payout`, {
+        vendor_payout: booking.vendor_payout
+      });
+      return Response.json({ 
+        error: 'Invalid pricing calculation. Vendor payout cannot be negative.' 
+      }, { status: 400 });
+    }
+
     // Verify tax rate is pre-calculated (CRITICAL)
     if (!booking.sales_tax_rate && booking.sales_tax_rate !== 0) {
       console.error(`[${requestId}] CRITICAL: Missing sales_tax_rate. Booking must have tax calculated during proposal.`);

@@ -49,6 +49,7 @@ export default function Home() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
+        // CRITICAL: Admin check uses ONLY role-based authorization
         const isAdmin = currentUser.role === "admin";
         
         if (!currentUser.onboarding_complete && !isAdmin) {

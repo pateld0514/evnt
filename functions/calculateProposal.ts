@@ -132,6 +132,19 @@ Deno.serve(async (req) => {
     // Calculate vendor payout: discounted amount - all deductions
     const totalDeductions = platformFeeAmount + salesTax + stripeFeeAmount;
     const vendorPayout = discountedAmount - totalDeductions;
+    
+    // CRITICAL: Validate vendor payout is not negative
+    if (vendorPayout < 0) {
+      throw new Error(
+        `Vendor payout cannot be negative ($${vendorPayout.toFixed(2)}). ` +
+        `Reduce fees or increase agreed price. ` +
+        `Breakdown: Agreed amount: $${discountedAmount.toFixed(2)}, ` +
+        `Fees: $${platformFeeAmount.toFixed(2)}, ` +
+        `Tax: $${salesTax.toFixed(2)}, ` +
+        `Stripe: $${stripeFeeAmount.toFixed(2)}`
+      );
+    }
+    
     const totalAmount = discountedAmount; // Client pays the discounted agreed price
 
     // Return validated financial breakdown with standardized field names - Fix #1: ensure stripe_fee_amount returned
