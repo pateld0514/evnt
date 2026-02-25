@@ -39,7 +39,8 @@ export default function Layout({ children, currentPageName }) {
         if (user.demo_mode) {
           setUserType(user.demo_user_type);
           setOnboardingComplete(user.demo_onboarding_complete || false);
-        } else if (user.email === "pateld0514@gmail.com" || user.role === "admin") {
+        } else if (user.role === "admin") {
+          // CRITICAL: Admin check uses ONLY role-based authorization
           setUserType("admin");
           setOnboardingComplete(true);
         } else {

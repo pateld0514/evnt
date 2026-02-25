@@ -6,7 +6,7 @@ const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
 // Email template helper
 const EmailTemplate = {
-  wrap: (content, preheader = "") => `
+  wrap: (content, preheader = "", recipientEmail = "") => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,9 +45,9 @@ const EmailTemplate = {
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
       <p style="margin: 20px 0;">Questions? Email <a href="mailto:info@joinevnt.com" style="color: #000000; font-weight: 600;">info@joinevnt.com</a> or text <a href="tel:6094423524" style="color: #000000; font-weight: 600;">609-442-3524</a></p>
       <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
-        <a href="https://evnt.com/unsubscribe" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-        <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-        <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
+       <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(recipientEmail || 'noreply@evnt.com')}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
+       <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
+       <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
       </p>
     </div>
   </div>
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
               to: booking.client_email,
               from_name: "EVNT",
               subject: '✅ Payment Authorized - Booking Confirmed',
-              body: EmailTemplate.wrap(clientEmailContent, 'Your payment has been authorized and booking confirmed')
+              body: EmailTemplate.wrap(clientEmailContent, 'Your payment has been authorized and booking confirmed', booking.client_email)
             });
 
             // Notify vendor
@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
                 to: vendorEmail,
                 from_name: "EVNT",
                 subject: '🎉 Booking Confirmed - Payment Secured',
-                body: EmailTemplate.wrap(vendorEmailContent, `Payment secured for ${booking.event_type} on ${booking.event_date}`)
+                body: EmailTemplate.wrap(vendorEmailContent, `Payment secured for ${booking.event_type} on ${booking.event_date}`, vendorEmail)
               });
             }
           }
@@ -323,7 +323,7 @@ Deno.serve(async (req) => {
               to: booking.client_email,
               from_name: "EVNT",
               subject: '🎉 Payment Receipt - Booking Confirmed',
-              body: EmailTemplate.wrap(receiptContent, 'Your payment was successful and booking is confirmed')
+              body: EmailTemplate.wrap(receiptContent, 'Your payment was successful and booking is confirmed', booking.client_email)
             });
 
             // Send notification to vendor
@@ -367,7 +367,7 @@ Deno.serve(async (req) => {
                 to: vendorEmail,
                 from_name: "EVNT",
                 subject: '💰 Payment Received - Booking Confirmed',
-                body: EmailTemplate.wrap(vendorPaymentContent, `Payment received for ${booking.event_type}`)
+                body: EmailTemplate.wrap(vendorPaymentContent, `Payment received for ${booking.event_type}`, vendorEmail)
               });
             }
           }
@@ -445,7 +445,7 @@ Deno.serve(async (req) => {
               to: booking.client_email,
               from_name: "EVNT",
               subject: '❌ Payment Failed',
-              body: EmailTemplate.wrap(failedContent, 'Your payment could not be processed')
+              body: EmailTemplate.wrap(failedContent, 'Your payment could not be processed', booking.client_email)
             });
           }
         }
@@ -497,7 +497,7 @@ Deno.serve(async (req) => {
             to: booking.client_email,
             from_name: "EVNT",
             subject: '💰 Refund Processed',
-            body: EmailTemplate.wrap(refundContent, `Refund of $${refundAmount.toFixed(2)} has been processed`)
+            body: EmailTemplate.wrap(refundContent, `Refund of $${refundAmount.toFixed(2)} has been processed`, booking.client_email)
           });
         }
         break;
