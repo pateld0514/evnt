@@ -49,7 +49,6 @@ export default function AdminDashboardPage() {
       // Use a backend function to fetch ALL vendors with service role access
       try {
         const response = await base44.functions.invoke('getAllVendorsForAdmin', {});
-        console.log('Admin fetched vendors:', response.data);
         return response.data || [];
       } catch (error) {
         console.error('Failed to fetch vendors:', error);

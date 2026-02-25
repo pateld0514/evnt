@@ -7,7 +7,6 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
 Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
-  console.log(`[${requestId}] === CHECKOUT REQUEST START ===`);
   
   try {
     const base44 = createClientFromRequest(req);
@@ -18,9 +17,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log(`[${requestId}] User authenticated:`, user.email);
     const { bookingId } = await req.json();
-    console.log(`[${requestId}] Booking ID:`, bookingId);
     
     if (!bookingId) {
       console.error(`[${requestId}] VALIDATION ERROR: Missing booking ID`);
@@ -38,7 +35,7 @@ Deno.serve(async (req) => {
 
     // CRITICAL: Verify user owns this booking
     if (booking.client_email !== user.email) {
-      console.error(`[${requestId}] AUTHORIZATION FAILED: User ${user.email} attempted to pay for booking owned by ${booking.client_email}`);
+      console.error(`[${requestId}] AUTHORIZATION FAILED`);
       return Response.json({ error: 'Unauthorized to pay for this booking' }, { status: 403 });
     }
 
@@ -81,13 +78,6 @@ Deno.serve(async (req) => {
     }
     
     const salesTaxRate = booking.sales_tax_rate;
-    
-    console.log(`[${requestId}] Tax validation:`, {
-      location: booking.location,
-      client_state: booking.client_state,
-      pre_calculated_rate: booking.sales_tax_rate,
-      applied_rate: salesTaxRate
-    });
 
     // Get vendor's Stripe account
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
@@ -98,11 +88,6 @@ Deno.serve(async (req) => {
     }
     
     const vendor = vendors[0];
-    console.log(`[${requestId}] Vendor Stripe status:`, {
-      vendor_id: vendor.id,
-      has_account: !!vendor.stripe_account_id,
-      verified: vendor.stripe_account_verified
-    });
     
     if (!vendor.stripe_account_id) {
       console.error(`[${requestId}] VENDOR ERROR: Missing Stripe account`);
@@ -116,11 +101,6 @@ Deno.serve(async (req) => {
     let stripeAccount;
     try {
       stripeAccount = await stripe.accounts.retrieve(vendor.stripe_account_id);
-      console.log(`[${requestId}] Stripe account retrieved:`, {
-        charges_enabled: stripeAccount.charges_enabled,
-        payouts_enabled: stripeAccount.payouts_enabled,
-        details_submitted: stripeAccount.details_submitted
-      });
     } catch (stripeError) {
       console.error(`[${requestId}] STRIPE ERROR: Failed to retrieve account`, stripeError);
       return Response.json({ 
@@ -185,24 +165,10 @@ Deno.serve(async (req) => {
     }
     const stripeFeeAmount = booking.stripe_fee_amount;
     const stripeFeeCents = Math.round(stripeFeeAmount * 100);
-    
-    console.log(`[${requestId}] Payment breakdown (cents):`, {
-      agreed_price: baseAmountCents,
-      platform_fee: platformFeeCents,
-      sales_tax: taxCents,
-      stripe_fee: stripeFeeCents,
-      total_client_pays: totalCents,
-      total_evnt_keeps: platformFeeCents + taxCents + stripeFeeCents,
-      vendor_receives: baseAmountCents - platformFeeCents - taxCents - stripeFeeCents
-    });
 
     // Get redirect URLs
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
-    console.log(`[${requestId}] Redirect base URL:`, baseUrl);
-
-    // Create Stripe Checkout Session with manual capture (escrow)
-    console.log(`[${requestId}] Creating Stripe Checkout Session...`);
     
     // Build comprehensive line items breakdown
     const additionalFeesText = booking.additional_fees && booking.additional_fees.length > 0
@@ -307,12 +273,6 @@ Deno.serve(async (req) => {
         event_date: booking.event_date,
       },
     });
-    
-    console.log(`[${requestId}] Checkout Session created:`, {
-      session_id: session.id,
-      url: session.url
-    });
-    console.log(`[${requestId}] === CHECKOUT REQUEST SUCCESS ===`);
 
     return Response.json({ url: session.url });
 

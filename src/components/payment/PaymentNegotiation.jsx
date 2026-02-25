@@ -107,7 +107,6 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             });
           }
         } catch (error) {
-          console.error('Failed to calculate proposal:', error);
           setCalculationError('Failed to calculate totals. Please try again.');
           toast.error('Failed to calculate totals');
         } finally {

@@ -37,7 +37,8 @@ export default function ProfilePage() {
         setNotificationPref(currentUser.notification_preference || "email");
 
         // Redirect to onboarding if not complete
-        if (!currentUser.onboarding_complete && currentUser.email !== "pateld0514@gmail.com") {
+        const isAdmin = currentUser.role === "admin";
+        if (!currentUser.onboarding_complete && !isAdmin) {
           navigate(createPageUrl("Onboarding"));
           return;
         }
@@ -49,7 +50,6 @@ export default function ProfilePage() {
           }
         }
       } catch (error) {
-        console.error("Error loading profile:", error);
         base44.auth.redirectToLogin();
       } finally {
         setLoading(false);
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     base44.auth.logout();
   };
 
-  const isAdmin = user?.email === "pateld0514@gmail.com" || user?.role === "admin";
+  const isAdmin = user?.role === "admin";
 
   const switchView = (type) => {
     if (type === "vendor") {
@@ -103,7 +103,6 @@ export default function ProfilePage() {
       }, 1000);
     },
     onError: (error) => {
-      console.error("Delete error:", error);
       toast.error("Failed to delete account: " + (error.message || "Unknown error"));
       setDeleteStep(1);
       setShowDeleteConfirm(false);

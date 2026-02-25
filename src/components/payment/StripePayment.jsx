@@ -43,19 +43,18 @@ export default function StripePayment({ booking, onSuccess }) {
     mutationFn: async () => {
       // Call backend to create Stripe Checkout Session
       const response = await base44.functions.invoke('createCheckout', {
-        booking_id: booking.id
+        bookingId: booking.id
       });
       
-      if (!response.data?.checkout_url) {
+      if (!response.data?.url) {
         throw new Error('Failed to create checkout session');
       }
       
       // Redirect to Stripe Checkout
-      window.location.href = response.data.checkout_url;
+      window.location.href = response.data.url;
     },
     onError: (error) => {
       toast.error(error.message || "Failed to initiate payment. Please try again.");
-      console.error(error);
     },
   });
 

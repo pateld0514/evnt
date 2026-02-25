@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === "admin";
 
     if (!isVendor && !isClient && !isAdmin) {
-      console.error('Unauthorized calculateProposal call', { user_id: user.id, booking_id: bookingId });
       return Response.json({ 
         error: 'Forbidden: Cannot modify this booking' 
       }, { status: 403 });
