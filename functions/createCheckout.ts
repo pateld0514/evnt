@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 import { STATE_TAX_RATES } from './stateTaxRates.js';
+import { buildStripeMetadata } from './lib/stripeMetadata.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -235,22 +236,7 @@ Deno.serve(async (req) => {
         transfer_data: {
           destination: vendor.stripe_account_id,
         },
-        metadata: {
-          booking_id: bookingId,
-          client_email: booking.client_email,
-          vendor_id: booking.vendor_id,
-          event_type: booking.event_type,
-          event_date: booking.event_date,
-          event_location: booking.location || '',
-          base_event_amount: booking.base_event_amount.toString(),
-          platform_fee_amount: booking.platform_fee_amount.toString(),
-          platform_fee_percent: booking.platform_fee_percent.toString(),
-          sales_tax_amount: booking.sales_tax_amount.toString(),
-          total_amount_charged: booking.total_amount_charged.toString(),
-          vendor_payout: booking.vendor_payout.toString(),
-          stripe_fee_amount: stripeFeeAmount.toString(),
-          request_id: requestId
-        },
+        metadata: buildStripeMetadata(booking, { requestId }),
         description: `${booking.event_type} on ${booking.event_date}`,
       },
       success_url: `${baseUrl}/Bookings?payment=success&booking=${bookingId}`,

@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
+import { requireAdmin } from './lib/auth.js';
+import { sendPlatformEmail } from './lib/emailTemplate.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -26,11 +28,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Only admins can issue refunds
-    if (!user || user.role !== 'admin') {
-      console.error('Unauthorized refundBooking attempt', { user_id: user?.id, email: user?.email });
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    // Only admins can issue refunds - using centralized auth
+    requireAdmin(user);
 
     // Can only refund if payment was captured
     if (booking.payment_status !== 'paid' && booking.payment_status !== 'escrow') {
@@ -65,25 +64,17 @@ Deno.serve(async (req) => {
         refund_approved_by: user.email // Fix #33: log admin approval
       });
 
-      // Notify client - Fix #9, #30, #31: proper email template
+      // Notify client using centralized email template
       try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          from_name: 'EVNT',
+        await sendPlatformEmail(base44, {
           to: booking.client_email,
           subject: '💰 Booking Cancelled - Authorization Released',
-          body: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          content: `
+            <div class="content">
               <h2>Booking Cancelled</h2>
               <p>Your booking with ${booking.vendor_name} has been cancelled.</p>
               <p>The payment authorization of <strong>$${refundAmount.toFixed(2)}</strong> has been released.</p>
               ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-              <p style="font-size: 12px; color: #666;">
-                <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-                <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-                <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-              </p>
-              <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
             </div>
           `,
         });
@@ -147,26 +138,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Notify client - Fix #9, #30, #31: proper email template with branding
+    // Notify client using centralized email template
     try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'EVNT',
+      await sendPlatformEmail(base44, {
         to: booking.client_email,
         subject: '💰 Refund Processed',
-        body: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        content: `
+          <div class="content">
             <h2>Refund Issued</h2>
             <p>A <strong>${isFullRefund ? 'full' : 'partial'}</strong> refund has been processed for your booking with <strong>${booking.vendor_name}</strong>.</p>
             <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
             ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
             <p>The funds should appear in your account within 5-10 business days.</p>
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="font-size: 12px; color: #666;">
-               <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-               <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-               <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-             </p>
-            <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
           </div>
         `,
       });
@@ -183,23 +166,15 @@ Deno.serve(async (req) => {
         const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendors[0].contact_email;
         
         if (vendorEmail) {
-          await base44.asServiceRole.integrations.Core.SendEmail({
-            from_name: 'EVNT',
+          await sendPlatformEmail(base44, {
             to: vendorEmail,
             subject: '❌ Booking Refunded',
-            body: `
-              <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            content: `
+              <div class="content">
                 <h2>Booking Refund Issued</h2>
                 <p>A <strong>${isFullRefund ? 'full' : 'partial'}</strong> refund was issued for booking with <strong>${booking.client_name}</strong>.</p>
                 <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
                 ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                <p style="font-size: 12px; color: #666;">
-                 <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-                 <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-                 <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-                </p>
-                <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
               </div>
             `,
           });

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
+import { sendPlatformEmail } from './lib/emailTemplate.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
@@ -66,27 +67,19 @@ Deno.serve(async (req) => {
       cancelled_date: new Date().toISOString(),
     });
 
-    // Notify both parties - Fix #10, #22, #30, #31: proper email templates with error handling
+    // Notify client using centralized email template
     try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'EVNT',
+      await sendPlatformEmail(base44, {
         to: booking.client_email,
         subject: '❌ Booking Cancelled',
-        body: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        content: `
+          <div class="content">
             <h2>Booking Cancelled</h2>
             <p>Your booking with <strong>${booking.vendor_name}</strong> has been cancelled.</p>
             <p><strong>Event:</strong> ${booking.event_type}</p>
             <p><strong>Date:</strong> ${booking.event_date}</p>
             ${booking.payment_status === 'escrow' ? '<p>Any authorized payment has been released back to your card.</p>' : ''}
             ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="font-size: 12px; color: #666;">
-              <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-              <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-              <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-            </p>
-            <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
           </div>
         `,
       });
@@ -103,24 +96,16 @@ Deno.serve(async (req) => {
         const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendors[0].contact_email;
         
         if (vendorEmail) {
-          await base44.asServiceRole.integrations.Core.SendEmail({
-            from_name: 'EVNT',
+          await sendPlatformEmail(base44, {
             to: vendorEmail,
             subject: '❌ Booking Cancelled',
-            body: `
-              <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            content: `
+              <div class="content">
                 <h2>Booking Cancelled</h2>
                 <p>The booking with <strong>${booking.client_name}</strong> has been cancelled.</p>
                 <p><strong>Event:</strong> ${booking.event_type}</p>
                 <p><strong>Date:</strong> ${booking.event_date}</p>
                 ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                <p style="font-size: 12px; color: #666;">
-                 <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-                 <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-                 <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-                </p>
-                <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
               </div>
             `,
           });

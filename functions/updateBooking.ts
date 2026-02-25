@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { validateTransition } from './lib/bookingStateMachine.js';
 
 Deno.serve(async (req) => {
   try {
@@ -50,6 +51,23 @@ Deno.serve(async (req) => {
 
     // Remove expectedUpdatedDate from actual updates (it's for validation only)
     const { expectedUpdatedDate, ...safeUpdates } = updates;
+
+    // CRITICAL: Validate state transitions if status is being changed
+    if (safeUpdates.status && safeUpdates.status !== booking.status) {
+      try {
+        validateTransition(booking.status, safeUpdates.status);
+      } catch (error) {
+        console.error(`[updateBooking] Invalid state transition:`, {
+          booking_id: bookingId,
+          current: booking.status,
+          requested: safeUpdates.status,
+          error: error.message
+        });
+        return Response.json({ 
+          error: error.message 
+        }, { status: 400 });
+      }
+    }
 
     // Update the booking
     await base44.asServiceRole.entities.Booking.update(bookingId, safeUpdates);

@@ -38,7 +38,7 @@ export default function AdminTransactionsPage() {
     queryFn: () => base44.auth.me(),
   });
 
-  const isAdmin = currentUser?.email === "pateld0514@gmail.com" || currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin";
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['all-bookings'],

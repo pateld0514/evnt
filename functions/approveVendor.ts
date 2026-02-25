@@ -1,16 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin } from './lib/auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // CRITICAL: Admin-only check
-    if (!user || user.role !== "admin") {
-      console.error('Unauthorized approveVendor attempt', { user_id: user?.id, email: user?.email });
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    // CRITICAL: Admin-only check using centralized auth
+    requireAdmin(user);
 
     const { vendorId, userId } = await req.json();
 

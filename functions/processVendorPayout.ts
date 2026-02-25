@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
+import { requireAdmin } from './lib/auth.js';
+import { sendPlatformEmail } from './lib/emailTemplate.js';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
@@ -33,11 +34,8 @@ Deno.serve(async (req) => {
         return Response.json({ success: true, message: 'Not a payout trigger event' });
       }
     } else {
-      // Direct call - require admin auth
-      if (!isAdmin) {
-        console.error('Unauthorized processVendorPayout attempt', { user_id: user.id, email: user.email });
-        return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
-      }
+      // Direct call - require admin auth using centralized auth
+      requireAdmin(user);
       if (!payload.booking_id) {
         return Response.json({ error: 'booking_id required' }, { status: 400 });
       }
@@ -137,26 +135,18 @@ Deno.serve(async (req) => {
       const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: vendor.id });
       const vendorEmail = vendorUsers.length > 0 ? vendorUsers[0].email : vendor.contact_email;
 
-      // Send notification to vendor with proper email
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'EVNT',
+      // Send notification to vendor using centralized email template
+      await sendPlatformEmail(base44, {
         to: vendorEmail,
         subject: '💰 Payment Released - Payout Processed',
-        body: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        content: `
+          <div class="content">
             <h2>Payment Released!</h2>
             <p>The payment for your completed booking has been released from escrow.</p>
             <p><strong>Booking:</strong> ${booking.event_type} with ${booking.client_name}</p>
             <p><strong>Amount:</strong> $${netAmount.toFixed(2)}</p>
             <p>The funds will be transferred to your bank account within 1-3 business days.</p>
             <p>View details at: ${req.headers.get('origin')}/VendorDashboard</p>
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="font-size: 12px; color: #666;">
-             <a href="https://evnt.com/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-             <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-             <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms</a>
-            </p>
-            <p style="font-size: 12px; color: #999;">EVNT, Inc. | Washington, DC</p>
           </div>
         `,
       });
