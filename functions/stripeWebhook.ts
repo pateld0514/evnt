@@ -114,17 +114,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
-    // CRITICAL: Verify we haven't already processed this webhook event to prevent double-processing
-    // For webhook idempotency, Stripe guarantees delivery but we must handle duplicates
-    console.log(`[${webhookId}] Webhook verified and processing`, {
+    // CRITICAL: Idempotency check - prevent duplicate processing
+    console.log(`[${webhookId}] Webhook received`, {
       event_id: event.id,
       event_type: event.type,
       timestamp: new Date().toISOString()
     });
 
-    // NOTE: In production, implement ProcessedWebhookEvent entity to store processed event IDs
-    // This prevents race conditions where rapid webhook delivery could cause double-processing
-    // For now, relying on idempotency at the operation level (payment intent capture, etc.)
+    // Check if we've already processed this event
+    const existingEvents = await base44.asServiceRole.entities.ProcessedWebhookEvent.filter({
+      event_id: event.id
+    });
+
+    if (existingEvents.length > 0) {
+      console.log(`[${webhookId}] Event ${event.id} already processed - returning success (idempotent)`);
+      return Response.json({ received: true, already_processed: true }, { status: 200 });
+    }
+
+    // Record that we're processing this event
+    await base44.asServiceRole.entities.ProcessedWebhookEvent.create({
+      event_id: event.id,
+      event_type: event.type,
+      processed_at: new Date().toISOString()
+    });
+
+    console.log(`[${webhookId}] Event ${event.id} marked as processing`);
 
     // Handle the event
     switch (event.type) {
@@ -490,7 +504,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ received: true });
+    console.log(`[${webhookId}] Webhook processing completed successfully`);
+    return Response.json({ received: true }, { status: 200 });
 
   } catch (error) {
     console.error(`[${webhookId}] === WEBHOOK PROCESSING FAILED ===`);
@@ -499,6 +514,7 @@ Deno.serve(async (req) => {
     console.error(`[${webhookId}] Stack:`, error.stack);
     
     // Only expose generic error to Stripe (don't leak internals)
+    // Return 500 so Stripe retries
     return Response.json({ 
       error: 'Webhook processing failed',
       webhook_id: webhookId 
