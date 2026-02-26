@@ -4,24 +4,19 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get the user first
-    const users = await base44.asServiceRole.entities.User.filter({ email: 'info@joinevnt.com' });
+    // Get the current logged-in user
+    const user = await base44.auth.me();
     
-    if (users.length === 0) {
-      return Response.json({ error: 'User not found' }, { status: 404 });
+    if (!user) {
+      return Response.json({ error: 'User not authenticated' }, { status: 401 });
     }
     
-    const userId = users[0].id;
-    
-    // Update user with vendor info
-    await base44.asServiceRole.entities.User.update(userId, {
+    // Update current user with vendor info
+    await base44.auth.updateMe({
       user_type: 'vendor',
       vendor_id: '699fa36c19956dc189f27101',
       onboarding_complete: true,
-      approval_status: 'approved',
-      full_name: 'Marcus Rivera',
-      phone: '(305) 842-7721',
-      location: 'Miami, FL'
+      approval_status: 'approved'
     });
 
     return Response.json({ 
