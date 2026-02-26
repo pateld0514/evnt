@@ -110,6 +110,12 @@ export default function BookingsPage() {
     queryFn: async () => {
       if (!currentUser) return [];
       
+      // TEST MODE: For admin/test users viewing vendor bookings
+      if ((currentUser.email === 'pateld0514@gmail.com' || currentUser.role === 'admin') && isVendor) {
+        const allBookings = await base44.entities.Booking.list('-created_date');
+        return allBookings.filter(b => b.vendor_id === '699fa36c19956dc189f27101');
+      }
+      
       if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
       } else if (currentUser.demo_mode === "client") {
