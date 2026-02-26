@@ -49,11 +49,17 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
 
     setSaving(true);
     try {
-      // Update user profile
-      await base44.auth.updateMe(formData);
-      
-      // Wait a bit to ensure database is updated
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Update the User entity directly to change full_name and other fields
+      await base44.entities.User.update(user.id, {
+        full_name: formData.full_name,
+        phone: formData.phone,
+        location: formData.location,
+        event_interests: formData.event_interests,
+        budget_range: formData.budget_range,
+        company_name: formData.company_name,
+        event_planning_experience: formData.event_planning_experience,
+        preferred_contact: formData.preferred_contact
+      });
       
       toast.success("Profile updated successfully!");
       
