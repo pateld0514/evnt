@@ -64,10 +64,6 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       
       console.log("Profile update result:", result);
       toast.success("Profile updated successfully!");
-      
-      // Wait a moment for the update to propagate
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
       if (onSave) await onSave();
     } catch (error) {
       console.error("Failed to update profile:", error);

@@ -154,10 +154,6 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
       console.log("Profile update results:", { vendorResult, userResult });
       toast.success("Profile updated successfully!");
-      
-      // Wait a moment for the update to propagate
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
       if (onSave) await onSave();
     } catch (error) {
       console.error("Profile update error:", error);

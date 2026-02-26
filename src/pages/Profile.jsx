@@ -398,8 +398,7 @@ export default function ProfilePage() {
               user={user}
               vendor={vendor}
               onSave={async () => {
-                setEditingProfile(false);
-                // Reload all data
+                // Reload all data BEFORE closing dialog
                 const updatedUser = await base44.auth.me();
                 setUser(updatedUser);
                 if (updatedUser.vendor_id) {
@@ -408,6 +407,7 @@ export default function ProfilePage() {
                     setVendor(vendors[0]);
                   }
                 }
+                setEditingProfile(false);
               }}
               onCancel={() => setEditingProfile(false)}
             />
@@ -415,10 +415,10 @@ export default function ProfilePage() {
             <ClientProfileEditor
               user={user}
               onSave={async () => {
-                setEditingProfile(false);
-                // Reload user data
+                // Reload user data BEFORE closing dialog
                 const updatedUser = await base44.auth.me();
                 setUser(updatedUser);
+                setEditingProfile(false);
               }}
               onCancel={() => setEditingProfile(false)}
             />
