@@ -78,7 +78,8 @@ export default function VendorDashboard() {
     queryKey: ['vendor-bookings', vendor?.id],
     queryFn: async () => {
       if (!vendor?.id) return [];
-      return await base44.entities.Booking.filter({ vendor_id: vendor.id }, '-created_date');
+      const allBookings = await base44.entities.Booking.list('-created_date');
+      return allBookings.filter(b => b.vendor_id === vendor.id);
     },
     enabled: !!vendor?.id,
     initialData: [],
@@ -90,7 +91,8 @@ export default function VendorDashboard() {
     queryKey: ['vendor-messages', vendor?.id],
     queryFn: async () => {
       if (!vendor?.id) return [];
-      return await base44.entities.Message.filter({ vendor_id: vendor.id }, '-created_date');
+      const allMessages = await base44.entities.Message.list('-created_date');
+      return allMessages.filter(m => m.vendor_id === vendor.id);
     },
     enabled: !!vendor?.id,
     initialData: [],
