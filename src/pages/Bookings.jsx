@@ -117,6 +117,11 @@ export default function BookingsPage() {
       } else if (currentUser.user_type === "vendor") {
         // Get all bookings and filter by vendor
         const allBookings = await base44.entities.Booking.list('-created_date');
+        
+        if (currentUser.vendor_id) {
+          return allBookings.filter(b => b.vendor_id === currentUser.vendor_id);
+        }
+        
         const allVendors = await base44.entities.Vendor.list();
         const myVendor = allVendors.find(v => v.created_by === currentUser.email);
         
