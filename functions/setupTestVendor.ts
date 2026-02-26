@@ -4,8 +4,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Update user profile for info@joinevnt.com
-    await base44.asServiceRole.auth.updateUser('info@joinevnt.com', {
+    // Get the user first
+    const users = await base44.asServiceRole.entities.User.filter({ email: 'info@joinevnt.com' });
+    
+    if (users.length === 0) {
+      return Response.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    const userId = users[0].id;
+    
+    // Update user with vendor info
+    await base44.asServiceRole.entities.User.update(userId, {
       user_type: 'vendor',
       vendor_id: '699fa36c19956dc189f27101',
       onboarding_complete: true,
@@ -17,7 +26,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ 
       success: true,
-      message: 'Test vendor account setup complete'
+      message: 'Test vendor account setup complete. Refresh the page.'
     });
 
   } catch (error) {
