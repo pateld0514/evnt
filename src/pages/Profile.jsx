@@ -16,7 +16,9 @@ import TierDisplay from "../components/tier/TierDisplay";
 import ClientProfileEditor from "../components/profile/ClientProfileEditor";
 import VendorProfileEditor from "../components/profile/VendorProfileEditor";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Edit } from "lucide-react";
+import { Edit, Bug } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BugReportForm from "../components/support/BugReportForm";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -133,7 +135,20 @@ export default function ProfilePage() {
         <h1 className="text-3xl md:text-4xl font-black text-black mb-2">Profile</h1>
       </div>
 
-      <Card className="border-2 border-black mb-6">
+      <Tabs defaultValue="profile" className="mb-6">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="profile" className="font-bold">
+            <User className="w-4 h-4 mr-2" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="bug-report" className="font-bold">
+            <Bug className="w-4 h-4 mr-2" />
+            Report Issue
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6">
+          <Card className="border-2 border-black">
         <CardHeader className="bg-black text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 font-black">
@@ -193,9 +208,9 @@ export default function ProfilePage() {
             )}
           </div>
         </CardContent>
-      </Card>
+          </Card>
 
-      {user?.user_type === "vendor" && vendor && (
+          {user?.user_type === "vendor" && vendor && (
         <Card className="border-2 border-black mb-6">
           <CardHeader className="bg-black text-white">
             <CardTitle className="font-black">Business Information</CardTitle>
@@ -234,10 +249,10 @@ export default function ProfilePage() {
               )}
             </div>
           </CardContent>
-        </Card>
-      )}
+            </Card>
+          )}
 
-      <Card className="border-2 border-black mb-6">
+          <Card className="border-2 border-black mb-6">
         <CardHeader className="bg-black text-white">
           <CardTitle className="flex items-center gap-2 font-black">
             <Bell className="w-6 h-6" />
@@ -256,10 +271,10 @@ export default function ProfilePage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+          </Card>
 
-      {user?.user_type && (
-        <div className="space-y-6 mb-6">
+          {user?.user_type && (
+            <div className="space-y-6 mb-6">
           <TierDisplay 
             userEmail={user.email} 
             userType={user.user_type}
@@ -267,10 +282,10 @@ export default function ProfilePage() {
           />
           <ReferralTracker userEmail={user.email} userType={user.user_type} />
           <ReferralCard userEmail={user.email} userType={user.user_type} />
-        </div>
-      )}
+            </div>
+          )}
 
-      <div className="space-y-3">
+          <div className="space-y-3">
         {isAdmin && (
           <Card className="border-2 border-purple-600 bg-purple-50">
             <CardContent className="p-4">
@@ -360,8 +375,14 @@ export default function ProfilePage() {
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
-        </AlertDialog>
-      </div>
+            </AlertDialog>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="bug-report">
+          {user && <BugReportForm user={user} />}
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Profile Dialog */}
       <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
