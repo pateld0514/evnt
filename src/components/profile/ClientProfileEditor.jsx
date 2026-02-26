@@ -50,20 +50,11 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
     setSaving(true);
     try {
       await base44.auth.updateMe(formData);
-      
-      // Send notification about profile update
-      await base44.entities.Notification.create({
-        recipient_email: user.email,
-        type: "booking_status",
-        title: "✅ Profile Updated Successfully",
-        message: "Your client profile has been updated. All changes are now live across the platform.",
-        read: false
-      });
-
       toast.success("Profile updated successfully!");
       if (onSave) onSave();
     } catch (error) {
-      toast.error("Failed to update profile");
+      console.error("Failed to update profile:", error);
+      toast.error("Failed to update profile: " + (error.message || "Unknown error"));
     } finally {
       setSaving(false);
     }
