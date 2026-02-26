@@ -75,26 +75,30 @@ export default function VendorDashboard() {
   }, [navigate]);
 
   const { data: bookings = [] } = useQuery({
-    queryKey: ['vendor-bookings', vendor?.id],
+    queryKey: ['vendor-bookings', vendor?.id, currentUser?.vendor_id],
     queryFn: async () => {
-      if (!vendor?.id) return [];
+      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
+      const vendorId = vendor?.id || currentUser?.vendor_id;
+      if (!vendorId) return [];
       const allBookings = await base44.entities.Booking.list('-created_date');
-      return allBookings.filter(b => b.vendor_id === vendor.id);
+      return allBookings.filter(b => b.vendor_id === vendorId);
     },
-    enabled: !!vendor?.id,
+    enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
     refetchOnMount: true,
     staleTime: 0,
   });
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['vendor-messages', vendor?.id],
+    queryKey: ['vendor-messages', vendor?.id, currentUser?.vendor_id],
     queryFn: async () => {
-      if (!vendor?.id) return [];
+      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
+      const vendorId = vendor?.id || currentUser?.vendor_id;
+      if (!vendorId) return [];
       const allMessages = await base44.entities.Message.list('-created_date');
-      return allMessages.filter(m => m.vendor_id === vendor.id);
+      return allMessages.filter(m => m.vendor_id === vendorId);
     },
-    enabled: !!vendor?.id,
+    enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -103,26 +107,30 @@ export default function VendorDashboard() {
   });
 
   const { data: vendorViews = [] } = useQuery({
-    queryKey: ['vendor-views', vendor?.id],
+    queryKey: ['vendor-views', vendor?.id, currentUser?.vendor_id],
     queryFn: async () => {
-      if (!vendor?.id) return [];
-      const allViews = await base44.entities.VendorView.filter({ vendor_id: vendor.id });
+      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
+      const vendorId = vendor?.id || currentUser?.vendor_id;
+      if (!vendorId) return [];
+      const allViews = await base44.entities.VendorView.filter({ vendor_id: vendorId });
       return allViews;
     },
-    enabled: !!vendor?.id,
+    enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
     refetchOnMount: true,
     staleTime: 0,
   });
 
   const { data: vendorSwipes = [] } = useQuery({
-    queryKey: ['vendor-swipes', vendor?.id],
+    queryKey: ['vendor-swipes', vendor?.id, currentUser?.vendor_id],
     queryFn: async () => {
-      if (!vendor?.id) return [];
-      const allSwipes = await base44.entities.UserSwipe.filter({ vendor_id: vendor.id });
+      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
+      const vendorId = vendor?.id || currentUser?.vendor_id;
+      if (!vendorId) return [];
+      const allSwipes = await base44.entities.UserSwipe.filter({ vendor_id: vendorId });
       return allSwipes;
     },
-    enabled: !!vendor?.id,
+    enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
     refetchOnMount: true,
     staleTime: 0,
