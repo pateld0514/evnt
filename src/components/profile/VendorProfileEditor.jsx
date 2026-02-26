@@ -140,20 +140,11 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         tiktok: formData.tiktok || null
       });
 
-      // Update user profile
-      await base44.auth.updateMe({
+      // Update user profile - use entities API to update full_name
+      await base44.entities.User.update(user.id, {
         full_name: formData.full_name,
         phone: formData.phone,
         location: formData.location
-      });
-
-      // Send notification
-      await base44.entities.Notification.create({
-        recipient_email: user.email,
-        type: "booking_status",
-        title: "✅ Vendor Profile Updated",
-        message: "Your vendor profile has been updated successfully. All changes are now visible to clients across the platform.",
-        read: false
       });
 
       toast.success("Profile updated successfully!");
