@@ -397,9 +397,17 @@ export default function ProfilePage() {
             <VendorProfileEditor
               user={user}
               vendor={vendor}
-              onSave={() => {
+              onSave={async () => {
                 setEditingProfile(false);
-                window.location.reload();
+                // Reload all data
+                const updatedUser = await base44.auth.me();
+                setUser(updatedUser);
+                if (updatedUser.vendor_id) {
+                  const vendors = await base44.entities.Vendor.filter({ id: updatedUser.vendor_id });
+                  if (vendors && vendors.length > 0) {
+                    setVendor(vendors[0]);
+                  }
+                }
               }}
               onCancel={() => setEditingProfile(false)}
             />

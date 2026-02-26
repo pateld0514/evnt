@@ -65,6 +65,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
+    } finally {
       setSaving(false);
     }
   };
