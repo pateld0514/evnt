@@ -65,7 +65,9 @@ export default function BookingsPage() {
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState(null);
 
-  const isVendor = currentUser?.user_type === "vendor" || currentUser?.demo_mode === "vendor";
+  // TEST MODE: Check if viewing as vendor
+  const isTestAdmin = currentUser?.email === 'pateld0514@gmail.com' || currentUser?.role === 'admin';
+  const isVendor = currentUser?.user_type === "vendor" || currentUser?.demo_mode === "vendor" || isTestAdmin;
 
   useEffect(() => {
     const loadUser = async () => {
@@ -110,8 +112,9 @@ export default function BookingsPage() {
     queryFn: async () => {
       if (!currentUser) return [];
       
-      // TEST MODE: For admin/test users viewing vendor bookings
-      if ((currentUser.email === 'pateld0514@gmail.com' || currentUser.role === 'admin') && isVendor) {
+      // TEST MODE: For admin viewing as vendor
+      const isTestAdmin = currentUser.email === 'pateld0514@gmail.com' || currentUser.role === 'admin';
+      if (isTestAdmin) {
         const allBookings = await base44.entities.Booking.list('-created_date');
         return allBookings.filter(b => b.vendor_id === '699fa36c19956dc189f27101');
       }
@@ -123,11 +126,6 @@ export default function BookingsPage() {
       } else if (currentUser.user_type === "vendor") {
         // Get all bookings and filter by vendor
         const allBookings = await base44.entities.Booking.list('-created_date');
-        
-        if (currentUser.vendor_id) {
-          return allBookings.filter(b => b.vendor_id === currentUser.vendor_id);
-        }
-        
         const allVendors = await base44.entities.Vendor.list();
         const myVendor = allVendors.find(v => v.created_by === currentUser.email);
         

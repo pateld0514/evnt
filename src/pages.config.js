@@ -47,66 +47,66 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Profile from './pages/Profile';
+import VendorRewards from './pages/VendorRewards';
+import VendorPending from './pages/VendorPending';
+import Saved from './pages/Saved';
 import About from './pages/About';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminMonitoring from './pages/AdminMonitoring';
-import AdminSetup from './pages/AdminSetup';
-import AdminTransactions from './pages/AdminTransactions';
-import Bookings from './pages/Bookings';
-import ClientRegistration from './pages/ClientRegistration';
 import EmailPreview from './pages/EmailPreview';
+import TestSuite from './pages/TestSuite';
+import AdminDashboard from './pages/AdminDashboard';
 import EventDashboard from './pages/EventDashboard';
 import EventVendors from './pages/EventVendors';
 import Home from './pages/Home';
-import Messages from './pages/Messages';
-import Onboarding from './pages/Onboarding';
 import Privacy from './pages/Privacy';
-import Profile from './pages/Profile';
 import Refund from './pages/Refund';
-import Rewards from './pages/Rewards';
-import Saved from './pages/Saved';
-import Swipe from './pages/Swipe';
-import Terms from './pages/Terms';
-import TestSuite from './pages/TestSuite';
-import VendorDashboard from './pages/VendorDashboard';
-import VendorOnboarding from './pages/VendorOnboarding';
-import VendorPending from './pages/VendorPending';
-import VendorProfile from './pages/VendorProfile';
-import VendorRegistration from './pages/VendorRegistration';
-import VendorRewards from './pages/VendorRewards';
+import ClientRegistration from './pages/ClientRegistration';
+import Messages from './pages/Messages';
 import VendorView from './pages/VendorView';
+import Onboarding from './pages/Onboarding';
+import Swipe from './pages/Swipe';
+import VendorRegistration from './pages/VendorRegistration';
+import VendorDashboard from './pages/VendorDashboard';
+import Terms from './pages/Terms';
+import VendorProfile from './pages/VendorProfile';
+import AdminTransactions from './pages/AdminTransactions';
+import Rewards from './pages/Rewards';
+import Bookings from './pages/Bookings';
+import AdminMonitoring from './pages/AdminMonitoring';
+import AdminSetup from './pages/AdminSetup';
+import VendorOnboarding from './pages/VendorOnboarding';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Profile": Profile,
+    "VendorRewards": VendorRewards,
+    "VendorPending": VendorPending,
+    "Saved": Saved,
     "About": About,
-    "AdminDashboard": AdminDashboard,
-    "AdminMonitoring": AdminMonitoring,
-    "AdminSetup": AdminSetup,
-    "AdminTransactions": AdminTransactions,
-    "Bookings": Bookings,
-    "ClientRegistration": ClientRegistration,
     "EmailPreview": EmailPreview,
+    "TestSuite": TestSuite,
+    "AdminDashboard": AdminDashboard,
     "EventDashboard": EventDashboard,
     "EventVendors": EventVendors,
     "Home": Home,
-    "Messages": Messages,
-    "Onboarding": Onboarding,
     "Privacy": Privacy,
-    "Profile": Profile,
     "Refund": Refund,
-    "Rewards": Rewards,
-    "Saved": Saved,
-    "Swipe": Swipe,
-    "Terms": Terms,
-    "TestSuite": TestSuite,
-    "VendorDashboard": VendorDashboard,
-    "VendorOnboarding": VendorOnboarding,
-    "VendorPending": VendorPending,
-    "VendorProfile": VendorProfile,
-    "VendorRegistration": VendorRegistration,
-    "VendorRewards": VendorRewards,
+    "ClientRegistration": ClientRegistration,
+    "Messages": Messages,
     "VendorView": VendorView,
+    "Onboarding": Onboarding,
+    "Swipe": Swipe,
+    "VendorRegistration": VendorRegistration,
+    "VendorDashboard": VendorDashboard,
+    "Terms": Terms,
+    "VendorProfile": VendorProfile,
+    "AdminTransactions": AdminTransactions,
+    "Rewards": Rewards,
+    "Bookings": Bookings,
+    "AdminMonitoring": AdminMonitoring,
+    "AdminSetup": AdminSetup,
+    "VendorOnboarding": VendorOnboarding,
 }
 
 export const pagesConfig = {
