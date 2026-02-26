@@ -32,7 +32,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
   const [uploadingGallery, setUploadingGallery] = useState(false);
   
   const [formData, setFormData] = useState({
-    full_name: user.full_name || "",
+    display_name: user.display_name || user.full_name || "",
     phone: user.phone || "",
     business_name: vendor.business_name || "",
     category: vendor.category || "",
@@ -101,7 +101,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.full_name || !formData.phone || !formData.business_name || 
+    if (!formData.display_name || !formData.phone || !formData.business_name || 
         !formData.category || !formData.description || !formData.location || 
         !formData.contact_email || !formData.years_in_business || !formData.average_price ||
         !formData.price_range || !formData.starting_price) {
@@ -140,9 +140,9 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         tiktok: formData.tiktok || null
       });
 
-      // Update user profile - use entities API to update full_name
-      await base44.entities.User.update(user.id, {
-        full_name: formData.full_name,
+      // Update user profile
+      await base44.auth.updateMe({
+        display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location
       });
@@ -152,7 +152,6 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
     } catch (error) {
       console.error(error);
       toast.error("Failed to update profile");
-    } finally {
       setSaving(false);
     }
   };
@@ -166,8 +165,8 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         <div className="space-y-2">
           <Label className="text-base font-bold">Full Name *</Label>
           <Input
-            value={formData.full_name}
-            onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+            value={formData.display_name}
+            onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
             className="border-2 border-gray-300 h-12"
             required
           />

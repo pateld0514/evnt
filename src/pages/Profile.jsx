@@ -170,7 +170,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-500 font-medium">Name</p>
-              <p className="text-lg font-bold">{user?.full_name}</p>
+              <p className="text-lg font-bold">{user?.display_name || user?.full_name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Email</p>

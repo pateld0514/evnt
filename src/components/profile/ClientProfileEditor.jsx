@@ -18,7 +18,7 @@ const eventTypes = [
 export default function ClientProfileEditor({ user, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: user.full_name || "",
+    display_name: user.display_name || user.full_name || "",
     phone: user.phone || "",
     location: user.location || "",
     event_interests: user.event_interests || [],
@@ -40,7 +40,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.full_name || !formData.phone || !formData.location || 
+    if (!formData.display_name || !formData.phone || !formData.location || 
         formData.event_interests.length === 0 || !formData.budget_range || 
         !formData.event_planning_experience) {
       toast.error("Please fill in all required fields");
@@ -49,9 +49,8 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
 
     setSaving(true);
     try {
-      // Update the User entity directly to change full_name and other fields
-      await base44.entities.User.update(user.id, {
-        full_name: formData.full_name,
+      await base44.auth.updateMe({
+        display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location,
         event_interests: formData.event_interests,
@@ -62,11 +61,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       });
       
       toast.success("Profile updated successfully!");
-      
-      // Call onSave callback
-      if (onSave) {
-        onSave();
-      }
+      if (onSave) onSave();
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
@@ -79,8 +74,8 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       <div className="space-y-2">
         <Label className="text-base font-bold">Full Name *</Label>
         <Input
-          value={formData.full_name}
-          onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+          value={formData.display_name}
+          onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
           placeholder="John Doe"
           className="border-2 border-gray-300 h-12"
           required
