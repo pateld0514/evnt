@@ -34,7 +34,7 @@ export default function Layout({ children, currentPageName }) {
       try {
         const user = await base44.auth.me();
         setCurrentUserEmail(user.email);
-        
+
         // Check for demo mode
         if (user.demo_mode) {
           setUserType(user.demo_user_type);
@@ -57,6 +57,15 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     loadUser();
+
+    // Subscribe to user updates to refresh when profile changes
+    const unsubscribe = base44.entities.User.subscribe((event) => {
+      if (event.type === 'update' && event.data.email === currentUserEmail) {
+        loadUser();
+      }
+    });
+
+    return () => unsubscribe();
   }, [location]);
 
   const unreadCount = messages.filter(m => !m.read && m.recipient_email === currentUserEmail).length;
