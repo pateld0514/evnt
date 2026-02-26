@@ -116,8 +116,13 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
     setSaving(true);
     try {
+      console.log("Saving vendor profile with data:", {
+        user: { display_name: formData.display_name, phone: formData.phone, location: formData.location },
+        vendor: { business_name: formData.business_name, category: formData.category }
+      });
+      
       // Update vendor profile
-      await base44.entities.Vendor.update(vendor.id, {
+      const vendorResult = await base44.entities.Vendor.update(vendor.id, {
         business_name: formData.business_name,
         category: formData.category,
         description: formData.description,
@@ -140,18 +145,19 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         tiktok: formData.tiktok || null
       });
 
-      // Update user profile
-      await base44.auth.updateMe({
+      // Update user profile using entities API
+      const userResult = await base44.entities.User.update(user.id, {
         display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location
       });
 
+      console.log("Profile update results:", { vendorResult, userResult });
       toast.success("Profile updated successfully!");
       if (onSave) onSave();
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to update profile");
+      console.error("Profile update error:", error);
+      toast.error("Failed to update profile: " + (error.message || "Unknown error"));
       setSaving(false);
     }
   };

@@ -49,7 +49,10 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
 
     setSaving(true);
     try {
-      await base44.auth.updateMe({
+      console.log("Saving client profile with data:", formData);
+      
+      // Use entities API to update the User record directly
+      const result = await base44.entities.User.update(user.id, {
         display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location,
@@ -60,6 +63,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
         preferred_contact: formData.preferred_contact
       });
       
+      console.log("Profile update result:", result);
       toast.success("Profile updated successfully!");
       if (onSave) onSave();
     } catch (error) {
