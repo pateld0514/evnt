@@ -406,9 +406,11 @@ export default function ProfilePage() {
           ) : user?.user_type === "client" ? (
             <ClientProfileEditor
               user={user}
-              onSave={() => {
+              onSave={async () => {
                 setEditingProfile(false);
-                window.location.reload();
+                // Reload user data
+                const updatedUser = await base44.auth.me();
+                setUser(updatedUser);
               }}
               onCancel={() => setEditingProfile(false)}
             />

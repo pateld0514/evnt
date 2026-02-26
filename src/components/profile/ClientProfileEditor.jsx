@@ -49,13 +49,21 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
 
     setSaving(true);
     try {
+      // Update user profile
       await base44.auth.updateMe(formData);
+      
+      // Wait a bit to ensure database is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       toast.success("Profile updated successfully!");
-      if (onSave) onSave();
+      
+      // Call onSave callback
+      if (onSave) {
+        onSave();
+      }
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
-    } finally {
       setSaving(false);
     }
   };
