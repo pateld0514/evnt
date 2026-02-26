@@ -8,30 +8,34 @@ import { toast } from "sonner";
 
 export default function StripeAccountStatus({ vendorId }) {
   const [checking, setChecking] = React.useState(false);
+  const [isTestVendor, setIsTestVendor] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkTestVendor = async () => {
+      const user = await base44.auth.me();
+      setIsTestVendor(user?.user_type === "test_vendor");
+    };
+    checkTestVendor();
+  }, []);
 
   const { data: status, isLoading, refetch } = useQuery({
     queryKey: ['stripe-account-status', vendorId],
     queryFn: async () => {
-      // TEST MODE: Mock data for test vendor
-      if (vendorId === '699fa36c19956dc189f27101') {
+      // Bypass Stripe check for test vendors
+      if (isTestVendor) {
         return {
-          stripe_account_id: 'acct_test_dj_marcus',
+          stripe_account_id: 'acct_test_vendor',
           charges_enabled: true,
           payouts_enabled: true,
           details_submitted: true
         };
       }
       
-      try {
-        const response = await base44.functions.invoke('checkStripeAccountStatus', { vendorId });
-        return response.data;
-      } catch (error) {
-        console.error('Error checking Stripe status:', error);
-        return { error: true, message: error.message };
-      }
+      const response = await base44.functions.invoke('checkStripeAccountStatus', { vendorId });
+      return response.data;
     },
     enabled: !!vendorId,
-    refetchInterval: 10000, // Check every 10 seconds
+    refetchInterval: isTestVendor ? false : 10000, // Don't refetch for test vendors
   });
 
   const handleConnect = async () => {
@@ -66,25 +70,6 @@ export default function StripeAccountStatus({ vendorId }) {
       <Card className="border-2 border-gray-200">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // For test accounts, bypass Stripe checks
-  if (status?.stripe_account_id === 'acct_test_dj_marcus') {
-    return (
-      <Card className="border-2 border-green-500 bg-green-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-900">Payment Setup Complete (Test Mode)</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-green-800">
-            ✅ Test account fully configured and ready to accept payments.
-          </p>
         </CardContent>
       </Card>
     );

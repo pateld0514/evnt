@@ -43,6 +43,9 @@ export default function Layout({ children, currentPageName }) {
           // CRITICAL: Admin check uses ONLY role-based authorization
           setUserType("admin");
           setOnboardingComplete(true);
+        } else if (user.user_type === "test_vendor") {
+          setUserType("vendor");
+          setOnboardingComplete(true);
         } else {
           setUserType(user.user_type);
           setOnboardingComplete(user.onboarding_complete || false);
