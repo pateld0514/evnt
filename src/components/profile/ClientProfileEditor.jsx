@@ -51,8 +51,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
     try {
       console.log("Saving client profile with data:", formData);
       
-      // Use entities API to update the User record directly
-      const result = await base44.entities.User.update(user.id, {
+      const result = await base44.auth.updateMe({
         display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location,
@@ -65,7 +64,11 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       
       console.log("Profile update result:", result);
       toast.success("Profile updated successfully!");
-      if (onSave) onSave();
+      
+      // Wait a moment for the update to propagate
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      if (onSave) await onSave();
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));

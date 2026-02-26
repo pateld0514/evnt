@@ -145,8 +145,8 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         tiktok: formData.tiktok || null
       });
 
-      // Update user profile using entities API
-      const userResult = await base44.entities.User.update(user.id, {
+      // Update user profile
+      const userResult = await base44.auth.updateMe({
         display_name: formData.display_name,
         phone: formData.phone,
         location: formData.location
@@ -154,7 +154,11 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
       console.log("Profile update results:", { vendorResult, userResult });
       toast.success("Profile updated successfully!");
-      if (onSave) onSave();
+      
+      // Wait a moment for the update to propagate
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      if (onSave) await onSave();
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
