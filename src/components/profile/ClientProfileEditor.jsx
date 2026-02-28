@@ -108,6 +108,18 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
               const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
               setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
             }}
+            onKeyDown={(e) => {
+              const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+              if (!allowedKeys.includes(e.key) && !/^\d$/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onPaste={(e) => {
+              e.preventDefault();
+              const pasted = e.clipboardData.getData('text');
+              const digits = pasted.replace(/\D/g, '').slice(0, 10);
+              setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
+            }}
             placeholder="(555)-123-4567"
             className="border-2 border-gray-300 h-12"
             maxLength={14}
