@@ -193,15 +193,16 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
         <div className="space-y-2">
           <Label className="text-base font-bold">Phone Number *</Label>
           <input
-            type="tel"
+            type="text"
+            inputMode="numeric"
             value={formData.phone}
             onChange={(e) => {
-              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+              const digits = e.target.value.replace(/\D/g, '');
+              if (digits.length > 10) return;
               setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
             }}
             placeholder="(555)-123-4567"
             className="flex h-12 w-full rounded-md border-2 border-gray-300 bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            maxLength={14}
             required
           />
         </div>
