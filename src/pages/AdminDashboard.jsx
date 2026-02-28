@@ -134,6 +134,21 @@ export default function AdminDashboardPage() {
     }
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userEmail) => {
+      const response = await base44.functions.invoke('deleteUserData', { user_email: userEmail });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-users']);
+      queryClient.invalidateQueries(['admin-vendors']);
+      toast.success("User and all associated data deleted");
+    },
+    onError: (error) => {
+      toast.error("Failed to delete user: " + (error.message || "Unknown error"));
+    }
+  });
+
 
   const pendingVendors = vendors.filter(v => v.approval_status === "pending");
   const approvedVendors = vendors.filter(v => v.approval_status === "approved");
