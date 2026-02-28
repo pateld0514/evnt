@@ -153,10 +153,8 @@ export default function SwipePage() {
       const isApproved = vendor.approval_status === "approved";
       const profileComplete = vendor.profile_complete === true;
       // Exclude vendors owned by test_vendor accounts
-      // Also exclude if the owner user is not found in the list (unknown/test accounts)
       const ownerUser = allUsers?.find(u => u.email === vendor.created_by);
-      const isTestVendor = ownerUser?.user_type === 'test_vendor' || 
-        (allUsers.length > 0 && !ownerUser);
+      const isTestVendor = ownerUser?.user_type === 'test_vendor';
       const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
       const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
