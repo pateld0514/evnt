@@ -26,7 +26,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     display_name: user.preferred_name || user.display_name || user.full_name || "",
-    phone: user.phone || "",
+    phone: formatPhone(user.phone || ""),
     location: user.location || "",
     event_interests: user.event_interests || [],
     budget_range: user.budget_range || "",
