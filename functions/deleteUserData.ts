@@ -108,9 +108,19 @@ Deno.serve(async (req) => {
     }
 
     // If user is a vendor, delete vendor-related data
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({ 
+    // Look up by both contact_email AND created_by to ensure we find the vendor profile
+    const vendorsByContact = await base44.asServiceRole.entities.Vendor.filter({ 
       contact_email: userEmail 
     });
+    const vendorsByCreator = await base44.asServiceRole.entities.Vendor.filter({ 
+      created_by: userEmail 
+    });
+    // Merge and deduplicate
+    const vendorMap = new Map();
+    for (const v of [...vendorsByContact, ...vendorsByCreator]) {
+      vendorMap.set(v.id, v);
+    }
+    const vendors = Array.from(vendorMap.values());
     
     for (const vendor of vendors) {
       // Delete vendor bookings
