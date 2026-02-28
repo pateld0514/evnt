@@ -73,6 +73,13 @@ export default function EventVendorsPage() {
     checkOnboarding();
   }, [navigate]);
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['all-users-eventvend'],
+    queryFn: () => base44.entities.User.list(),
+    initialData: [],
+    staleTime: 10 * 60 * 1000,
+  });
+
   const { data: allVendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
@@ -82,6 +89,8 @@ export default function EventVendorsPage() {
   const vendors = allVendors.filter(v => {
     const isApproved = v.approval_status === "approved" && v.profile_complete === true;
     if (!isApproved) return false;
+    const ownerUser = allUsers.find(u => u.email === v.created_by);
+    if (ownerUser?.user_type === 'test_vendor') return false;
     
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
