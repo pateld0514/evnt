@@ -10,10 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch ALL users using service role
-    const users = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+    // Fetch ALL users using service role, excluding test vendors
+    const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+    const users = allUsers.filter(u => u.user_type !== 'test_vendor');
 
-    console.log(`[Admin] Fetched ${users.length} users`);
+    console.log(`[Admin] Fetched ${users.length} users (excluded test vendors)`);
 
     return Response.json(users);
 
