@@ -107,6 +107,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
             onChange={(e) => setFormData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
             placeholder="(555)-123-4567"
             className="border-2 border-gray-300 h-12"
+            maxLength={14}
             required
           />
         </div>
