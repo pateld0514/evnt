@@ -192,27 +192,15 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
         <div className="space-y-2">
           <Label className="text-base font-bold">Phone Number *</Label>
-          <Input
+          <input
             type="tel"
             value={formData.phone}
             onChange={(e) => {
               const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
               setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
             }}
-            onKeyDown={(e) => {
-              const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
-              if (!allowedKeys.includes(e.key) && !/^\d$/.test(e.key)) {
-                e.preventDefault();
-              }
-            }}
-            onPaste={(e) => {
-              e.preventDefault();
-              const pasted = e.clipboardData.getData('text');
-              const digits = pasted.replace(/\D/g, '').slice(0, 10);
-              setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
-            }}
             placeholder="(555)-123-4567"
-            className="border-2 border-gray-300 h-12"
+            className="flex h-12 w-full rounded-md border-2 border-gray-300 bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             maxLength={14}
             required
           />
