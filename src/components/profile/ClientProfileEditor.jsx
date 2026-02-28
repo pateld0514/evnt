@@ -106,8 +106,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
             inputMode="numeric"
             value={formData.phone}
             onChange={(e) => {
-              const digits = e.target.value.replace(/\D/g, '');
-              if (digits.length > 10) return;
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
               setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
             }}
             placeholder="(555)-123-4567"
