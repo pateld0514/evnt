@@ -47,10 +47,15 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.display_name || !formData.phone || !formData.location || 
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (!formData.display_name || !formData.location || 
         formData.event_interests.length === 0 || !formData.budget_range || 
         !formData.event_planning_experience) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+    if (phoneDigits.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
       return;
     }
 
