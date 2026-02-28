@@ -190,7 +190,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
           <Input
             type="tel"
             value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
             className="border-2 border-gray-300 h-12"
             required
           />
