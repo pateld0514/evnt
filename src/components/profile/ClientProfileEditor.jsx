@@ -25,7 +25,7 @@ const eventTypes = [
 export default function ClientProfileEditor({ user, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    display_name: user.display_name || user.full_name || "",
+    display_name: user.preferred_name || user.display_name || user.full_name || "",
     phone: user.phone || "",
     location: user.location || "",
     event_interests: user.event_interests || [],
@@ -59,7 +59,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       console.log("Saving client profile with data:", formData);
       
       const result = await base44.auth.updateMe({
-        display_name: formData.display_name,
+        preferred_name: formData.display_name,
         phone: formData.phone,
         location: formData.location,
         event_interests: formData.event_interests,

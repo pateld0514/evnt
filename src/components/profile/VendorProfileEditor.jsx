@@ -39,8 +39,8 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
   const [uploadingGallery, setUploadingGallery] = useState(false);
   
   const [formData, setFormData] = useState({
-    display_name: user.display_name || user.full_name || "",
-    phone: user.phone || "",
+    display_name: user.preferred_name || user.display_name || user.full_name || "",
+    phone: formatPhone(user.phone || ""),
     business_name: vendor.business_name || "",
     category: vendor.category || "",
     description: vendor.description || "",
@@ -154,7 +154,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
       // Update user profile
       const userResult = await base44.auth.updateMe({
-        display_name: formData.display_name,
+        preferred_name: formData.display_name,
         phone: formData.phone,
         location: formData.location
       });

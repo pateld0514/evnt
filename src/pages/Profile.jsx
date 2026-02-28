@@ -170,7 +170,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-500 font-medium">Name</p>
-              <p className="text-lg font-bold">{user?.display_name || user?.full_name}</p>
+              <p className="text-lg font-bold">{user?.preferred_name || user?.display_name || user?.full_name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Email</p>
@@ -399,7 +399,7 @@ export default function ProfilePage() {
               vendor={vendor}
               onSave={async (formData) => {
                 // Directly update state from saved form data — no re-fetch needed
-                setUser(prev => ({ ...prev, display_name: formData.display_name, phone: formData.phone, location: formData.location }));
+                setUser(prev => ({ ...prev, preferred_name: formData.display_name, phone: formData.phone, location: formData.location }));
                 setVendor(prev => ({
                   ...prev,
                   business_name: formData.business_name,
@@ -428,7 +428,7 @@ export default function ProfilePage() {
                 // Directly update state from saved form data — no re-fetch needed
                 setUser(prev => ({
                   ...prev,
-                  display_name: formData.display_name,
+                  preferred_name: formData.display_name,
                   phone: formData.phone,
                   location: formData.location,
                   event_interests: formData.event_interests,
