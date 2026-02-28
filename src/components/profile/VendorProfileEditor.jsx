@@ -108,11 +108,16 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.display_name || !formData.phone || !formData.business_name || 
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (!formData.display_name || !formData.business_name || 
         !formData.category || !formData.description || !formData.location || 
         !formData.contact_email || !formData.years_in_business || !formData.average_price ||
         !formData.price_range || !formData.starting_price) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+    if (phoneDigits.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
       return;
     }
 
