@@ -585,6 +585,54 @@ export default function AdminDashboardPage() {
             ))}
           </TabsContent>
 
+          <TabsContent value="users" className="space-y-4">
+            <Card className="border-2 border-black">
+              <CardHeader className="bg-black text-white">
+                <CardTitle className="font-black">All Users ({allUsers.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-gray-200">
+                  {allUsers.map(u => (
+                    <div key={u.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
+                      <div>
+                        <p className="font-bold">{u.full_name}</p>
+                        <p className="text-sm text-gray-600">{u.email}</p>
+                        <Badge className={u.user_type === "vendor" ? "bg-purple-100 text-purple-800 mt-1" : "bg-blue-100 text-blue-800 mt-1"}>
+                          {u.user_type || "unknown"}
+                        </Badge>
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold">
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete <strong>{u.full_name}</strong> ({u.email}) and ALL their data: bookings, messages, reviews, notifications, etc. This cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteUserMutation.mutate(u.email)}
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Delete Forever
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="monitoring" className="space-y-4">
             <SystemMonitoring />
           </TabsContent>
