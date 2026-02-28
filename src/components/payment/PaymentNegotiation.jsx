@@ -312,7 +312,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           )}
           <div className="flex justify-between text-sm text-blue-800"> {/* Fix #37: darken color */}
             <span>Stripe Processing Fee (2.9% + $0.30):</span>
-            <span className="font-bold">-${(totals.stripeFee || 0).toFixed(2)}</span>
+            <span className="font-bold">-${typeof totals.stripeFee === 'number' ? totals.stripeFee.toFixed(2) : '0.00'}</span>
           </div>
           <div className="flex justify-between text-sm font-bold text-gray-800 pt-2 border-t border-gray-300">
             <span>Vendor Receives:</span>
