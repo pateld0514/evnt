@@ -49,7 +49,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const [serviceDescription, setServiceDescription] = useState(booking.service_description || "");
   const [additionalFees, setAdditionalFees] = useState(booking.additional_fees || []);
   const [platformFeePercent, setPlatformFeePercent] = useState(0);
-  const [totals, setTotals] = useState({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0 });
+  const [totals, setTotals] = useState({ price: 0, additionalTotal: 0, subtotal: 0, platformFeeAmount: 0, totalAmount: 0, vendorPayout: 0, finalFeePercent: 0, salesTax: 0, stripeFee: 0 });
 
   const { data: platformSettings = [] } = useQuery({
     queryKey: ['platform-fee-setting'],
