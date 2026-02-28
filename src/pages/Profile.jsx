@@ -191,7 +191,7 @@ export default function ProfilePage() {
             {user?.phone && (
               <div>
                 <p className="text-sm text-gray-500 font-medium">Phone</p>
-                <p className="text-lg font-bold">{user.phone}</p>
+                <p className="text-lg font-bold">{formatPhone(user.phone)}</p>
               </div>
             )}
             {user?.budget_range && (
