@@ -160,7 +160,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
       // Update user profile
       const userResult = await base44.auth.updateMe({
         preferred_name: formData.display_name,
-        phone: formData.phone,
+        phone: phoneDigits,
         location: formData.location
       });
 
