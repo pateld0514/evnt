@@ -57,10 +57,12 @@ export default function VendorDashboard() {
         } else {
           const isAdminCheck = user.email === "pateld0514@gmail.com" || user.role === "admin";
           if (isAdminCheck) {
-            // Admin viewing vendor side without a vendor profile
+            // Admin viewing vendor side without a vendor profile - exclude test vendor
+            const testVendorId = '699fa36c19956dc189f27101';
             const allVendors = await base44.entities.Vendor.list();
-            if (allVendors.length > 0) {
-              setVendor(allVendors[0]);
+            const realVendors = allVendors.filter(v => v.id !== testVendorId);
+            if (realVendors.length > 0) {
+              setVendor(realVendors[0]);
             }
           }
         }
