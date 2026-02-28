@@ -294,7 +294,10 @@ export default function SwipePage() {
   });
 
   const availableCategories = vendors
-    .filter(v => v.approval_status === "approved" && v.profile_complete === true)
+    .filter(v => {
+      const ownerUser = allUsers?.find(u => u.email === v.created_by);
+      return v.approval_status === "approved" && v.profile_complete === true && ownerUser?.user_type !== 'test_vendor';
+    })
     .map(v => v.category);
   
   const uniqueAvailableCategories = [...new Set(availableCategories)];
