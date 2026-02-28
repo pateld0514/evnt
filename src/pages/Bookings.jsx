@@ -65,7 +65,7 @@ export default function BookingsPage() {
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState(null);
 
-  const isVendor = currentUser?.user_type === "vendor" || currentUser?.user_type === "test_vendor" || currentUser?.demo_mode === "vendor";
+  const isVendor = currentUser?.user_type === "vendor" || currentUser?.demo_mode === "vendor";
 
   useEffect(() => {
     const loadUser = async () => {
