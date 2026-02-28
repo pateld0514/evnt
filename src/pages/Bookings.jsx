@@ -111,8 +111,8 @@ export default function BookingsPage() {
       if (!currentUser) return [];
       
       // Handle test_vendor or regular vendor with vendor_id
-      if (currentUser.user_type === "test_vendor" || (currentUser.user_type === "vendor" && currentUser.vendor_id)) {
-        const vendorId = currentUser.vendor_id || '699fa36c19956dc189f27101';
+      if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
+        const vendorId = currentUser.vendor_id;
         const allBookings = await base44.entities.Booking.list('-created_date');
         return allBookings.filter(b => b.vendor_id === vendorId);
       } else if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
