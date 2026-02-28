@@ -195,7 +195,7 @@ export default function SwipePage() {
       }
       if (!minPriceValid || !maxPriceValid) return false;
       
-      return isApproved && profileComplete && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+      return isApproved && profileComplete && !isTestVendor && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       const tierA = getVendorTier(a.id);
       const tierB = getVendorTier(b.id);
