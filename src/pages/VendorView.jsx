@@ -41,7 +41,15 @@ export default function VendorViewPage() {
           navigate(createPageUrl("Home"));
           return;
         }
-        setVendor(vendors[0]);
+        const v = vendors[0];
+        // Block access to test vendor profiles
+        const allUsers = await base44.entities.User.list();
+        const ownerUser = allUsers.find(u => u.email === v.created_by);
+        if (ownerUser?.user_type === 'test_vendor') {
+          navigate(createPageUrl("Home"));
+          return;
+        }
+        setVendor(v);
 
         // Load reviews
         const allReviews = await base44.entities.Review.filter({ vendor_id: vendorId });
