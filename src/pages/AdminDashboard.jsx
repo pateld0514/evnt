@@ -76,10 +76,14 @@ export default function AdminDashboardPage() {
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
     queryFn: async () => {
-      const batch = await base44.entities.Booking.list('-created_date', 500);
-      // Exclude bookings linked to test vendors (vendor_id of test vendor accounts)
-      return batch.filter(b => b.vendor_id !== '699fa36c19956dc189f27101');
+      const [batch, vendorList] = await Promise.all([
+        base44.entities.Booking.list('-created_date', 500),
+        base44.functions.invoke('getAllVendorsForAdmin', {}).then(r => r.data || [])
+      ]);
+      const realVendorIds = new Set(vendorList.map(v => v.id));
+      return batch.filter(b => realVendorIds.has(b.vendor_id));
     },
+    enabled: !!currentUser,
     initialData: [],
   });
 
