@@ -278,8 +278,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
         </TabsContent>
 
         <TabsContent value="overview" className="mt-6">
-        {/* Stripe Account Status */}
-        {vendor?.id && (
+        {/* Stripe Account Status - hide for test vendor accounts */}
+        {vendor?.id && currentUser?.user_type !== "test_vendor" && (
           <div className="mb-8">
             <StripeAccountStatus vendorId={vendor.id} />
           </div>
