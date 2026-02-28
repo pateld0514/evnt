@@ -10,6 +10,13 @@ import { Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../forms/CityAutocomplete";
 
+const formatPhone = (value) => {
+  const digits = (value || "").replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits.length ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 3)})-${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
 const eventTypes = [
   "Wedding", "Birthday", "Sweet 16", "Baby Shower", 
   "Anniversary", "Corporate Event", "Other"
