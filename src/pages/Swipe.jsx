@@ -145,7 +145,9 @@ export default function SwipePage() {
     const filteredAndSorted = vendors.filter(vendor => {
       const isApproved = vendor.approval_status === "approved";
       const profileComplete = vendor.profile_complete === true;
-      const isTestVendor = vendor.business_name?.toLowerCase() === 'testvendor' || vendor.created_by === 'devhetvi1@gmail.com';
+      // Exclude vendors owned by test_vendor accounts
+      const ownerUser = allUsers?.find(u => u.email === vendor.created_by);
+      const isTestVendor = ownerUser?.user_type === 'test_vendor';
       const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
       const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
