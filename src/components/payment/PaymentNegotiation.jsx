@@ -98,7 +98,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               salesTax: calc.sales_tax_amount,
               salesTaxRate: calc.sales_tax_rate,
               taxLabel: calc.tax_label,
-              stripeFee: calc.stripe_fee_amount, // Fix #1, #7, #18: use standardized field name
+              stripeFee: parseFloat(calc.stripe_fee_amount) || 0,
               totalAmount: calc.total_amount_charged,
               vendorPayout: calc.vendor_payout,
               finalFeePercent: calc.platform_fee_percent,
