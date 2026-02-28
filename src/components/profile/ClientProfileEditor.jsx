@@ -64,7 +64,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       
       console.log("Profile update result:", result);
       toast.success("Profile updated successfully!");
-      if (onSave) await onSave();
+      if (onSave) await onSave(formData);
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));

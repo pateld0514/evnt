@@ -154,7 +154,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
 
       console.log("Profile update results:", { vendorResult, userResult });
       toast.success("Profile updated successfully!");
-      if (onSave) await onSave();
+      if (onSave) await onSave(formData);
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
