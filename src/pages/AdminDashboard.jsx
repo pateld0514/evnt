@@ -76,24 +76,9 @@ export default function AdminDashboardPage() {
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
     queryFn: async () => {
-      // Fetch in batches to avoid limits
-      const limit = 500;
-      let allRecords = [];
-      let skip = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const batch = await base44.entities.Booking.list('-created_date', limit);
-        allRecords = [...allRecords, ...batch];
-        
-        if (batch.length < limit) {
-          hasMore = false;
-        } else {
-          skip += limit;
-        }
-      }
-      
-      return allRecords;
+      const batch = await base44.entities.Booking.list('-created_date', 500);
+      // Exclude bookings linked to test vendors (vendor_id of test vendor accounts)
+      return batch.filter(b => b.vendor_id !== '699fa36c19956dc189f27101');
     },
     initialData: [],
   });
