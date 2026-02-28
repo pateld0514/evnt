@@ -18,8 +18,10 @@ Deno.serve(async (req) => {
     const testVendorEmails = new Set(
       allUsers.filter(u => u.user_type === 'test_vendor').map(u => u.email)
     );
+    // Also hardcode known test vendor IDs
+    const testVendorIds = new Set(['699fa36c19956dc189f27101']);
 
-    const vendors = allVendors.filter(v => !testVendorEmails.has(v.created_by));
+    const vendors = allVendors.filter(v => !testVendorEmails.has(v.created_by) && !testVendorIds.has(v.id));
 
     console.log(`[Admin] Fetched ${vendors.length} vendors (excluded test vendors)`);
 
