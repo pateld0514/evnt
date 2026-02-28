@@ -236,21 +236,6 @@ export default function VendorRegistrationPage() {
       return;
     }
 
-    // Verify Stripe account is ready to accept payments
-    try {
-      const statusResponse = await base44.functions.invoke('checkStripeAccountStatus', {});
-      const status = statusResponse.data;
-      
-      if (!status.charges_enabled || !status.details_submitted) {
-        toast.error("Please complete your Stripe account setup before submitting. Click 'Connect Stripe Account' again to finish.");
-        return;
-      }
-    } catch (error) {
-      console.error('Stripe verification failed:', error);
-      toast.error("Could not verify Stripe account status. Please try again.");
-      return;
-    }
-
     setLoading(true);
     try {
       const user = await base44.auth.me();
