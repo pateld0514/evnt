@@ -104,7 +104,10 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
           <Input
             type="tel"
             value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+              setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
+            }}
             placeholder="(555)-123-4567"
             className="border-2 border-gray-300 h-12"
             maxLength={14}
