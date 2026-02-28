@@ -127,6 +127,13 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['all-users-for-swipe'],
+    queryFn: () => base44.entities.User.list(),
+    initialData: [],
+    staleTime: 10 * 60 * 1000,
+  });
+
   const getVendorTier = (vendorId) => {
     const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
     if (completedCount >= 100) return 5;
