@@ -397,16 +397,26 @@ export default function ProfilePage() {
             <VendorProfileEditor
               user={user}
               vendor={vendor}
-              onSave={async () => {
-                // Reload all data BEFORE closing dialog
-                const updatedUser = await base44.auth.me();
-                setUser(updatedUser);
-                if (updatedUser.vendor_id) {
-                  const vendors = await base44.entities.Vendor.filter({ id: updatedUser.vendor_id });
-                  if (vendors && vendors.length > 0) {
-                    setVendor(vendors[0]);
-                  }
-                }
+              onSave={async (formData) => {
+                // Directly update state from saved form data — no re-fetch needed
+                setUser(prev => ({ ...prev, display_name: formData.display_name, phone: formData.phone, location: formData.location }));
+                setVendor(prev => ({
+                  ...prev,
+                  business_name: formData.business_name,
+                  category: formData.category,
+                  description: formData.description,
+                  location: formData.location,
+                  contact_email: formData.contact_email,
+                  contact_phone: formData.phone,
+                  willing_to_travel: formData.willing_to_travel,
+                  travel_radius: formData.travel_radius,
+                  years_in_business: formData.years_in_business,
+                  average_price: formData.average_price,
+                  price_range: formData.price_range,
+                  starting_price: formData.starting_price,
+                  image_url: formData.image_url,
+                  additional_images: formData.additional_images,
+                }));
                 setEditingProfile(false);
               }}
               onCancel={() => setEditingProfile(false)}
@@ -414,10 +424,19 @@ export default function ProfilePage() {
           ) : user?.user_type === "client" ? (
             <ClientProfileEditor
               user={user}
-              onSave={async () => {
-                // Reload user data BEFORE closing dialog
-                const updatedUser = await base44.auth.me();
-                setUser(updatedUser);
+              onSave={async (formData) => {
+                // Directly update state from saved form data — no re-fetch needed
+                setUser(prev => ({
+                  ...prev,
+                  display_name: formData.display_name,
+                  phone: formData.phone,
+                  location: formData.location,
+                  event_interests: formData.event_interests,
+                  budget_range: formData.budget_range,
+                  company_name: formData.company_name,
+                  event_planning_experience: formData.event_planning_experience,
+                  preferred_contact: formData.preferred_contact,
+                }));
                 setEditingProfile(false);
               }}
               onCancel={() => setEditingProfile(false)}
