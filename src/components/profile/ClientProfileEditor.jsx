@@ -65,7 +65,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
       
       const result = await base44.auth.updateMe({
         preferred_name: formData.display_name,
-        phone: formData.phone,
+        phone: phoneDigits,
         location: formData.location,
         event_interests: formData.event_interests,
         budget_range: formData.budget_range,
