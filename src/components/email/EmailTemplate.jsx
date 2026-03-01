@@ -207,7 +207,7 @@ export const EmailTemplate = {
     ${content}
     <div class="footer">
       <div class="logo" style="margin: 0 auto 20px; display: block; text-align: center;">
-        <div class="logo-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; font-size: 20px; line-height: 1;">E</div>
+        <div class="logo-icon" style="display: inline-block; width: 32px; height: 32px; font-size: 20px; line-height: 32px; text-align: center; vertical-align: middle;">E</div>
         <div class="logo-text" style="display: inline-block; font-size: 24px; color: #000000; vertical-align: middle;">EVNT</div>
       </div>
       <div class="footer-links">
