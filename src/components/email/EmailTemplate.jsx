@@ -198,9 +198,9 @@ export const EmailTemplate = {
   <div class="preheader">${preheader}</div>
   <div class="email-container">
     <div class="header">
-      <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 16px auto;">
+      <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 16px auto; border-collapse:collapse;">
         <tr>
-          <td width="48" height="48" style="width:48px;height:48px;background:#ffffff;border-radius:12px;text-align:center;vertical-align:middle;font-size:32px;font-weight:900;color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">E</td>
+          <td align="center" valign="middle" style="width:48px;height:48px;min-width:48px;min-height:48px;background:#ffffff;border-radius:12px;padding:0;margin:0;font-size:32px;font-weight:900;color:#000000;font-family:Arial,sans-serif;line-height:48px;mso-line-height-rule:exactly;">&#69;</td>
         </tr>
       </table>
       <div class="logo-text">EVNT</div>
