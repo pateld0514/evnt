@@ -4,7 +4,7 @@
  * Ensures unsubscribe links, branding, and compliance
  */
 
-export const wrapEmailContent = (content, recipientEmail) => `
+export const wrapEmailContent = (content, recipientEmail, preheader = '') => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
