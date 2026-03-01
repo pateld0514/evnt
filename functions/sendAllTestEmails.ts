@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
               <p style="margin:0;"><strong>🔥 Pro Tip:</strong> The best vendors fill up fast — start browsing now before your date gets taken!</p>
             </div>
           </div>
-        `)
+        `, 'Welcome to EVNT! Start finding vendors for your event.')
       },
       // VENDOR APPROVAL EMAILS
       {
