@@ -174,26 +174,24 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-black mb-2 md:mb-3">Admin Dashboard</h1>
             <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">Manage vendor approvals and platform activity</p>
           </div>
-          {!testEmailsSent && (
-            <Button
-              onClick={() => testEmailsMutation.mutate()}
-              disabled={testEmailsMutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold whitespace-nowrap"
-              title="Send sample notification emails to verify email templates are working correctly"
-            >
-              {testEmailsMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Bell className="w-4 h-4 mr-2" />
-                  Test All Emails
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            onClick={() => testEmailsMutation.mutate()}
+            disabled={testEmailsMutation.isPending}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-bold whitespace-nowrap"
+            title="Send sample notification emails to verify email templates are working correctly"
+          >
+            {testEmailsMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Bell className="w-4 h-4 mr-2" />
+                Test All Emails
+              </>
+            )}
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
