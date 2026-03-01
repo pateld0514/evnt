@@ -23,9 +23,15 @@ export const wrapEmailContent = (content, recipientEmail) => `
 <body>
   <div class="email-container">
     <div class="header">
-      <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 12px auto; border-collapse:collapse;">
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 12px auto;border-collapse:collapse;">
         <tr>
-          <td align="center" valign="middle" style="width:48px;height:48px;min-width:48px;min-height:48px;background:#ffffff;border-radius:12px;padding:0;margin:0;font-size:32px;font-weight:900;color:#000000;font-family:Arial,sans-serif;line-height:48px;mso-line-height-rule:exactly;">&#69;</td>
+          <td style="padding:0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-radius:12px;overflow:hidden;background:#ffffff;width:48px;height:48px;">
+              <tr>
+                <td width="48" height="48" align="center" valign="middle" style="width:48px;height:48px;background:#ffffff;font-size:32px;font-weight:900;color:#000000;font-family:Arial,Helvetica,sans-serif;text-align:center;vertical-align:middle;padding:0;line-height:1;">E</td>
+              </tr>
+            </table>
+          </td>
         </tr>
       </table>
       <div class="logo-text">EVNT</div>
