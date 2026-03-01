@@ -198,10 +198,12 @@ export const EmailTemplate = {
   <div class="preheader">${preheader}</div>
   <div class="email-container">
     <div class="header">
-      <div class="logo">
-        <div class="logo-icon">E</div>
-        <div class="logo-text">EVNT</div>
-      </div>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 16px auto;">
+        <tr>
+          <td width="48" height="48" style="width:48px;height:48px;background:#ffffff;border-radius:12px;text-align:center;vertical-align:middle;font-size:32px;font-weight:900;color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">E</td>
+        </tr>
+      </table>
+      <div class="logo-text">EVNT</div>
       <p class="tagline">Event Planning Made Simple</p>
     </div>
     ${content}
