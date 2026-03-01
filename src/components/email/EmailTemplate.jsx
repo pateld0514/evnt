@@ -209,7 +209,9 @@ export const EmailTemplate = {
     ${content}
     <div class="footer">
       <div class="logo" style="margin: 0 auto 20px; display: block; text-align: center;">
-        <div class="logo-icon" style="display: inline-block; width: 32px; height: 32px; font-size: 20px; line-height: 32px; text-align: center; vertical-align: middle;">E</div>
+        <table cellpadding="0" cellspacing="0" border="0" style="display:inline-table;vertical-align:middle;margin-right:6px;">
+          <tr><td width="32" height="32" style="width:32px;height:32px;background:#f9fafb;border-radius:8px;text-align:center;vertical-align:middle;font-size:20px;font-weight:900;color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">E</td></tr>
+        </table>
         <div class="logo-text" style="display: inline-block; font-size: 24px; color: #000000; vertical-align: middle;">EVNT</div>
       </div>
       <div class="footer-links">
