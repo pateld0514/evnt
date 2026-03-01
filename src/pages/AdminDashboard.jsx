@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [viewingBooking, setViewingBooking] = useState(null);
   const [viewingType, setViewingType] = useState(null); // 'contract' or 'invoice'
-  const [testEmailsSent, setTestEmailsSent] = useState(false);
+  const [testEmailsSent, setTestEmailsSent] = useState(false); // kept for toast, button always visible
 
   useEffect(() => {
     const checkAdmin = async () => {
