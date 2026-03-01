@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
           </div>
         `, '📋 Booking Declined')
       },
-      // WELCOME EMAILS
+      // WELCOME EMAIL
       {
         name: 'Welcome Email: New Client',
         to: adminEmail,
