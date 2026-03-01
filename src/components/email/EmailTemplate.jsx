@@ -45,9 +45,7 @@ export const EmailTemplate = {
       margin: 0 6px;
     }
     .logo-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: inline-block;
       width: 48px;
       height: 48px;
       background: #ffffff;
@@ -55,8 +53,9 @@ export const EmailTemplate = {
       font-size: 32px;
       font-weight: 900;
       color: #000000;
-      line-height: 1;
+      line-height: 48px;
       text-align: center;
+      vertical-align: middle;
     }
     .logo-text {
       font-size: 40px;
