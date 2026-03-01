@@ -126,7 +126,6 @@ export default function AdminDashboardPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      setTestEmailsSent(true);
       toast.success(data.message);
     },
     onError: (error) => {
