@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     .preheader { display: none; max-height: 0; overflow: hidden; }
     .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
     .header { background: linear-gradient(135deg, #000000 0%, #1f2937 100%); padding: 40px 30px; text-align: center; }
-    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #000000; margin-bottom: 12px; }
+    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; font-size: 32px; font-weight: 900; color: #000000; margin-bottom: 12px; }
     .logo-text { font-size: 40px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
     .content { padding: 40px 30px; }
     .title { font-size: 24px; font-weight: 900; color: #000000; margin: 0 0 20px 0; }
