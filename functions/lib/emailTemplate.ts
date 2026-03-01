@@ -14,7 +14,7 @@ export const wrapEmailContent = (content, recipientEmail) => `
     body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f3f4f6; }
     .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
     .header { background: linear-gradient(135deg, #000000 0%, #1f2937 100%); padding: 40px 30px; text-align: center; }
-    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #000000; margin-bottom: 12px; }
+    .logo-icon { width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: inline-block; font-size: 32px; font-weight: 900; color: #000000; margin-bottom: 12px; text-align: center; line-height: 48px; vertical-align: middle; }
     .logo-text { font-size: 40px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
     .content { padding: 40px 30px; }
     .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 2px solid #e5e7eb; color: #9ca3af; font-size: 13px; }
