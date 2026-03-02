@@ -265,10 +265,24 @@ export default function ClientRegistrationPage() {
               </div>
             )}
 
+            <div className="flex items-start space-x-3 bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(!!checked)}
+              />
+              <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-gray-700">
+                I confirm I am at least <strong>18 years old</strong> and agree to the{" "}
+                <a href="/Terms" target="_blank" className="underline font-semibold text-black">Terms of Service</a>{" "}
+                and{" "}
+                <a href="/Privacy" target="_blank" className="underline font-semibold text-black">Privacy Policy</a>.
+              </label>
+            </div>
+
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading}
+              disabled={loading || !termsAccepted}
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Registration"}
             </Button>

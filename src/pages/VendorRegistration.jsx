@@ -888,6 +888,20 @@ export default function VendorRegistrationPage() {
               </div>
             )}
 
+            <div className="flex items-start space-x-3 bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(!!checked)}
+              />
+              <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-gray-700">
+                I confirm I am at least <strong>18 years old</strong> and agree to the{" "}
+                <a href="/Terms" target="_blank" className="underline font-semibold text-black">Terms of Service</a>{" "}
+                and{" "}
+                <a href="/Privacy" target="_blank" className="underline font-semibold text-black">Privacy Policy</a>.
+              </label>
+            </div>
+
             <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
                 <strong>Next Steps:</strong> Your profile will be reviewed by our admin team within 24-48 hours. 
