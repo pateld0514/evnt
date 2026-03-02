@@ -80,14 +80,11 @@ Deno.serve(async (req) => {
       console.warn('Failed to calculate dynamic fee, using base:', error);
     }
 
-    // Check for referral discounts
+    // Check for referral credits the client has earned (as a referred person)
     let appliedDiscount = 0;
-    const rewards = await base44.asServiceRole.entities.ReferralReward.filter({ 
-      referrer_email: booking.client_email,
-      status: 'earned'
-    });
-    if (rewards.length > 0) {
-      appliedDiscount = rewards[0].reward_amount || 0;
+    const clientUsers = await base44.asServiceRole.entities.User.filter({ email: booking.client_email });
+    if (clientUsers.length > 0 && clientUsers[0].referral_credit > 0) {
+      appliedDiscount = Math.min(clientUsers[0].referral_credit, agreedAmount);
     }
 
     // Apply discount to agreed amount
