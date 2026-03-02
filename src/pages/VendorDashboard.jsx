@@ -39,7 +39,7 @@ export default function VendorDashboard() {
 
         const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
 
-        if (user.user_type === "vendor" && user.approval_status !== "approved" && !isAdmin) {
+        if (user.user_type === "vendor" && user.user_type !== "test_vendor" && user.approval_status !== "approved" && !isAdmin) {
           navigate(createPageUrl("VendorPending"));
           return;
         }
