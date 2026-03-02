@@ -22,6 +22,7 @@ export default function ClientRegistrationPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [referralCode, setReferralCode] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [formData, setFormData] = useState({
     phone: "",
     location: "",

@@ -6,224 +6,176 @@ export default function RefundPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <Card className="border-2 border-black">
+        <Card className="border-4 border-black shadow-lg">
           <CardHeader className="bg-black text-white">
-            <CardTitle className="text-3xl font-black">Cancellation & Refund Policy</CardTitle>
-            <p className="text-gray-300 mt-2">Last Updated: January 28, 2026</p>
+            <CardTitle className="text-4xl md:text-5xl font-black">Refund & Cancellation Policy</CardTitle>
+            <p className="text-gray-300 mt-3 text-lg font-medium">Last Updated: March 1, 2026</p>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 flex items-start gap-3">
+          <CardContent className="p-8 md:p-12 space-y-8">
+
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-900">
                 <p className="font-bold mb-1">Important Notice</p>
-                <p>
-                  EVNT is a marketplace platform. Cancellation and refund policies are set by individual vendors 
-                  and agreed upon at the time of booking. This policy outlines the general framework and platform procedures.
-                </p>
+                <p>EVNT is a marketplace platform connecting event clients with independent vendors. Service agreements are made directly between clients and vendors. EVNT does not provide event services and does not control vendor cancellation policies but facilitates payments and dispute resolution according to this policy.</p>
               </div>
             </div>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">1. Vendor Cancellation Policies</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">1. Marketplace Role</h2>
+              <p className="text-gray-700 leading-relaxed">
+                EVNT is a platform that connects event clients with independent vendors. Service agreements are made directly between clients and vendors. EVNT does not provide event services and does not control vendor cancellation policies but facilitates payments and dispute resolution according to this policy.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">2. Vendor Cancellation Policies</h2>
               <div className="space-y-3 text-gray-700">
-                <p>
-                  Each vendor on EVNT sets their own cancellation terms, which are presented to you before confirming a booking. 
-                  Common policies include:
-                </p>
+                <p>Each vendor sets their own cancellation and refund terms, which are displayed before booking confirmation. These policies may include:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Flexible:</strong> Full refund if cancelled 7+ days before event</li>
-                  <li><strong>Moderate:</strong> 50% refund if cancelled 14+ days before event</li>
-                  <li><strong>Strict:</strong> No refund if cancelled less than 30 days before event</li>
-                  <li><strong>Custom:</strong> Vendor-specific terms outlined in booking agreement</li>
+                  <li>Full refunds within a specified timeframe</li>
+                  <li>Partial refunds depending on notice period</li>
+                  <li>Non-refundable deposits</li>
+                  <li>Rescheduling options</li>
                 </ul>
-                <p className="mt-3 font-semibold">
-                  Always review the specific cancellation policy for your booking before confirming.
-                </p>
+                <p className="font-semibold mt-3">By completing a booking, the client agrees to the vendor's cancellation policy.</p>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">2. Client-Initiated Cancellations</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-bold mb-2">Before Vendor Accepts:</h3>
-                  <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                    <li>Full refund of any deposits or fees paid</li>
-                    <li>No penalty for cancelling pending bookings</li>
-                    <li>Cancellation can be done through your bookings page</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold mb-2">After Vendor Accepts:</h3>
-                  <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                    <li>Cancellation terms as agreed in the booking contract</li>
-                    <li>Refund amount depends on timing and vendor's policy</li>
-                    <li>Platform fees (if applicable) may be non-refundable</li>
-                    <li>Contact vendor directly to discuss potential flexibility</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold mb-2">How to Cancel:</h3>
-                  <ol className="list-decimal pl-6 space-y-2 text-gray-700">
-                    <li>Log in to your EVNT account</li>
-                    <li>Go to "My Bookings"</li>
-                    <li>Select the booking you want to cancel</li>
-                    <li>Click "Cancel Booking" and confirm</li>
-                    <li>Refunds are processed within 5-7 business days</li>
-                  </ol>
-                </div>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">3. Client Cancellations</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>If a client cancels a booking:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Refund eligibility is determined by the vendor's stated cancellation policy</li>
+                  <li>Refunds, if applicable, are issued to the original payment method</li>
+                  <li>Processing times may vary depending on the payment provider</li>
+                  <li>EVNT may deduct non-recoverable payment processing costs where permitted by law</li>
+                </ul>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">3. Vendor-Initiated Cancellations</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">4. Vendor Cancellations</h2>
               <div className="space-y-3 text-gray-700">
                 <p>If a vendor cancels a confirmed booking:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Client receives a <strong>full refund</strong> of all payments made</li>
-                  <li>Refund is processed immediately (within 24 hours)</li>
-                  <li>Vendor may face account penalties for excessive cancellations</li>
-                  <li>EVNT will assist in finding alternative vendors when possible</li>
+                  <li>The client will receive a full refund of the amount paid</li>
+                  <li>EVNT may assist the client in finding a replacement vendor when possible</li>
+                  <li>Vendors who repeatedly cancel bookings may face account suspension or removal</li>
                 </ul>
-                <p className="mt-3 bg-green-50 border-2 border-green-200 rounded-lg p-3 font-semibold">
-                  Client Protection: If a vendor cancels, you are always entitled to a full refund.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">4. Force Majeure & Unforeseen Circumstances</h2>
-              <div className="space-y-3 text-gray-700">
-                <p>
-                  In cases of events beyond reasonable control (severe weather, natural disasters, government restrictions, etc.):
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Standard cancellation policies may be waived</li>
-                  <li>Clients and vendors should work together to reschedule or find solutions</li>
-                  <li>Refunds or credits may be offered at vendor's discretion</li>
-                  <li>EVNT will facilitate communication and resolution</li>
-                  <li>Insurance coverage (if purchased) may apply</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">5. Refund Processing</h2>
-              <div className="space-y-3 text-gray-700">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Refunds are issued to the original payment method</li>
-                  <li>Processing time: 5-7 business days after approval</li>
-                  <li>Bank processing may take additional 3-5 business days</li>
-                  <li>You'll receive an email confirmation when refund is initiated</li>
-                  <li>Platform fees may be deducted from refund amount per vendor policy</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">6. Disputes and Resolution</h2>
-              <div className="space-y-3 text-gray-700">
-                <p>If you have a dispute about a cancellation or refund:</p>
-                <ol className="list-decimal pl-6 space-y-2">
-                  <li><strong>Contact the Vendor:</strong> Try to resolve directly with the vendor first</li>
-                  <li><strong>Review Your Contract:</strong> Check the booking agreement and cancellation terms</li>
-                  <li><strong>Contact EVNT Support:</strong> Email support@evnt.com with your booking details</li>
-                  <li><strong>Provide Documentation:</strong> Include any relevant communications or evidence</li>
-                  <li><strong>Mediation:</strong> EVNT may mediate disputes between clients and vendors</li>
-                </ol>
-                <p className="mt-3 font-semibold">
-                  Response Time: We respond to all dispute inquiries within 48 hours.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">7. No-Show Policy</h2>
-              <div className="space-y-3 text-gray-700">
-                <p><strong>Client No-Show:</strong></p>
-                <ul className="list-disc pl-6 space-y-2 mb-4">
-                  <li>If client fails to be present at scheduled event time</li>
-                  <li>No refund is provided</li>
-                  <li>Vendor is entitled to full payment</li>
-                </ul>
-
-                <p><strong>Vendor No-Show:</strong></p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>If vendor fails to show up for booked event</li>
-                  <li>Immediate full refund to client</li>
-                  <li>Vendor account may be suspended</li>
-                  <li>Additional compensation may be provided</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">8. Partial Services & Partial Refunds</h2>
-              <div className="space-y-3 text-gray-700">
-                <p>
-                  If a vendor provides partial services or there are issues with service quality:
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Contact EVNT support within 48 hours of the event</li>
-                  <li>Provide details and evidence of the issue</li>
-                  <li>Partial refunds may be issued based on investigation</li>
-                  <li>Vendor will have opportunity to respond and resolve</li>
-                  <li>EVNT's decision on partial refunds is final</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">9. Event Postponement</h2>
-              <div className="space-y-3 text-gray-700">
-                <p>If you need to postpone (not cancel) your event:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Contact vendor as soon as possible</li>
-                  <li>Subject to vendor's availability and policies</li>
-                  <li>Payment may be transferred to new date</li>
-                  <li>Price adjustments may apply for new date</li>
-                  <li>Changes must be mutually agreed upon</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">10. EVNT Platform Fees</h2>
-              <div className="space-y-3 text-gray-700">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Platform fees are calculated as a percentage of booking total</li>
-                  <li>In most cancellations, platform fees are non-refundable</li>
-                  <li>Exception: Vendor-initiated cancellations result in full refund including fees</li>
-                  <li>Platform fees cover payment processing, customer support, and platform services</li>
-                </ul>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-3">11. Contact & Support</h2>
-              <div className="text-gray-700">
-                <p className="mb-3">For cancellation or refund questions:</p>
-                <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-                  <p><strong>Email:</strong> support@evnt.com</p>
-                  <p><strong>Cancellation Support:</strong> cancellations@evnt.com</p>
-                  <p><strong>Response Time:</strong> Within 48 hours</p>
-                  <p><strong>Phone Support:</strong> Available for urgent matters (provided in confirmation email)</p>
+                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mt-3">
+                  <p className="font-semibold text-green-900">Client Protection: If a vendor cancels a confirmed booking, you are always entitled to a full refund.</p>
                 </div>
               </div>
             </section>
 
-            <div className="mt-8 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
-              <p className="text-sm text-gray-700">
-                <strong>Important:</strong> This policy provides general guidelines. Specific cancellation terms 
-                for your booking are outlined in your booking agreement and confirmation email. In case of conflict, 
-                the specific booking terms take precedence.
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">5. Rescheduling</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Rescheduling requests must be mutually agreed upon by both client and vendor through the EVNT platform messaging system. Any pricing adjustments or new terms must be confirmed within the updated booking agreement.
               </p>
-            </div>
+            </section>
 
-            <div className="mt-4 p-4 bg-black text-white rounded-lg text-center">
-              <p className="font-bold">By making a booking on EVNT, you acknowledge and agree to this Cancellation & Refund Policy.</p>
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">6. Payment Protection & Escrow</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>Payments made through EVNT are securely held until service completion. Funds are released to vendors after the event is completed unless:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>A cancellation occurs under an eligible refund condition, or</li>
+                  <li>A dispute is opened within the allowed timeframe (48 hours after the event)</li>
+                </ul>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">7. Disputes and Refund Requests</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>If a problem occurs, clients must report disputes within <strong>48 hours</strong> after the scheduled event end time by contacting:</p>
+                <p className="font-semibold">info@joinevnt.com</p>
+                <p>Disputes may include:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Service not delivered</li>
+                  <li>Significant deviation from agreed services</li>
+                  <li>Vendor no-show</li>
+                </ul>
+                <p>EVNT may request supporting documentation such as messages, contracts, or event evidence.</p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">8. Dispute Review Process</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>During review, EVNT may:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Temporarily hold payout funds</li>
+                  <li>Request information from both parties</li>
+                  <li>Evaluate booking details and communications</li>
+                </ul>
+                <p>EVNT will make a good-faith determination based on available evidence and platform policies. Decisions made by EVNT regarding platform payment releases are final to the extent permitted by law.</p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">9. Non-Refundable Situations</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>Refunds may not be issued for:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Change of mind after booking</li>
+                  <li>Dissatisfaction not related to agreed services</li>
+                  <li>Issues outside vendor control (e.g., weather, venue problems)</li>
+                  <li>Failure to read vendor listing details before booking</li>
+                </ul>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">10. Chargebacks</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Clients agree to contact EVNT before initiating a chargeback with their payment provider. If a chargeback is filed, EVNT may suspend accounts during investigation. Vendors agree to cooperate by providing documentation. Improper chargebacks may result in account termination.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">11. Force Majeure (Unforeseeable Events)</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>Neither EVNT, vendors, nor clients are liable for failure to perform due to events beyond reasonable control, including:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Natural disasters</li>
+                  <li>Government restrictions</li>
+                  <li>Public health emergencies</li>
+                  <li>Severe weather</li>
+                  <li>Venue closures</li>
+                </ul>
+                <p>Refunds or rescheduling under these circumstances are determined by the vendor's policy unless otherwise required by law.</p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">12. Processing Times</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Approved refunds typically process within <strong>5–10 business days</strong> depending on the payment provider and financial institution.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">13. Policy Updates</h2>
+              <p className="text-gray-700 leading-relaxed">
+                EVNT may update this policy periodically. Continued use of the platform after updates constitutes acceptance of the revised policy.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">14. Contact</h2>
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-5 text-gray-700">
+                <p className="font-bold mb-2">EVNT Support</p>
+                <p><strong>Email:</strong> info@joinevnt.com</p>
+                <p><strong>Response Time:</strong> Within 48 hours</p>
+              </div>
+            </section>
+
+            <div className="mt-8 p-6 bg-black text-white rounded-xl text-center">
+              <p className="font-black text-lg">By making a booking on EVNT, you acknowledge and agree to this Refund & Cancellation Policy.</p>
             </div>
           </CardContent>
         </Card>
