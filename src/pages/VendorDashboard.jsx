@@ -44,7 +44,7 @@ export default function VendorDashboard() {
           return;
         }
 
-        if (user.user_type !== "vendor" && !isAdmin) {
+        if (user.user_type !== "vendor" && user.user_type !== "test_vendor" && !isAdmin) {
           navigate(createPageUrl("Home"));
           return;
         }
