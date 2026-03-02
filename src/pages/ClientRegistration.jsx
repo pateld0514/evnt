@@ -58,6 +58,11 @@ export default function ClientRegistrationPage() {
       return;
     }
 
+    if (!termsAccepted) {
+      toast.error("Please confirm you are 18+ and agree to the Terms of Service");
+      return;
+    }
+
     setLoading(true);
     try {
       const currentUser = await base44.auth.me();
