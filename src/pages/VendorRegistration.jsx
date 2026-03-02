@@ -156,7 +156,8 @@ export default function VendorRegistrationPage() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) {
-      setReferralCode(ref);
+      // URL-decode in case the base64 was encoded
+      setReferralCode(decodeURIComponent(ref));
     }
 
     // Check if returning from Stripe Connect
