@@ -8,9 +8,9 @@ import { toast } from "sonner";
 export default function ReferralCard({ userEmail, userType }) {
   const [copied, setCopied] = useState(false);
   
-  // Generate referral code from email (simple hash)
-  const referralCode = btoa(userEmail).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase();
-  const referralLink = `${window.location.origin}/Onboarding?ref=${referralCode}`;
+  // Generate referral code from email - base64 encoded so it can be decoded back
+  const referralCode = btoa(userEmail);
+  const referralLink = `${window.location.origin}/Onboarding?ref=${encodeURIComponent(referralCode)}`;
   
   const isVendor = userType === "vendor";
   
