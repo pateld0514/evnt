@@ -126,6 +126,18 @@ export default function ClientRegistrationPage() {
             reward_amount: 25,
             status: "pending"
           });
+
+          // Notify referrer that their referral signed up
+          try {
+            await base44.functions.invoke('sendReferralNotification', {
+              referrer_email: referrerEmail,
+              referrer_type: referrerType,
+              referred_email: currentUser.email,
+              reward_type: 'pending'
+            });
+          } catch (e) {
+            console.error("Failed to send referral signup notification:", e);
+          }
         } catch (error) {
           console.error("Failed to create referral record:", error);
         }
