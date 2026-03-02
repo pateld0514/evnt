@@ -204,12 +204,17 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: booking.client_email,
-      from_name: "EVNT",
-      subject: statusNotif.client.emailSubject,
-      body: wrapEmail(clientContent, statusNotif.client.message, booking.client_email)
-    });
+    // Send to client (wrap email in try/catch so notification still works even if email fails)
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: booking.client_email,
+        from_name: "EVNT",
+        subject: statusNotif.client.emailSubject,
+        body: wrapEmail(clientContent, statusNotif.client.message, booking.client_email)
+      });
+    } catch (emailErr) {
+      console.warn('Client email failed (non-fatal):', emailErr.message);
+    }
 
     await base44.asServiceRole.entities.Notification.create({
       recipient_email: booking.client_email,
@@ -235,12 +240,16 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: vendorEmail,
-      from_name: "EVNT",
-      subject: statusNotif.vendor.emailSubject,
-      body: wrapEmail(vendorContent, statusNotif.vendor.message, vendorEmail)
-    });
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: vendorEmail,
+        from_name: "EVNT",
+        subject: statusNotif.vendor.emailSubject,
+        body: wrapEmail(vendorContent, statusNotif.vendor.message, vendorEmail)
+      });
+    } catch (emailErr) {
+      console.warn('Vendor email failed (non-fatal):', emailErr.message);
+    }
 
     await base44.asServiceRole.entities.Notification.create({
       recipient_email: vendorEmail,
