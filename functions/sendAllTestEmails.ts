@@ -272,7 +272,7 @@ Deno.serve(async (req) => {
       }
     ];
 
-    // Send all emails
+    // Send all emails with a small delay to avoid deduplication/rate limiting
     const results = [];
     for (const email of emails) {
       try {
@@ -283,6 +283,8 @@ Deno.serve(async (req) => {
           body: email.content
         });
         results.push({ name: email.name, status: 'sent' });
+        // Small delay to prevent email provider deduplication
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (err) {
         results.push({ name: email.name, status: 'failed', error: err.message });
       }
