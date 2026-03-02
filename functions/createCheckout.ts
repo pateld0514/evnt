@@ -271,42 +271,16 @@ Deno.serve(async (req) => {
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: `EVNT Marketplace - ${booking.event_type} Event Services`,
+          description: `EVNT Secure Checkout — ${serviceTitle}`,
           custom_fields: [
-            {
-              name: 'Booking Reference',
-              value: `EVNT-${bookingId.substring(0, 8).toUpperCase()}`,
-            },
-            {
-              name: 'Service Provider',
-              value: booking.vendor_name,
-            },
-            {
-              name: 'Client Name',
-              value: booking.client_name || booking.client_email,
-            },
-            {
-              name: 'Event Type',
-              value: booking.event_type,
-            },
-            {
-              name: 'Event Date',
-              value: booking.event_date,
-            },
-            {
-              name: 'Event Location',
-              value: booking.location || 'To be determined',
-            },
-            {
-              name: 'Guest Count',
-              value: booking.guest_count ? `${booking.guest_count} guests` : 'Not specified',
-            },
+            { name: 'Booking Reference', value: `EVNT-${bookingId.substring(0, 8).toUpperCase()}` },
+            { name: 'Service Provider', value: booking.vendor_name },
+            { name: 'Client Name', value: booking.client_name || booking.client_email },
+            { name: 'Event Date', value: booking.event_date },
+            { name: 'Event Location', value: booking.location || 'To be determined' },
+            { name: 'Guest Count', value: booking.guest_count ? `${booking.guest_count} guests` : 'Not specified' },
           ],
-          footer: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPRICE BREAKDOWN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nService Price: $${booking.base_event_amount.toFixed(2)}${booking.additional_fees && booking.additional_fees.length > 0 ? '\n' + booking.additional_fees.map(f => `  + ${f.name}: $${parseFloat(f.amount).toFixed(2)}`).join('\n') : ''}\n\nAgreed Service Price: $${booking.base_event_amount.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nClient Pays Total: $${booking.total_amount_charged.toFixed(2)}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEVNT Fee (${booking.platform_fee_percent.toFixed(1)}%): -$${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? `\n${booking.client_state || 'Sales'} Tax (${(booking.sales_tax_rate * 100).toFixed(1)}%): -$${salesTaxAmount.toFixed(2)}` : ''}\nStripe Processing Fee: -$${stripeFeeAmount.toFixed(2)}\n  ────────────────────────────────────\nVendor Receives: $${booking.vendor_payout.toFixed(2)}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPAYMENT PROTECTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✓ Funds held in secure escrow until event completion\n✓ Full refund protection per EVNT terms of service\n✓ Dispute resolution support included\n✓ 24/7 customer service available\n\nQuestions? Contact support@evnt.com\nTerms of Service: evnt.com/terms`,
-          account_tax_ids: [],
-          rendering_options: {
-            amount_tax_display: 'include_inclusive_tax',
-          },
+          footer: `EVNT Platform Fee (${booking.platform_fee_percent?.toFixed(1) || ''}%): $${booking.platform_fee_amount.toFixed(2)}${salesTaxAmount > 0 ? ` | ${booking.client_state || 'Sales'} Tax (${(booking.sales_tax_rate * 100).toFixed(2)}%): $${salesTaxAmount.toFixed(2)}` : ''} | Stripe Processing Fee: $${stripeFeeAmount.toFixed(2)} | Vendor Receives: $${booking.vendor_payout.toFixed(2)}\n\nFunds held in secure escrow until event completion. Questions? support@joinevnt.com | Terms: joinevnt.com/terms | Privacy: joinevnt.com/privacy`,
         },
       },
       metadata: {
