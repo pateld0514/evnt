@@ -1,5 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { STATE_TAX_RATES, getTaxLabel } from './stateTaxRates.js';
+// Inline tax rates to avoid import issues (no local imports in functions)
+const STATE_TAX_RATES = {
+  'AL': { rate: 0.0946 }, 'AK': { rate: 0.0182 }, 'AZ': { rate: 0.0852 }, 'AR': { rate: 0.0946 },
+  'CA': { rate: 0.0899 }, 'CO': { rate: 0.0789 }, 'CT': { rate: 0.0635 }, 'DE': { rate: 0 },
+  'FL': { rate: 0.0698 }, 'GA': { rate: 0.0749 }, 'HI': { rate: 0.0450 }, 'ID': { rate: 0.0603 },
+  'IL': { rate: 0.0896 }, 'IN': { rate: 0.0700 }, 'IA': { rate: 0.0694 }, 'KS': { rate: 0.0869 },
+  'KY': { rate: 0.0600 }, 'LA': { rate: 0.1011 }, 'ME': { rate: 0.0550 }, 'MD': { rate: 0.0600 },
+  'MA': { rate: 0.0625 }, 'MI': { rate: 0.0600 }, 'MN': { rate: 0.0814 }, 'MS': { rate: 0.0706 },
+  'MO': { rate: 0.0844 }, 'MT': { rate: 0 }, 'NE': { rate: 0.0698 }, 'NV': { rate: 0.0824 },
+  'NH': { rate: 0 }, 'NJ': { rate: 0.0660 }, 'NM': { rate: 0.0767 }, 'NY': { rate: 0.0854 },
+  'NC': { rate: 0.0700 }, 'ND': { rate: 0.0709 }, 'OH': { rate: 0.0729 }, 'OK': { rate: 0.0906 },
+  'OR': { rate: 0 }, 'PA': { rate: 0.0634 }, 'RI': { rate: 0.0700 }, 'SC': { rate: 0.0749 },
+  'SD': { rate: 0.0611 }, 'TN': { rate: 0.0961 }, 'TX': { rate: 0.0820 }, 'UT': { rate: 0.0742 },
+  'VT': { rate: 0.0639 }, 'VA': { rate: 0.0577 }, 'WA': { rate: 0.0951 }, 'WV': { rate: 0.0659 },
+  'WI': { rate: 0.0572 }, 'WY': { rate: 0.0556 }, 'DC': { rate: 0.0600 }
+};
+function getTaxLabel(stateAbbr, rate) {
+  return stateAbbr ? `${stateAbbr} Sales Tax (${(rate * 100).toFixed(1)}%)` : '';
+}
 
 Deno.serve(async (req) => {
   try {
