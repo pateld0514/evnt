@@ -100,7 +100,6 @@ export default function ClientRegistrationPage() {
         });
       } catch (emailError) {
         console.error('Failed to send welcome email:', emailError);
-        // Don't block registration if email fails
       }
 
       // Create referral reward if referred - decode referral code to get referrer email
