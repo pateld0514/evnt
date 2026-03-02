@@ -49,10 +49,11 @@ export default function VendorDashboard() {
           return;
         }
 
-        // Always list all vendors and find by id OR by created_by email (handles stale vendor_id)
+        // Find vendor by id, created_by email, or contact_email
         const allVendors = await base44.entities.Vendor.list();
-        const found = allVendors.find(v => v.id === user.vendor_id) 
-          || allVendors.find(v => v.created_by === user.email);
+        const found = allVendors.find(v => v.id === user.vendor_id)
+          || allVendors.find(v => v.created_by === user.email)
+          || allVendors.find(v => v.contact_email === user.email);
         if (found) {
           setVendor(found);
         } else {
