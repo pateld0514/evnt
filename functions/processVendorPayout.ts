@@ -76,7 +76,8 @@ Deno.serve(async (req) => {
     }
 
     // Calculate payout amounts with validation
-    const grossAmount = booking.agreed_price || 0;
+    // Use base_event_amount (the agreed/discounted price client actually pays)
+    const grossAmount = booking.base_event_amount || booking.agreed_price || booking.total_amount_charged || 0;
     const platformFee = booking.platform_fee_amount || 0;
     const netAmount = booking.vendor_payout || (grossAmount - platformFee);
     
