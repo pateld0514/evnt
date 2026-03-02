@@ -292,7 +292,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
           </div>
           {totals.appliedDiscount > 0 && (
             <div className="flex justify-between text-sm text-green-600">
-              <span>✨ Referral Perk Discount:</span>
+              <span>✨ Referral Credit Applied:</span>
               <span className="font-bold">-${totals.appliedDiscount.toFixed(2)}</span>
             </div>
           )}
