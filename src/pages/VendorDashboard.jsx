@@ -350,7 +350,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
           </CardHeader>
           <CardContent className="p-6">
             {bookings.slice(0, 5).length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No bookings yet</p>
+              <p className="text-gray-500 text-center py-8">No bookings yet. Clients will appear here once they book you.</p>
             ) : (
               <div className="space-y-4">
                 {bookings.slice(0, 5).map((booking) => (
