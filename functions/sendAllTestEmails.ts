@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     }
 
     const adminEmail = user.email;
-    const wrapEmail = (content) => wrapEmailContent(content, adminEmail);
+    const wrapEmail = (content, preheader = '') => wrapEmailContent(content, adminEmail, preheader);
 
     // All sample emails
     const emails = [
