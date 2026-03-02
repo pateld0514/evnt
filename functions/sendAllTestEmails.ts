@@ -197,31 +197,6 @@ Deno.serve(async (req) => {
           </div>
         `, '📋 Booking Declined')
       },
-      // WELCOME EMAIL
-      {
-        name: 'Welcome Email: New Client',
-        to: adminEmail,
-        subject: '🎉 Welcome to EVNT - Start Swiping!',
-        content: wrapEmail(`
-          <div class="content">
-            <h1 style="font-size:24px;font-weight:900;color:#000000;margin:0 0 20px 0;">🎉 Welcome to EVNT, Sample Client!</h1>
-            <p style="font-size:16px;color:#4b5563;margin:0 0 20px 0;line-height:1.8;">You're all set! EVNT is the easiest way to find and book top-rated vendors for your next event. Thousands of verified professionals are waiting to make your vision a reality.</p>
-            <div style="background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;padding:24px;margin:24px 0;">
-              <h3 style="font-size:16px;font-weight:700;color:#1f2937;margin:0 0 12px 0;">Here's how it works:</h3>
-              <p style="margin:0 0 8px 0;color:#4b5563;">✨ <strong>Swipe</strong> through curated vendors tailored to your event type</p>
-              <p style="margin:0 0 8px 0;color:#4b5563;">💬 <strong>Connect</strong> and negotiate directly with vendors</p>
-              <p style="margin:0 0 8px 0;color:#4b5563;">🔒 <strong>Pay securely</strong> — funds held in escrow until your event is done</p>
-              <p style="margin:0;color:#4b5563;">⭐ <strong>Review</strong> your vendors after every event</p>
-            </div>
-            <div style="text-align:center;margin:32px 0;">
-              <a href="https://joinevnt.com" style="display:inline-block;padding:16px 40px;background:#000000;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:18px;">Start Swiping Now →</a>
-            </div>
-            <div style="background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-left:4px solid #000000;padding:20px;margin:30px 0;border-radius:8px;">
-              <p style="margin:0;"><strong>🔥 Pro Tip:</strong> The best vendors fill up fast — start browsing now before your date gets taken!</p>
-            </div>
-          </div>
-        `, 'Welcome to EVNT! Start finding vendors for your event.')
-      },
       // VENDOR APPROVAL EMAILS
       {
         name: 'Vendor Approval Email',
