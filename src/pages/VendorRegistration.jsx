@@ -912,7 +912,7 @@ export default function VendorRegistrationPage() {
             <Button
               type="submit"
               className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingLicense || !formData.stripe_account_id}
+              disabled={loading || uploadingId || uploadingMain || uploadingGallery || uploadingLicense || !formData.stripe_account_id || !termsAccepted}
             >
               {loading ? (
                 <>
