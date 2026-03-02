@@ -24,8 +24,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (!booking.vendor_id) {
+      return Response.json({ error: 'Missing vendor_id on booking' }, { status: 400 });
+    }
+
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
     if (!vendors || vendors.length === 0) {
+      console.error('Vendor not found:', booking.vendor_id);
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
     
