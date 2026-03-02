@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     // Update current user with vendor info
     await base44.auth.updateMe({
       user_type: 'vendor',
-      vendor_id: '699fa36c19956dc189f27101',
+      vendor_id: '69a50e986595f212661cb432',
       onboarding_complete: true,
       approval_status: 'approved'
     });
