@@ -49,13 +49,7 @@ export default function VendorDashboard() {
           return;
         }
 
-        // For test_vendor accounts, look up by created_by email
-        if (user.user_type === "test_vendor") {
-          const vendorsByCreator = await base44.entities.Vendor.filter({ created_by: user.email });
-          if (vendorsByCreator && vendorsByCreator.length > 0) {
-            setVendor(vendorsByCreator[0]);
-          }
-        } else if (user.vendor_id) {
+        if (user.vendor_id) {
           const vendors = await base44.entities.Vendor.filter({ id: user.vendor_id });
           if (vendors && vendors.length > 0) {
             setVendor(vendors[0]);
