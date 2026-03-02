@@ -42,12 +42,15 @@ Deno.serve(async (req) => {
       results.push({ type: 'client', result: clientResult });
     }
 
-    // Process vendor referral - find vendor's email from the vendor record
+    // Process vendor referral - find vendor's email from the Vendor record (created_by field)
     if (bookingData.vendor_id) {
-      const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: bookingData.vendor_id });
-      if (vendorUsers.length > 0) {
-        const vendorResult = await processForPerson(base44, vendorUsers[0].email, 'vendor');
-        results.push({ type: 'vendor', result: vendorResult });
+      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: bookingData.vendor_id });
+      if (vendorRecords.length > 0) {
+        const vendorEmail = vendorRecords[0].created_by || vendorRecords[0].contact_email;
+        if (vendorEmail) {
+          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor');
+          results.push({ type: 'vendor', result: vendorResult });
+        }
       }
     }
 
