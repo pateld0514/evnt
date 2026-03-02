@@ -125,16 +125,6 @@ export default function BookingsPage() {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
       } else if (currentUser.demo_mode === "client") {
         return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
-      } else if (currentUser.user_type === "vendor") {
-        // Get all bookings and filter by vendor
-        const allBookings = await base44.entities.Booking.list('-created_date');
-        const allVendors = await base44.entities.Vendor.list();
-        const myVendor = allVendors.find(v => v.created_by === currentUser.email);
-        
-        if (myVendor) {
-          return allBookings.filter(b => b.vendor_id === myVendor.id);
-        }
-        return [];
       } else {
         return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
       }
