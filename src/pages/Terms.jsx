@@ -49,7 +49,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold mb-3">4. Payments and Fees</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-4">4. Payments and Fees</h2>
               <div className="space-y-3 text-gray-700">
                 <p className="font-semibold mb-2">Payment Processing:</p>
                 <ul className="list-disc pl-6 space-y-2">
@@ -59,18 +59,33 @@ export default function TermsPage() {
                   <li>EVNT retains its service fee percentage from the agreed service price</li>
                   <li>EVNT also collects and retains all applicable sales taxes based on event location</li>
                   <li>Vendor receives the agreed service price minus EVNT's fee and applicable taxes</li>
-                  <li>Payment breakdown example: $1,000 booking in Kentucky (6% sales tax) = Client pays $1,000 total; EVNT deducts $100 fee (10%) + $60 tax (6%) = $160; Vendor receives $840</li>
                   <li>Payments are held in escrow until the event is completed</li>
                   <li>Refunds are subject to the cancellation policy agreed upon in the booking</li>
                 </ul>
 
+                <p className="font-semibold mt-6 mb-2">How Fees Are Calculated:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>EVNT Platform Fee:</strong> 10% of the agreed service price, deducted from vendor payout after successful service completion</li>
+                  <li><strong>Sales Tax:</strong> Applied based on the event location state at the applicable rate. Deducted from vendor payout and remitted to the relevant tax authority</li>
+                  <li><strong>Stripe Processing Fee:</strong> Approximately 2.9% + $0.30 per transaction, deducted from vendor payout</li>
+                  <li><strong>Example:</strong> $1,000 booking in Kentucky (6% sales tax): Client pays $1,000 total. EVNT deducts $100 fee (10%) + $60 tax (6%) = $160. Vendor receives approximately $840 before Stripe processing fees.</li>
+                </ul>
+
                 <p className="font-semibold mt-6 mb-2">Vendor Payout Timeline:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>After booking completion:</strong> Vendors will receive their payout within 5-7 business days following the successful completion of the event</li>
-                  <li><strong>Stripe processing fees:</strong> Standard payment processing fees (approximately 2.9% + $0.30 per transaction) are deducted from the vendor's payout before funds are transferred to their bank account</li>
-                  <li><strong>Bank transfer timing:</strong> Once released by EVNT, funds typically appear in the vendor's bank account within 2-3 business days, depending on their financial institution</li>
-                  <li><strong>Payout tracking:</strong> Vendors can view all pending and completed payouts in their dashboard under the Payout History section</li>
+                  <li><strong>After booking completion:</strong> Vendors receive their payout within 5-7 business days following successful event completion</li>
+                  <li><strong>Bank transfer timing:</strong> Once released by EVNT, funds typically appear in the vendor's bank account within 2-3 business days depending on their financial institution</li>
+                  <li><strong>Payout tracking:</strong> Vendors can view all pending and completed payouts in their dashboard under Payout History</li>
                 </ul>
+
+                <p className="font-semibold mt-6 mb-2">Step-by-Step Payment Flow:</p>
+                <ol className="list-decimal pl-6 space-y-2">
+                  <li>Client sends a booking request with event details and initial budget</li>
+                  <li>Vendor reviews and submits a pricing proposal including any additional charges (travel, equipment, etc.)</li>
+                  <li>Client accepts the proposal and pays the agreed total through Stripe; funds are held in escrow</li>
+                  <li>Both parties digitally sign the service agreement; vendor delivers service on the event date</li>
+                  <li>After event completion, vendor payout is released from escrow within 5-7 business days</li>
+                </ol>
               </div>
             </section>
 
