@@ -217,6 +217,11 @@ export default function VendorRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!termsAccepted) {
+      toast.error("Please confirm you are 18+ and agree to the Terms of Service");
+      return;
+    }
+
     if (!formData.business_name || !formData.category || !formData.description || 
         !formData.phone || !formData.location || !formData.contact_email || 
         !formData.id_verification_url || 
