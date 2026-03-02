@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { STATE_TAX_RATES, getTaxLabel } from '../utils/stateTaxRates.js';
+import { STATE_TAX_RATES, getTaxLabel } from './stateTaxRates.js';
 
 Deno.serve(async (req) => {
   try {
