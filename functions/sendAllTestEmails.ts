@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         });
         results.push({ name: def.name, status: 'sent' });
         console.log(`[INFO] Sent: ${def.name}`);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 800));
       } catch (err) {
         console.error(`[ERROR] Failed: ${def.name} - ${err.message}`);
         results.push({ name: def.name, status: 'failed', error: err.message });
