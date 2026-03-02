@@ -110,11 +110,17 @@ export default function BookingsPage() {
     queryFn: async () => {
       if (!currentUser) return [];
       
-      // Handle test_vendor or regular vendor with vendor_id
-      if (currentUser.user_type === "vendor" && currentUser.vendor_id) {
-        const vendorId = currentUser.vendor_id;
+      // Handle test_vendor or regular vendor
+      if ((currentUser.user_type === "vendor" || currentUser.user_type === "test_vendor")) {
         const allBookings = await base44.entities.Booking.list('-created_date');
-        return allBookings.filter(b => b.vendor_id === vendorId);
+        const allVendors = await base44.entities.Vendor.list();
+        const myVendor = allVendors.find(v => v.id === currentUser.vendor_id)
+          || allVendors.find(v => v.created_by === currentUser.email)
+          || allVendors.find(v => v.contact_email === currentUser.email);
+        if (myVendor) {
+          return allBookings.filter(b => b.vendor_id === myVendor.id);
+        }
+        return [];
       } else if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
       } else if (currentUser.demo_mode === "client") {
