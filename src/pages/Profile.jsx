@@ -283,6 +283,7 @@ export default function ProfilePage() {
 
           {user?.user_type && (
             <div className="space-y-6 mb-6">
+          <RewardsSummary user={user} userType={user.user_type} />
           <TierDisplay 
             userEmail={user.email} 
             userType={user.user_type}
