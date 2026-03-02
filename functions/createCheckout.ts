@@ -225,7 +225,10 @@ Deno.serve(async (req) => {
       line_items: lineItems,
       payment_intent_data: {
         capture_method: 'manual', // ESCROW: Holds funds until manual capture
-        application_fee_amount: platformFeeCents + taxCents + stripeFeeCents, // EVNT keeps fee + tax + Stripe processing fee
+        // application_fee_amount = what EVNT keeps from the transaction
+        // Vendor receives: base_event_amount - platform_fee - tax - stripe_fee (= vendor_payout)
+        // EVNT keeps: platform_fee + tax (stripe fee is collected by Stripe directly from EVNT's platform fee)
+        application_fee_amount: platformFeeCents + taxCents,
         transfer_data: {
           destination: vendor.stripe_account_id,
         },
