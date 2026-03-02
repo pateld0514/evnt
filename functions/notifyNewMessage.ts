@@ -64,13 +64,17 @@ Deno.serve(async (req) => {
 </html>
     `;
 
-    // Send email
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: message.recipient_email,
-      from_name: "EVNT Messages",
-      subject: `💬 New Message from ${senderName}`,
-      body: emailContent
-    });
+    // Send email (non-fatal - in-app notification still gets created)
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: message.recipient_email,
+        from_name: "EVNT Messages",
+        subject: `💬 New Message from ${senderName}`,
+        body: emailContent
+      });
+    } catch (emailErr) {
+      console.warn('Message email failed (non-fatal):', emailErr.message);
+    }
 
     // Create in-app notification
     await base44.asServiceRole.entities.Notification.create({
