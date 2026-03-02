@@ -43,26 +43,23 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Check for referral credit
+      // Check for referral credit (informational only - actual deduction happens in calculateProposal)
       const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
       if (users.length > 0 && users[0].referral_credit > 0) {
         const creditAmount = Math.min(users[0].referral_credit, bookingData.agreed_price || 0);
-        appliedDiscounts.push({ type: 'credit', amount: creditAmount, description: 'Referral credit' });
-        
-        // Deduct used credit
-        await base44.asServiceRole.entities.User.update(users[0].id, {
-          referral_credit: users[0].referral_credit - creditAmount
-        });
+        appliedDiscounts.push({ type: 'credit', amount: creditAmount, description: 'Referral credit (applied at checkout)' });
+        // NOTE: Do NOT deduct here - deduction is handled by calculateProposal/capturePayment
       }
 
-      // Check birthday month discount (assuming 5% discount)
+      // Check birthday month discount (5% off platform fee only)
       const user = users[0];
       if (user && user.birthday) {
         const today = new Date();
         const birthday = new Date(user.birthday);
         if (today.getMonth() === birthday.getMonth()) {
-          totalDiscount += 5;
-          appliedDiscounts.push({ type: 'birthday', amount: 5, description: 'Birthday month bonus' });
+          const birthdayDiscountPercent = 5;
+          totalDiscount += birthdayDiscountPercent;
+          appliedDiscounts.push({ type: 'birthday', amount: birthdayDiscountPercent, description: 'Birthday month 5% fee discount' });
         }
       }
     } else if (user_type === 'vendor') {
