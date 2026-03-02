@@ -161,29 +161,39 @@ Deno.serve(async (req) => {
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
     
-    // Build itemized line items for Stripe checkout
-    // 1. Base service price (agreed_price minus additional fees totals)
+    // Build line items for Stripe checkout.
+    // IMPORTANT: The client pays base_event_amount (the agreed price). Platform fee, tax, and stripe fee
+    // are all DEDUCTED FROM the vendor payout — they are NOT added on top of what the client pays.
+    // So we show the service breakdown (base + additional fees) which sum to base_event_amount.
     const additionalFeesTotal = (booking.additional_fees || []).reduce((sum, f) => sum + parseFloat(f.amount || 0), 0);
-    const baseServiceCents = Math.round((booking.base_event_amount - additionalFeesTotal) * 100);
+    const coreServiceCents = Math.round((booking.base_event_amount - additionalFeesTotal) * 100);
 
     const serviceTitle = booking.service_description
       ? `${booking.service_description} — ${booking.vendor_name}`
       : `${booking.event_type} Service — ${booking.vendor_name}`;
 
+    // Build fee description for transparency (shown in product description, not as extra charges)
+    const feeBreakdownNote = [
+      `EVNT platform fee (${booking.platform_fee_percent?.toFixed(1) || '10'}%): $${booking.platform_fee_amount.toFixed(2)}`,
+      ...(salesTaxAmount > 0 ? [`${booking.client_state || 'Sales'} tax: $${salesTaxAmount.toFixed(2)}`] : []),
+      `Payment processing: $${stripeFeeAmount.toFixed(2)}`,
+      `Vendor receives: $${booking.vendor_payout.toFixed(2)}`
+    ].join(' · ');
+
     const lineItems = [
-      // Main service line item
+      // Core service line item
       {
         price_data: {
           currency: 'usd',
           product_data: {
             name: serviceTitle,
-            description: `Service provided by a verified EVNT vendor. Event Date: ${booking.event_date}${booking.location ? ' · Location: ' + booking.location : ''}${booking.guest_count ? ' · ' + booking.guest_count + ' guests' : ''}`,
+            description: `${booking.event_type} · ${booking.event_date}${booking.location ? ' · ' + booking.location : ''}${booking.guest_count ? ' · ' + booking.guest_count + ' guests' : ''} | ${feeBreakdownNote}`,
           },
-          unit_amount: Math.max(baseServiceCents, 0),
+          unit_amount: Math.max(coreServiceCents, 50), // Stripe minimum 50 cents
         },
         quantity: 1,
       },
-      // Dynamic additional vendor fees
+      // Dynamic additional vendor fees (these are already included in base_event_amount total)
       ...(booking.additional_fees || [])
         .filter(fee => fee.name && parseFloat(fee.amount) > 0)
         .map(fee => ({
@@ -191,53 +201,23 @@ Deno.serve(async (req) => {
             currency: 'usd',
             product_data: {
               name: fee.name,
-              description: fee.description || `Additional fee — ${booking.vendor_name}`,
+              description: fee.description || `Additional fee from ${booking.vendor_name}`,
             },
             unit_amount: Math.round(parseFloat(fee.amount) * 100),
           },
           quantity: 1,
         })),
-      // EVNT Platform Fee
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'EVNT Platform Fee',
-            description: `Marketplace service fee (${booking.platform_fee_percent?.toFixed(1) || ''}%) for booking management, payment protection, and platform support.`,
-          },
-          unit_amount: platformFeeCents,
-        },
-        quantity: 1,
-      },
-      // Sales Tax (only if applicable)
-      ...(taxCents > 0 ? [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${booking.client_state || 'Sales'} Tax`,
-            description: `Sales tax (${(salesTaxRate * 100).toFixed(2)}%) applied based on service location.`,
-          },
-          unit_amount: taxCents,
-        },
-        quantity: 1,
-      }] : []),
-      // Stripe Processing Fee
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Payment Processing Fee',
-            description: 'Secure payment processing powered by Stripe (2.9% + $0.30).',
-          },
-          unit_amount: stripeFeeCents,
-        },
-        quantity: 1,
-      },
     ];
+
+    // Verify line items sum to base_event_amount (what client pays)
+    const lineItemsSum = lineItems.reduce((sum, item) => sum + item.price_data.unit_amount * item.quantity, 0);
+    console.log(`[${requestId}] Line items sum: $${(lineItemsSum/100).toFixed(2)}, expected base_event_amount: $${booking.base_event_amount}`);
     
-    // Recalculate total from itemized line items to ensure Stripe session total matches
-    const itemizedTotal = lineItems.reduce((sum, item) => sum + item.price_data.unit_amount * item.quantity, 0);
-    console.log(`[${requestId}] Itemized line items total: $${(itemizedTotal/100).toFixed(2)}, base_event_amount: $${booking.base_event_amount}`);
+    // If there's a rounding discrepancy, adjust the first item
+    if (lineItemsSum !== baseAmountCents && Math.abs(lineItemsSum - baseAmountCents) <= 5) {
+      lineItems[0].price_data.unit_amount += (baseAmountCents - lineItemsSum);
+      console.log(`[${requestId}] Adjusted first item by ${baseAmountCents - lineItemsSum} cents for rounding`);
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
