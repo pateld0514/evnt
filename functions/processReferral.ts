@@ -22,7 +22,8 @@ Deno.serve(async (req) => {
     } else if (!payload.event) {
       // Direct call - requires referred_email + referred_type
       if (payload.referred_email && payload.referred_type) {
-        return await processForPerson(base44, payload.referred_email, payload.referred_type);
+        const result = await processForPerson(base44, payload.referred_email, payload.referred_type);
+        return Response.json({ success: true, result });
       }
       return Response.json({ error: 'referred_email and referred_type are required for direct calls' }, { status: 400 });
     } else {
