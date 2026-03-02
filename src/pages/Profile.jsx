@@ -12,6 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ReferralCard from "../components/referral/ReferralCard";
 import ReferralTracker from "../components/referral/ReferralTracker";
+import RewardsSummary from "../components/referral/RewardsSummary";
 import TierDisplay from "../components/tier/TierDisplay";
 import ClientProfileEditor from "../components/profile/ClientProfileEditor";
 import VendorProfileEditor from "../components/profile/VendorProfileEditor";
