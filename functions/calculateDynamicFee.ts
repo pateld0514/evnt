@@ -67,12 +67,14 @@ Deno.serve(async (req) => {
     const platformFeeAmount = (booking_amount * finalFeePercent) / 100;
     const vendorPayout = booking_amount - platformFeeAmount;
 
+    const correctFinalFee = Math.max(baseFeePercent - higherDiscount, 0);
+
     return Response.json({
       success: true,
       base_fee_percent: baseFeePercent,
       vendor_discount: vendorDiscount,
       client_discount: clientDiscount,
-      final_fee_percent: parseFloat(finalFeePercent.toFixed(2)),
+      final_fee_percent: parseFloat(correctFinalFee.toFixed(2)),
       booking_amount: booking_amount,
       platform_fee_amount: parseFloat(platformFeeAmount.toFixed(2)),
       vendor_payout: parseFloat(vendorPayout.toFixed(2))
