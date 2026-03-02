@@ -49,13 +49,12 @@ export default function VendorDashboard() {
           return;
         }
 
-        if (user.vendor_id) {
-          // Filter by created_by for test_vendor accounts, or list all and find by id
-          const allVendors = await base44.entities.Vendor.list();
-          const found = allVendors.find(v => v.id === user.vendor_id);
-          if (found) {
-            setVendor(found);
-          }
+        // Always list all vendors and find by id OR by created_by email (handles stale vendor_id)
+        const allVendors = await base44.entities.Vendor.list();
+        const found = allVendors.find(v => v.id === user.vendor_id) 
+          || allVendors.find(v => v.created_by === user.email);
+        if (found) {
+          setVendor(found);
         } else {
           const isAdminCheck = user.email === "pateld0514@gmail.com" || user.role === "admin";
           if (isAdminCheck) {
