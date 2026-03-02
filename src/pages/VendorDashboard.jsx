@@ -50,9 +50,11 @@ export default function VendorDashboard() {
         }
 
         if (user.vendor_id) {
-          const vendors = await base44.entities.Vendor.filter({ id: user.vendor_id });
-          if (vendors && vendors.length > 0) {
-            setVendor(vendors[0]);
+          // Filter by created_by for test_vendor accounts, or list all and find by id
+          const allVendors = await base44.entities.Vendor.list();
+          const found = allVendors.find(v => v.id === user.vendor_id);
+          if (found) {
+            setVendor(found);
           }
         } else {
           const isAdminCheck = user.email === "pateld0514@gmail.com" || user.role === "admin";
