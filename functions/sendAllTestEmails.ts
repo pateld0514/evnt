@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { wrapEmailContent, sendPlatformEmail } from './lib/emailTemplate.js';
+import { wrapEmailContent } from './lib/emailTemplate.js';
+// v2 - force redeploy
 
 Deno.serve(async (req) => {
   try {
