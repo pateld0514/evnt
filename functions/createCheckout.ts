@@ -235,6 +235,10 @@ Deno.serve(async (req) => {
       },
     ];
     
+    // Recalculate total from itemized line items to ensure Stripe session total matches
+    const itemizedTotal = lineItems.reduce((sum, item) => sum + item.price_data.unit_amount * item.quantity, 0);
+    console.log(`[${requestId}] Itemized line items total: $${(itemizedTotal/100).toFixed(2)}, base_event_amount: $${booking.base_event_amount}`);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
