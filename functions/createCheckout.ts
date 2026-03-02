@@ -170,26 +170,78 @@ Deno.serve(async (req) => {
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
     
-    // Build comprehensive line items breakdown
-    const additionalFeesText = booking.additional_fees && booking.additional_fees.length > 0
-      ? '\n\nADDITIONAL SERVICES:\n' + booking.additional_fees.map(fee => 
-          `• ${fee.name}: $${parseFloat(fee.amount).toFixed(2)}${fee.description ? ' - ' + fee.description : ''}`
-        ).join('\n')
-      : '';
+    // Build itemized line items for Stripe checkout
+    // 1. Base service price (agreed_price minus additional fees totals)
+    const additionalFeesTotal = (booking.additional_fees || []).reduce((sum, f) => sum + parseFloat(f.amount || 0), 0);
+    const baseServiceCents = Math.round((booking.base_event_amount - additionalFeesTotal) * 100);
+
+    const serviceTitle = booking.service_description
+      ? `${booking.service_description} — ${booking.vendor_name}`
+      : `${booking.event_type} Service — ${booking.vendor_name}`;
 
     const lineItems = [
+      // Main service line item
       {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${booking.event_type} Event - ${booking.vendor_name}`,
-            description: `EVNT MARKETPLACE BOOKING\n━━━━━━━━━━━━━━━━━━━━━━━━\n\nEVENT DETAILS:\n• Type: ${booking.event_type}\n• Date: ${booking.event_date}\n• Location: ${booking.location || 'To be determined'}\n• Client: ${booking.client_name || booking.client_email}\n\nSERVICE PROVIDER:\n• Vendor: ${booking.vendor_name}\n${booking.service_description ? '• Services: ' + booking.service_description : '• Professional event services'}${additionalFeesText}\n\nPAYMENT PROTECTION:\n• Secure escrow until event completion\n• Full refund protection per EVNT policies\n• 24/7 customer support`,
-            images: [],
+            name: serviceTitle,
+            description: `Service provided by a verified EVNT vendor. Event Date: ${booking.event_date}${booking.location ? ' · Location: ' + booking.location : ''}${booking.guest_count ? ' · ' + booking.guest_count + ' guests' : ''}`,
           },
-          unit_amount: baseAmountCents,
+          unit_amount: Math.max(baseServiceCents, 0),
         },
         quantity: 1,
-      }
+      },
+      // Dynamic additional vendor fees
+      ...(booking.additional_fees || [])
+        .filter(fee => fee.name && parseFloat(fee.amount) > 0)
+        .map(fee => ({
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: fee.name,
+              description: fee.description || `Additional fee — ${booking.vendor_name}`,
+            },
+            unit_amount: Math.round(parseFloat(fee.amount) * 100),
+          },
+          quantity: 1,
+        })),
+      // EVNT Platform Fee
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'EVNT Platform Fee',
+            description: `Marketplace service fee (${booking.platform_fee_percent?.toFixed(1) || ''}%) for booking management, payment protection, and platform support.`,
+          },
+          unit_amount: platformFeeCents,
+        },
+        quantity: 1,
+      },
+      // Sales Tax (only if applicable)
+      ...(taxCents > 0 ? [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `${booking.client_state || 'Sales'} Tax`,
+            description: `Sales tax (${(salesTaxRate * 100).toFixed(2)}%) applied based on service location.`,
+          },
+          unit_amount: taxCents,
+        },
+        quantity: 1,
+      }] : []),
+      // Stripe Processing Fee
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Payment Processing Fee',
+            description: 'Secure payment processing powered by Stripe (2.9% + $0.30).',
+          },
+          unit_amount: stripeFeeCents,
+        },
+        quantity: 1,
+      },
     ];
     
     const session = await stripe.checkout.sessions.create({
