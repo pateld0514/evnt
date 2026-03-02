@@ -262,13 +262,10 @@ Deno.serve(async (req) => {
       },
       custom_text: {
         submit: {
-          message: 'Complete your secure booking with EVNT. Your payment will be held safely in escrow and only released to the vendor upon successful event completion. By proceeding, you agree to EVNT Terms of Service.',
-        },
-        shipping_address: {
-          message: 'Please confirm your event location address for vendor coordination and service delivery.',
+          message: 'By completing this purchase, you agree to EVNT\'s Terms of Service (joinevnt.com/terms) and Privacy Policy (joinevnt.com/privacy). All bookings are subject to vendor availability and cancellation policies. Your payment is held securely in escrow and released only after your event is completed.',
         },
         after_submit: {
-          message: 'Payment Successful! 🎉\n\nYour booking is now confirmed and protected by EVNT escrow. You will receive:\n• Detailed booking confirmation via email\n• Professional invoice and service agreement\n• Vendor contact information\n\nYour vendor will reach out within 24 hours to coordinate event details. Thank you for trusting EVNT!',
+          message: '✅ Booking Confirmed — Your vendor has been notified. A confirmation email has been sent with your booking details.',
         },
       },
       invoice_creation: {
