@@ -58,6 +58,7 @@ export default function SavedPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
   // Load current user immediately
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
