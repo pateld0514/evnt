@@ -136,7 +136,8 @@ export default function SwipePage() {
     queryKey: ['all-users-for-swipe'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
-    staleTime: 10 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   const getVendorTier = (vendorId) => {
