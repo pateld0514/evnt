@@ -9,6 +9,8 @@ import { Loader2, MapPin, DollarSign, Globe, Instagram, Facebook, Twitter, Music
 import { toast } from "sonner";
 import ReviewsList from "../components/vendor/ReviewsList";
 import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import BookingForm from "../components/booking/BookingForm";
 
 export default function VendorViewPage() {
   const navigate = useNavigate();

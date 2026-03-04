@@ -37,13 +37,20 @@ export default function SwipePage() {
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [animatingVendorId, setAnimatingVendorId] = useState(null);
-  const [filters, setFilters] = useState({
-    category: "all",
-    priceRange: "all",
-    minPrice: "",
-    maxPrice: "",
-    location: "",
-    minRating: "all"
+  const [filters, setFilters] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('swipe_filters');
+      return saved ? JSON.parse(saved) : {
+        category: "all",
+        priceRange: "all",
+        minPrice: "",
+        maxPrice: "",
+        location: "",
+        minRating: "all"
+      };
+    } catch {
+      return { category: "all", priceRange: "all", minPrice: "", maxPrice: "", location: "", minRating: "all" };
+    }
   });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
