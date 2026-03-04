@@ -180,7 +180,9 @@ export default function BookingsPage() {
       }
       
       // Verify ownership: vendor can update their bookings, client can update their bookings
-      const isVendorBooking = currentUser.vendor_id && booking.vendor_id === currentUser.vendor_id;
+      // For vendors, check if they own the vendor associated with this booking (not just currentUser.vendor_id)
+      const myVendor = vendors.find(v => v.created_by === currentUser.email || v.id === currentUser.vendor_id);
+      const isVendorBooking = myVendor && booking.vendor_id === myVendor.id;
       const isClientBooking = booking.client_email === currentUser.email;
       
       if (!isVendorBooking && !isClientBooking) {
