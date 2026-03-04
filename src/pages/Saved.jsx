@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -88,6 +88,7 @@ export default function SavedPage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const deleteMutation = useMutation({
@@ -172,7 +173,8 @@ export default function SavedPage() {
     }
   };
 
-  if (userLoading || loadingSaved || loadingVendors) {
+  // Show skeleton/content as soon as we have vendors — don't wait for saved vendors
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
