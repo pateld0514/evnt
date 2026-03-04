@@ -51,7 +51,19 @@ export default function BookingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState("all");
-...
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [vendorResponse, setVendorResponse] = useState("");
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [showContract, setShowContract] = useState(false);
+  const [currentVendor, setCurrentVendor] = useState(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [bookingToReview, setBookingToReview] = useState(null);
+  const [negotiationOpen, setNegotiationOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
+
   // Load user immediately with React Query (no useEffect needed)
   const { data: currentUser = null } = useQuery({
     queryKey: ['current-user'],
