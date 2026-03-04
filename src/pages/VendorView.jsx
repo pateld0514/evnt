@@ -82,29 +82,22 @@ export default function VendorViewPage() {
       toast.error("Please log in to save vendors");
       return;
     }
-
-    try {
-      if (isSaved) {
-        const saved = await base44.entities.SavedVendor.filter({ 
-          created_by: currentUser.email,
-          vendor_id: vendorId 
-        });
-        if (saved.length > 0) {
-          await base44.entities.SavedVendor.delete(saved[0].id);
-          setIsSaved(false);
-          toast.success("Removed from favorites");
-        }
-      } else {
-        await base44.entities.SavedVendor.create({
-          vendor_id: vendor.id,
-          vendor_name: vendor.business_name,
-          vendor_category: vendor.category,
-        });
-        setIsSaved(true);
-        toast.success("Added to favorites!");
+    if (isSaved) {
+      if (savedVendorsList.length > 0) {
+        await base44.entities.SavedVendor.delete(savedVendorsList[0].id);
+        queryClient.invalidateQueries(['saved-vendor-check', vendorId, currentUser.email]);
+        queryClient.invalidateQueries(['saved-vendors']);
+        toast.success("Removed from favorites");
       }
-    } catch (error) {
-      toast.error("Failed to update favorites");
+    } else {
+      await base44.entities.SavedVendor.create({
+        vendor_id: vendor.id,
+        vendor_name: vendor.business_name,
+        vendor_category: vendor.category,
+      });
+      queryClient.invalidateQueries(['saved-vendor-check', vendorId, currentUser.email]);
+      queryClient.invalidateQueries(['saved-vendors']);
+      toast.success("Added to favorites!");
     }
   };
 
