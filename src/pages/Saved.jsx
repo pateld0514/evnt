@@ -60,37 +60,36 @@ export default function SavedPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-        if (!user.onboarding_complete) {
-          navigate(createPageUrl("Onboarding"));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    checkOnboarding();
-  }, [navigate]);
-
-  const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
-    queryKey: ['saved-vendors', currentUser?.email],
-    queryFn: async () => {
-      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date');
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-    staleTime: 2 * 60 * 1000,
+  // Load current user immediately
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_complete) {
+      navigate(createPageUrl("Onboarding"));
+    }
+  }, [currentUser, navigate]);
+
+  // Vendors load immediately — no auth needed
   const { data: allVendors = [], isLoading: loadingVendors } = useQuery({
-    queryKey: ['vendors-for-saved'],
+    queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+
+  // Saved vendors load as soon as user email is known
+  const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
+    enabled: !!currentUser?.email,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
   });
 
   const deleteMutation = useMutation({

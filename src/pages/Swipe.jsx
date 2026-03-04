@@ -55,20 +55,22 @@ export default function SwipePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
 
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const user = await base44.auth.me();
-        if (!user.onboarding_complete) {
-          navigate(createPageUrl("Onboarding"));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    checkOnboarding();
-  }, [navigate]);
+  // Load current user - fires immediately
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
+  // Redirect if onboarding not complete
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_complete) {
+      navigate(createPageUrl("Onboarding"));
+    }
+  }, [currentUser, navigate]);
+
+  // All data queries fire in parallel immediately (vendors/bookings/reviews/users don't need auth)
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
@@ -77,58 +79,12 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
   });
 
-  // Real-time subscription for vendors
-  useEffect(() => {
-    const unsubscribe = base44.entities.Vendor.subscribe((event) => {
-      queryClient.invalidateQueries(['vendors']);
-    });
-
-    return () => unsubscribe();
-  }, [queryClient]);
-
   const { data: bookings = [] } = useQuery({
     queryKey: ['all-bookings'],
     queryFn: () => base44.entities.Booking.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-  });
-
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {
-        // not logged in
-      } finally {
-        setUserLoading(false);
-      }
-    };
-    loadUser();
-  }, []);
-
-  const { data: swipedVendors = [] } = useQuery({
-    queryKey: ['user-swipes', currentUser?.email],
-    queryFn: async () => {
-      return await base44.entities.UserSwipe.filter({ created_by: currentUser.email });
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-    staleTime: 2 * 60 * 1000,
-  });
-
-  const { data: savedVendors = [] } = useQuery({
-    queryKey: ['saved-vendors', currentUser?.email],
-    queryFn: async () => {
-      return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
-    },
-    enabled: !!currentUser?.email,
-    initialData: [],
-    staleTime: 2 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
@@ -146,6 +102,31 @@ export default function SwipePage() {
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
   });
+
+  // User-specific queries — enabled as soon as email is known
+  const { data: swipedVendors = [] } = useQuery({
+    queryKey: ['user-swipes', currentUser?.email],
+    queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
+    enabled: !!currentUser?.email,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: savedVendors = [] } = useQuery({
+    queryKey: ['saved-vendors', currentUser?.email],
+    queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
+    enabled: !!currentUser?.email,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Real-time subscription for vendors
+  useEffect(() => {
+    const unsubscribe = base44.entities.Vendor.subscribe(() => {
+      queryClient.invalidateQueries(['vendors']);
+    });
+    return () => unsubscribe();
+  }, [queryClient]);
 
   const getVendorTier = (vendorId) => {
     const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
