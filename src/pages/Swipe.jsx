@@ -150,6 +150,7 @@ export default function SwipePage() {
   };
 
   useEffect(() => {
+    if (userLoading) return;
     if (!currentUser || vendors.length === 0) {
       setDisplayableVendors([]);
       return;
