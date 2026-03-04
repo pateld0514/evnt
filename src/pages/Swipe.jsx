@@ -387,11 +387,11 @@ export default function SwipePage() {
     }
   };
 
-  if (isLoading || userLoading) {
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
-        <p className="text-gray-600 font-medium">Loading vendors...</p>
+        <p className="text-gray-600 font-medium">Loading...</p>
       </div>
     );
   }
