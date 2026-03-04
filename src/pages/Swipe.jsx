@@ -88,11 +88,18 @@ export default function SwipePage() {
   });
 
   const [currentUser, setCurrentUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
     const loadUser = async () => {
-      const user = await base44.auth.me();
-      setCurrentUser(user);
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {
+        // not logged in
+      } finally {
+        setUserLoading(false);
+      }
     };
     loadUser();
   }, []);
