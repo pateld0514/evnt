@@ -50,36 +50,22 @@ const statusConfig = {
 export default function BookingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [vendorResponse, setVendorResponse] = useState("");
-  const [showInvoice, setShowInvoice] = useState(false);
-  const [showContract, setShowContract] = useState(false);
-  const [currentVendor, setCurrentVendor] = useState(null);
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [bookingToReview, setBookingToReview] = useState(null);
-  const [negotiationOpen, setNegotiationOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
-  const [bookingToCancel, setBookingToCancel] = useState(null);
-
-  const isVendor = currentUser?.user_type === "vendor" || currentUser?.user_type === "test_vendor" || currentUser?.demo_mode === "vendor";
+...
+  // Load user immediately with React Query (no useEffect needed)
+  const { data: currentUser = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   useEffect(() => {
-    const loadUser = async () => {
-      const user = await base44.auth.me();
-      setCurrentUser(user);
-    };
-    loadUser();
-
     // Listen for payment trigger from negotiation
     const handleOpenPayment = async (event) => {
       setNegotiationOpen(false);
       if (event.detail) {
         setSelectedBooking(event.detail);
-        // Trigger payment immediately
         await handleStartPayment(event.detail);
       }
     };
