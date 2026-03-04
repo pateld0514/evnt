@@ -162,11 +162,14 @@ export default function BookingsPage() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const isVendor = currentUser?.user_type === "vendor" || currentUser?.user_type === "test_vendor" || currentUser?.demo_mode === "vendor";
+
   const { data: allUsers = [] } = useQuery({
     queryKey: ['all-users'],
     queryFn: () => base44.entities.User.list(),
     enabled: isVendor,
     initialData: [],
+    staleTime: 10 * 60 * 1000,
   });
 
   const updateBookingMutation = useMutation({
