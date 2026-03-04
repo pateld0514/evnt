@@ -36,18 +36,22 @@ export default function VendorViewPage() {
         const user = await base44.auth.me();
         setCurrentUser(user);
 
-        const vendors = await base44.entities.Vendor.filter({ id: vendorId });
-        if (!vendors || vendors.length === 0) {
+        const allVendors = await base44.entities.Vendor.list();
+        const v = allVendors.find(vendor => vendor.id === vendorId);
+        if (!v) {
           navigate(createPageUrl("Home"));
           return;
         }
-        const v = vendors[0];
-        // Block access to test vendor profiles
-        const allUsers = await base44.entities.User.list();
-        const ownerUser = allUsers.find(u => u.email === v.created_by);
-        if (ownerUser?.user_type === 'test_vendor') {
-          navigate(createPageUrl("Home"));
-          return;
+        // Block access to test vendor profiles (only if owner explicitly marked as test_vendor)
+        try {
+          const allUsers = await base44.entities.User.list();
+          const ownerUser = allUsers.find(u => u.email === v.created_by);
+          if (ownerUser?.user_type === 'test_vendor') {
+            navigate(createPageUrl("Home"));
+            return;
+          }
+        } catch (e) {
+          // If user list fails, don't block access
         }
         setVendor(v);
 
