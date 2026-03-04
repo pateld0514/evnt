@@ -237,7 +237,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, bookings, reviews, currentUser, eventType]);
+  }, [vendors, swipedVendors, savedVendors, filters, bookings, reviews, currentUser, eventType, userLoading]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
