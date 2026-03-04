@@ -147,23 +147,19 @@ export default function BookingsPage() {
   }, [currentUser, refetch]);
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors-for-bookings'],
+    queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    refetchOnMount: true,
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      return await base44.entities.Review.filter({ created_by: currentUser.email });
-    },
-    enabled: !!currentUser,
+    queryFn: () => base44.entities.Review.filter({ created_by: currentUser.email }),
+    enabled: !!currentUser?.email,
     initialData: [],
-    refetchOnMount: true,
-    staleTime: 0,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: allUsers = [] } = useQuery({
