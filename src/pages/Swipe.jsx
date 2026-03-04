@@ -297,6 +297,17 @@ export default function SwipePage() {
   
   const uniqueAvailableCategories = [...new Set(availableCategories)];
   
+  // Pre-compute completed booking counts per vendor for performance
+  const completedBookingsByVendor = React.useMemo(() => {
+    const map = {};
+    bookings.forEach(b => {
+      if (b.status === "completed") {
+        map[b.vendor_id] = (map[b.vendor_id] || 0) + 1;
+      }
+    });
+    return map;
+  }, [bookings]);
+
   const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {

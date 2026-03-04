@@ -67,6 +67,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
 
   const tier = getTier(completedBookings);
 
+
   useEffect(() => {
     const trackView = async () => {
       if (!viewTracked && showDetails) {
