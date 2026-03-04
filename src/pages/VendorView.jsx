@@ -16,77 +16,66 @@ export default function VendorViewPage() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const vendorId = urlParams.get('id');
-  
-  const [vendor, setVendor] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isSaved, setIsSaved] = useState(false);
-  const [completedBookings, setCompletedBookings] = useState(0);
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  // Load portfolio items
+  useEffect(() => {
+    if (!vendorId) navigate(createPageUrl("Home"));
+  }, [vendorId, navigate]);
+
+  // All queries fire in parallel
+  const { data: currentUser = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const { data: allVendors = [], isLoading: vendorsLoading } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => base44.entities.Vendor.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    initialData: [],
+  });
+
+  const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
+    queryKey: ['vendor-reviews', vendorId],
+    queryFn: () => base44.entities.Review.filter({ vendor_id: vendorId }, '-created_date'),
+    enabled: !!vendorId,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: completedBookingsData = [] } = useQuery({
+    queryKey: ['vendor-completed-bookings', vendorId],
+    queryFn: () => base44.entities.Booking.filter({ vendor_id: vendorId, status: "completed" }),
+    enabled: !!vendorId,
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: savedVendorsList = [] } = useQuery({
+    queryKey: ['saved-vendor-check', vendorId, currentUser?.email],
+    queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email, vendor_id: vendorId }),
+    enabled: !!currentUser?.email && !!vendorId,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
+  });
+
   const { data: portfolioItems = [] } = useQuery({
     queryKey: ['portfolio', vendorId],
     queryFn: () => base44.entities.PortfolioItem.filter({ vendor_id: vendorId }, 'display_order'),
     enabled: !!vendorId,
     staleTime: 5 * 60 * 1000,
+    initialData: [],
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
+  const vendor = allVendors.find(v => v.id === vendorId) || null;
+  const completedBookings = completedBookingsData.length;
+  const isSaved = savedVendorsList.length > 0;
+  const loading = vendorsLoading;
 
-        const allVendors = await base44.entities.Vendor.list();
-        const v = allVendors.find(vendor => vendor.id === vendorId);
-        if (!v) {
-          navigate(createPageUrl("Home"));
-          return;
-        }
-        // Block access to test vendor profiles (only if owner explicitly marked as test_vendor)
-        try {
-          const allUsers = await base44.entities.User.list();
-          const ownerUser = allUsers.find(u => u.email === v.created_by);
-          if (ownerUser?.user_type === 'test_vendor') {
-            navigate(createPageUrl("Home"));
-            return;
-          }
-        } catch (e) {
-          // If user list fails, don't block access
-        }
-        setVendor(v);
-
-        // Load reviews
-        const allReviews = await base44.entities.Review.filter({ vendor_id: vendorId });
-        setReviews(allReviews);
-
-        // Load completed bookings count
-        const bookings = await base44.entities.Booking.filter({ vendor_id: vendorId, status: "completed" });
-        setCompletedBookings(bookings.length);
-
-        // Check if saved
-        const savedVendors = await base44.entities.SavedVendor.filter({ 
-          created_by: user.email,
-          vendor_id: vendorId 
-        });
-        setIsSaved(savedVendors.length > 0);
-
-      } catch (error) {
-        console.error(error);
-        navigate(createPageUrl("Home"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (vendorId) {
-      loadData();
-    } else {
-      navigate(createPageUrl("Home"));
-    }
-  }, [vendorId, navigate]);
+  const queryClient = useQueryClient();
 
   const handleSaveVendor = async () => {
     if (!currentUser) {
