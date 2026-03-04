@@ -81,9 +81,7 @@ export default function InAppNotifications({ userEmail }) {
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       const unread = notifications.filter(n => !n.read);
-      for (const notif of unread) {
-        await base44.entities.Notification.update(notif.id, { read: true });
-      }
+      await Promise.all(unread.map(notif => base44.entities.Notification.update(notif.id, { read: true })));
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['notifications']);
