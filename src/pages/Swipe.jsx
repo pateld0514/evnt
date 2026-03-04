@@ -551,7 +551,7 @@ export default function SwipePage() {
         </Sheet>
       </div>
 
-      <div className="relative h-[500px] md:h-[600px] mb-6 md:mb-8">
+      <div className="relative h-[460px] md:h-[540px] mt-2 mb-6 md:mb-8">
         {visibleVendors.length > 0 ? (
           visibleVendors.map((vendor, index) => (
             <SwipeCard
@@ -564,8 +564,8 @@ export default function SwipePage() {
                 width: '100%',
                 height: '100%',
                 zIndex: visibleVendors.length - index,
-                transform: `scale(${(20 - index) / 20}) translateY(-${30 * index}px)`,
-                opacity: (10 - index) / 10,
+                transform: `scale(${1 - index * 0.04}) translateY(${index * 12}px)`,
+                opacity: index === 0 ? 1 : index === 1 ? 0.85 : 0.7,
                 pointerEvents: index === 0 && !isProcessing ? 'auto' : 'none'
               }}
             />
