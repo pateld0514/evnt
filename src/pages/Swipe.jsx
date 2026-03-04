@@ -107,10 +107,9 @@ export default function SwipePage() {
   const { data: swipedVendors = [] } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser) return [];
       return await base44.entities.UserSwipe.filter({ created_by: currentUser.email });
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
@@ -118,10 +117,9 @@ export default function SwipePage() {
   const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser) return [];
       return await base44.entities.SavedVendor.filter({ created_by: currentUser.email });
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
