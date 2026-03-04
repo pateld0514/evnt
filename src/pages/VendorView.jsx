@@ -23,6 +23,7 @@ export default function VendorViewPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [completedBookings, setCompletedBookings] = useState(0);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   // Load portfolio items
   const { data: portfolioItems = [] } = useQuery({
@@ -123,7 +124,7 @@ export default function VendorViewPage() {
   };
 
   const handleBookVendor = () => {
-    navigate(createPageUrl("Bookings") + `?vendor=${vendorId}`);
+    setBookingOpen(true);
   };
 
   const getTier = (completedCount) => {
