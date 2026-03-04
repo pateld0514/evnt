@@ -182,6 +182,21 @@ export default function VendorViewPage() {
   };
 
   return (
+    <>
+    <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black">Book {vendor?.business_name}</DialogTitle>
+        </DialogHeader>
+        {vendor && (
+          <BookingForm
+            vendor={vendor}
+            onSuccess={() => setBookingOpen(false)}
+            onCancel={() => setBookingOpen(false)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-12">
       {/* Hero Section */}
       <div className="relative h-80 md:h-96 bg-black">
@@ -490,5 +505,6 @@ export default function VendorViewPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

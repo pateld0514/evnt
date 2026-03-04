@@ -368,6 +368,11 @@ export default function SwipePage() {
     }
   };
 
+  // Persist filters to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('swipe_filters', JSON.stringify(filters));
+  }, [filters]);
+
   const handleReset = async () => {
     if (isProcessing) return;
     
@@ -378,14 +383,16 @@ export default function SwipePage() {
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
 
       setSwipeHistory([]);
-      setFilters({
+      const resetFilters = {
         category: "all",
         priceRange: "all",
         minPrice: "",
         maxPrice: "",
         location: "",
         minRating: "all"
-      });
+      };
+      setFilters(resetFilters);
+      sessionStorage.removeItem('swipe_filters');
       
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
