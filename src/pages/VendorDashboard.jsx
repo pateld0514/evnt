@@ -15,66 +15,52 @@ import StripeAccountStatus from "../components/vendor/StripeAccountStatus";
 
 export default function VendorDashboard() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [vendor, setVendor] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [aiInsights, setAiInsights] = useState(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
 
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const { data: allVendors = [], isLoading: vendorsLoading } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => base44.entities.Vendor.list(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    initialData: [],
+  });
+
+  const vendor = React.useMemo(() => {
+    if (!currentUser || allVendors.length === 0) return null;
+    if (currentUser.demo_mode === "vendor") {
+      return allVendors.find(v => v.contact_email === "demo_vendor_admin@test.com") || null;
+    }
+    const isAdmin = currentUser.role === "admin";
+    const found = allVendors.find(v => v.id === currentUser.vendor_id)
+      || allVendors.find(v => v.created_by === currentUser.email)
+      || allVendors.find(v => v.contact_email === currentUser.email);
+    if (found) return found;
+    if (isAdmin && allVendors.length > 0) return allVendors[0];
+    return null;
+  }, [currentUser, allVendors]);
+
+  const loading = userLoading || vendorsLoading;
+
+  // Redirects
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-
-        // Handle demo mode
-        if (user.demo_mode === "vendor") {
-          const vendorsList = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
-          if (vendorsList && vendorsList.length > 0) {
-            setVendor(vendorsList[0]);
-          }
-          setLoading(false);
-          return;
-        }
-
-        const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
-
-        if (user.user_type === "vendor" && user.user_type !== "test_vendor" && user.approval_status !== "approved" && !isAdmin) {
-          navigate(createPageUrl("VendorPending"));
-          return;
-        }
-
-        if (user.user_type !== "vendor" && user.user_type !== "test_vendor" && !isAdmin) {
-          navigate(createPageUrl("Home"));
-          return;
-        }
-
-        // Find vendor by id, created_by email, or contact_email
-        const allVendors = await base44.entities.Vendor.list();
-        const found = allVendors.find(v => v.id === user.vendor_id)
-          || allVendors.find(v => v.created_by === user.email)
-          || allVendors.find(v => v.contact_email === user.email);
-        if (found) {
-          setVendor(found);
-        } else {
-          const isAdminCheck = user.email === "pateld0514@gmail.com" || user.role === "admin";
-          if (isAdminCheck) {
-            // Admin viewing vendor side without a vendor profile
-            const adminAllVendors = await base44.entities.Vendor.list();
-            if (adminAllVendors.length > 0) {
-              setVendor(adminAllVendors[0]);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
+    if (!currentUser || loading) return;
+    const isAdmin = currentUser.role === "admin";
+    if (!currentUser.demo_mode) {
+      if (currentUser.user_type === "vendor" && currentUser.user_type !== "test_vendor" && currentUser.approval_status !== "approved" && !isAdmin) {
+        navigate(createPageUrl("VendorPending"));
+      } else if (currentUser.user_type !== "vendor" && currentUser.user_type !== "test_vendor" && !isAdmin) {
+        navigate(createPageUrl("Home"));
       }
-    };
-
-    loadData();
-  }, [navigate]);
+    }
+  }, [currentUser, loading, navigate]);
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['vendor-bookings', vendor?.id, currentUser?.vendor_id],
