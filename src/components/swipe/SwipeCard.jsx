@@ -48,22 +48,14 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, style, isRemoving }) {
+export default function SwipeCard({ vendor, onSwipe, style, isRemoving, completedBookingsCount = 0 }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
-  const [completedBookings, setCompletedBookings] = useState(0);
+  const completedBookings = completedBookingsCount;
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
-
-  useEffect(() => {
-    const loadBookings = async () => {
-      const bookings = await base44.entities.Booking.filter({ vendor_id: vendor.id, status: "completed" });
-      setCompletedBookings(bookings.length);
-    };
-    loadBookings();
-  }, [vendor.id]);
 
   const getTier = (completedCount) => {
     if (completedCount >= 100) return { name: "Elite", icon: "👑", color: "bg-purple-100 text-purple-800 border-purple-300" };
