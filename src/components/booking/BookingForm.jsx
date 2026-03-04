@@ -16,7 +16,6 @@ import CityAutocomplete from "../forms/CityAutocomplete";
 export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     event_id: eventId || "",
     event_type: "",
@@ -27,28 +26,20 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
     notes: ""
   });
 
-  const { data: events = [] } = useQuery({
-    queryKey: ['user-events', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      // CRITICAL: Only fetch events owned by authenticated user
-      return await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
-    },
-    enabled: !!currentUser,
-    initialData: [],
+  const { data: currentUser = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error("Error loading user:", error);
-      }
-    };
-    loadUser();
-  }, []);
+  const { data: events = [] } = useQuery({
+    queryKey: ['user-events', currentUser?.email],
+    queryFn: () => base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
+    enabled: !!currentUser?.email,
+    initialData: [],
+    staleTime: 2 * 60 * 1000,
+  });
 
   const bookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
