@@ -75,10 +75,9 @@ export default function EventDashboardPage() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser) return [];
       return await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
@@ -86,10 +85,9 @@ export default function EventDashboardPage() {
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser) return [];
       return await base44.entities.Booking.filter({ client_email: currentUser.email });
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
@@ -200,7 +198,7 @@ export default function EventDashboardPage() {
     });
   };
 
-  if (isLoading || !currentUser) {
+  if (!currentUser || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
