@@ -51,7 +51,6 @@ const bookingStatusConfig = {
 export default function EventDashboardPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [formData, setFormData] = useState({
@@ -64,19 +63,16 @@ export default function EventDashboardPage() {
     notes: ""
   });
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const user = await base44.auth.me();
-      setCurrentUser(user);
-    };
-    loadUser();
-  }, []);
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
-    queryFn: async () => {
-      return await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
-    },
+    queryFn: () => base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
@@ -84,9 +80,7 @@ export default function EventDashboardPage() {
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings', currentUser?.email],
-    queryFn: async () => {
-      return await base44.entities.Booking.filter({ client_email: currentUser.email });
-    },
+    queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
@@ -198,7 +192,7 @@ export default function EventDashboardPage() {
     });
   };
 
-  if (!currentUser || isLoading) {
+  if (userLoading || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
