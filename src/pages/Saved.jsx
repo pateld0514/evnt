@@ -78,15 +78,14 @@ export default function SavedPage() {
   const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: async () => {
-      if (!currentUser) return [];
       return await base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date');
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: allVendors = [] } = useQuery({
+  const { data: allVendors = [], isLoading: loadingVendors } = useQuery({
     queryKey: ['vendors-for-saved'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
