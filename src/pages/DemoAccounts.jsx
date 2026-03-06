@@ -24,7 +24,7 @@ const accounts = [
   {
     id: "vendor",
     label: "Demo Vendor",
-    email: "demo.vendor@evnt-test.com",
+    email: "evnttestvendor@gmail.com",
     description: "Spotlight Studios — a fully populated photographer vendor with bookings, messages, portfolio, reviews, and payout history.",
     icon: Store,
     color: "bg-purple-100 text-purple-800 border-purple-300",
