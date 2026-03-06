@@ -45,7 +45,7 @@ const accounts = [
   {
     id: "client",
     label: "Demo Client",
-    email: "demo.client@evnt-test.com",
+    email: "evnttestclient@gmail.com",
     description: "Jamie Rivera — a fully populated client with 3 events, 4 bookings across multiple vendors, saved favorites, messages, and notifications.",
     icon: User,
     color: "bg-blue-100 text-blue-800 border-blue-300",
