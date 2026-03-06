@@ -50,14 +50,14 @@ Deno.serve(async (req) => {
         </p>
       </div>
       <div style="text-align: center;">
-        <a href="${process.env.APP_URL || 'https://your-app.base44.com'}/Messages?conversation=${message.conversation_id}" class="button">
+        <a href="${Deno.env.get('APP_URL') || 'https://joinevnt.com'}/Messages?conversation=${message.conversation_id}" class="button">
           View Message
         </a>
       </div>
     </div>
     <div class="footer">
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a></p>
+      <p style="margin: 8px 0;">Questions? Email <a href="mailto:${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}" style="color: #000000; text-decoration: none; font-weight: 600;">${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}</a></p>
     </div>
   </div>
 </body>

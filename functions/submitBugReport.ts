@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     `;
 
     await base44.asServiceRole.integrations.Core.SendEmail({
-      to: 'info@joinevnt.com',
+      to: Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com',
       from_name: 'EVNT Bug Reports',
       subject: `🐛 Bug Report from ${bugData.reporter_name || bugData.reporter_email} [${bugReport.id.substring(0, 8)}]`,
       body: emailContent

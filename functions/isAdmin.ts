@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     }
 
     // Check admin status: either hardcoded admin email OR admin role
-    const isAdmin = user.email === "pateld0514@gmail.com" || user.role === "admin";
+    const isAdmin = user.role === "admin";
 
     return Response.json({
       isAdmin,

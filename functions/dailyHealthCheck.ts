@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     // Admin-only check
-    if (!user || (user.email !== "pateld0514@gmail.com" && user.role !== "admin")) {
+    if (!user || user.role !== "admin") {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
