@@ -213,16 +213,18 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    // Send to client (wrap email in try/catch so notification still works even if email fails)
-    try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: booking.client_email,
-        from_name: "EVNT",
-        subject: statusNotif.client.emailSubject,
-        body: wrapEmail(clientContent, statusNotif.client.message, booking.client_email)
-      });
-    } catch (emailErr) {
-      console.warn('Client email failed (non-fatal):', emailErr.message);
+    // Send to client - only if email looks valid
+    if (booking.client_email && booking.client_email.includes('@')) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: booking.client_email,
+          from_name: "EVNT",
+          subject: statusNotif.client.emailSubject,
+          body: wrapEmail(clientContent, statusNotif.client.message, booking.client_email)
+        });
+      } catch (emailErr) {
+        console.warn('Client email failed (non-fatal):', emailErr.message);
+      }
     }
 
     await base44.asServiceRole.entities.Notification.create({
