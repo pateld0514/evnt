@@ -3,8 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Internal automation endpoint - validate shared secret
+    const secret = req.headers.get('x-internal-secret');
+    if (secret !== Deno.env.get('INTERNAL_SECRET')) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const payload = await req.json();
-    
     const { user_email, user_type, updated_fields } = payload;
     
     if (!user_email || !user_type) {
