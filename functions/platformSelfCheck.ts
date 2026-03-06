@@ -3,15 +3,33 @@
  * Run automated validation against platform invariants
  * Detects regressions before they reach production
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { PLATFORM_RULES } from './lib/platformInvariants.js';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Inlined platform rules — no local imports allowed in Deno Deploy
+const PLATFORM_RULES = {
+  DEPRECATED_FIELDS: [
+    'stripe_fee',         // replaced by stripe_fee_amount
+    'total_amount',       // replaced by total_amount_charged
+    'processing_fee',     // replaced by stripe_fee_amount
+    'service_fee',        // replaced by platform_fee_amount
+  ],
+  REQUIRED_FIELDS_AFTER_NEGOTIATION: [
+    'stripe_fee_amount',
+    'sales_tax_amount',
+    'sales_tax_rate',
+    'platform_fee_amount',
+    'platform_fee_percent',
+    'vendor_payout',
+    'total_amount_charged',
+    'base_event_amount',
+  ],
+};
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Only admins can run platform checks
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }

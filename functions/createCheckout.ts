@@ -1,9 +1,67 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@17.5.0';
-import { STATE_TAX_RATES } from './stateTaxRates.js';
-import { buildStripeMetadata } from './lib/stripeMetadata.js';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
+
+// Inlined from stateTaxRates.js — no local imports allowed in Deno Deploy
+const STATE_TAX_RATES = {
+  'AL': { rate: 0.0946, name: 'Alabama' }, 'AK': { rate: 0.0182, name: 'Alaska' },
+  'AZ': { rate: 0.0852, name: 'Arizona' }, 'AR': { rate: 0.0946, name: 'Arkansas' },
+  'CA': { rate: 0.0899, name: 'California' }, 'CO': { rate: 0.0789, name: 'Colorado' },
+  'CT': { rate: 0.0635, name: 'Connecticut' }, 'DE': { rate: 0, name: 'Delaware' },
+  'FL': { rate: 0.0698, name: 'Florida' }, 'GA': { rate: 0.0749, name: 'Georgia' },
+  'HI': { rate: 0.0450, name: 'Hawaii' }, 'ID': { rate: 0.0603, name: 'Idaho' },
+  'IL': { rate: 0.0896, name: 'Illinois' }, 'IN': { rate: 0.0700, name: 'Indiana' },
+  'IA': { rate: 0.0694, name: 'Iowa' }, 'KS': { rate: 0.0869, name: 'Kansas' },
+  'KY': { rate: 0.0600, name: 'Kentucky' }, 'LA': { rate: 0.1011, name: 'Louisiana' },
+  'ME': { rate: 0.0550, name: 'Maine' }, 'MD': { rate: 0.0600, name: 'Maryland' },
+  'MA': { rate: 0.0625, name: 'Massachusetts' }, 'MI': { rate: 0.0600, name: 'Michigan' },
+  'MN': { rate: 0.0814, name: 'Minnesota' }, 'MS': { rate: 0.0706, name: 'Mississippi' },
+  'MO': { rate: 0.0844, name: 'Missouri' }, 'MT': { rate: 0, name: 'Montana' },
+  'NE': { rate: 0.0698, name: 'Nebraska' }, 'NV': { rate: 0.0824, name: 'Nevada' },
+  'NH': { rate: 0, name: 'New Hampshire' }, 'NJ': { rate: 0.0660, name: 'New Jersey' },
+  'NM': { rate: 0.0767, name: 'New Mexico' }, 'NY': { rate: 0.0854, name: 'New York' },
+  'NC': { rate: 0.0700, name: 'North Carolina' }, 'ND': { rate: 0.0709, name: 'North Dakota' },
+  'OH': { rate: 0.0729, name: 'Ohio' }, 'OK': { rate: 0.0906, name: 'Oklahoma' },
+  'OR': { rate: 0, name: 'Oregon' }, 'PA': { rate: 0.0634, name: 'Pennsylvania' },
+  'RI': { rate: 0.0700, name: 'Rhode Island' }, 'SC': { rate: 0.0749, name: 'South Carolina' },
+  'SD': { rate: 0.0611, name: 'South Dakota' }, 'TN': { rate: 0.0961, name: 'Tennessee' },
+  'TX': { rate: 0.0820, name: 'Texas' }, 'UT': { rate: 0.0742, name: 'Utah' },
+  'VT': { rate: 0.0639, name: 'Vermont' }, 'VA': { rate: 0.0577, name: 'Virginia' },
+  'WA': { rate: 0.0951, name: 'Washington' }, 'WV': { rate: 0.0659, name: 'West Virginia' },
+  'WI': { rate: 0.0572, name: 'Wisconsin' }, 'WY': { rate: 0.0556, name: 'Wyoming' },
+  'DC': { rate: 0.0600, name: 'District of Columbia' }
+};
+
+// Inlined from lib/stripeMetadata.js — no local imports allowed in Deno Deploy
+function truncate(str, maxLength) {
+  if (!str || str.length <= maxLength) return str;
+  return str.substring(0, maxLength - 3) + '...';
+}
+
+function buildStripeMetadata(booking, options = {}) {
+  const metadata = {
+    booking_id: booking.id,
+    vendor_id: booking.vendor_id,
+    client_email: booking.client_email,
+    event_type: truncate(booking.event_type, 100),
+    event_date: booking.event_date,
+    event_location: truncate(booking.location || '', 200),
+    base_event_amount: booking.base_event_amount?.toString() || '0',
+    platform_fee_amount: booking.platform_fee_amount?.toString() || '0',
+    platform_fee_percent: booking.platform_fee_percent?.toString() || '0',
+    sales_tax_amount: booking.sales_tax_amount?.toString() || '0',
+    stripe_fee_amount: booking.stripe_fee_amount?.toString() || '0',
+    total_amount_charged: booking.total_amount_charged?.toString() || '0',
+    vendor_payout: booking.vendor_payout?.toString() || '0',
+    ...(options.requestId && { request_id: options.requestId }),
+  };
+  const metadataSize = JSON.stringify(metadata).length;
+  if (metadataSize > 50000) {
+    console.warn(`Metadata size exceeds safe limit: ${metadataSize} bytes`);
+  }
+  return metadata;
+}
 
 Deno.serve(async (req) => {
   const requestId = crypto.randomUUID();
@@ -47,13 +105,9 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Verify amounts are set (these should be calculated during negotiation)
+    // Verify amounts are set
     if (!booking.base_event_amount || booking.platform_fee_amount === undefined || booking.total_amount_charged === undefined) {
-      console.error(`[${requestId}] INVALID DATA: Missing pricing fields`, {
-        base_event_amount: booking.base_event_amount,
-        platform_fee_amount: booking.platform_fee_amount,
-        total_amount_charged: booking.total_amount_charged
-      });
+      console.error(`[${requestId}] INVALID DATA: Missing pricing fields`);
       return Response.json({ 
         error: 'Booking pricing not calculated. Please contact support.' 
       }, { status: 400 });
@@ -61,17 +115,15 @@ Deno.serve(async (req) => {
 
     // CRITICAL: Validate vendor payout is positive
     if (booking.vendor_payout !== undefined && booking.vendor_payout < 0) {
-      console.error(`[${requestId}] INVALID DATA: Negative vendor payout`, {
-        vendor_payout: booking.vendor_payout
-      });
+      console.error(`[${requestId}] INVALID DATA: Negative vendor payout`);
       return Response.json({ 
         error: 'Invalid pricing calculation. Vendor payout cannot be negative.' 
       }, { status: 400 });
     }
 
-    // Verify tax rate is pre-calculated (CRITICAL)
+    // Verify tax rate is pre-calculated
     if (!booking.sales_tax_rate && booking.sales_tax_rate !== 0) {
-      console.error(`[${requestId}] CRITICAL: Missing sales_tax_rate. Booking must have tax calculated during proposal.`);
+      console.error(`[${requestId}] CRITICAL: Missing sales_tax_rate.`);
       return Response.json({ 
         error: 'Tax calculation incomplete. Please recalculate proposal.' 
       }, { status: 400 });
@@ -128,8 +180,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate amounts in cents - must match booking record exactly
-    // NO FALLBACKS to deprecated fields
+    // Calculate amounts in cents
     const baseAmountCents = Math.round(booking.base_event_amount * 100);
     const platformFeeCents = Math.round(booking.platform_fee_amount * 100);
     const salesTaxAmount = booking.sales_tax_amount;
@@ -140,8 +191,6 @@ Deno.serve(async (req) => {
     const taxCents = Math.round(salesTaxAmount * 100);
     const totalCents = Math.round(booking.total_amount_charged * 100);
 
-    // Verification: ensure total matches base_event_amount (client pays the agreed price)
-    // The total_amount_charged equals base_event_amount (fee+tax+stripe deducted from vendor payout)
     const calculatedTotal = baseAmountCents;
     if (Math.abs(totalCents - calculatedTotal) > 1) {
       console.warn(`[${requestId}] AMOUNT NOTE: total_amount_charged ($${booking.total_amount_charged}) vs base_event_amount ($${booking.base_event_amount}). Proceeding.`);
@@ -149,7 +198,7 @@ Deno.serve(async (req) => {
 
     // CRITICAL: Use only standardized stripe_fee_amount field
     if (!booking.stripe_fee_amount && booking.stripe_fee_amount !== 0) {
-      console.error(`[${requestId}] CRITICAL: Missing stripe_fee_amount. Must be calculated during proposal.`);
+      console.error(`[${requestId}] CRITICAL: Missing stripe_fee_amount.`);
       return Response.json({ 
         error: 'Stripe fee not calculated. Please recalculate proposal.' 
       }, { status: 400 });
@@ -161,10 +210,6 @@ Deno.serve(async (req) => {
     const referer = req.headers.get('referer') || req.headers.get('origin') || '';
     const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
     
-    // Build line items for Stripe checkout.
-    // IMPORTANT: The client pays base_event_amount (the agreed price). Platform fee, tax, and stripe fee
-    // are all DEDUCTED FROM the vendor payout — they are NOT added on top of what the client pays.
-    // So we show the service breakdown (base + additional fees) which sum to base_event_amount.
     const additionalFeesTotal = (booking.additional_fees || []).reduce((sum, f) => sum + parseFloat(f.amount || 0), 0);
     const coreServiceCents = Math.round((booking.base_event_amount - additionalFeesTotal) * 100);
 
@@ -172,7 +217,6 @@ Deno.serve(async (req) => {
       ? `${booking.service_description} — ${booking.vendor_name}`
       : `${booking.event_type} Service — ${booking.vendor_name}`;
 
-    // Build fee description for transparency (shown in product description, not as extra charges)
     const feeBreakdownNote = [
       `EVNT platform fee (${booking.platform_fee_percent?.toFixed(1) || '10'}%): $${booking.platform_fee_amount.toFixed(2)}`,
       ...(salesTaxAmount > 0 ? [`${booking.client_state || 'Sales'} tax: $${salesTaxAmount.toFixed(2)}`] : []),
@@ -181,7 +225,6 @@ Deno.serve(async (req) => {
     ].join(' · ');
 
     const lineItems = [
-      // Core service line item
       {
         price_data: {
           currency: 'usd',
@@ -189,11 +232,10 @@ Deno.serve(async (req) => {
             name: serviceTitle,
             description: `${booking.event_type} · ${booking.event_date}${booking.location ? ' · ' + booking.location : ''}${booking.guest_count ? ' · ' + booking.guest_count + ' guests' : ''} | ${feeBreakdownNote}`,
           },
-          unit_amount: Math.max(coreServiceCents, 50), // Stripe minimum 50 cents
+          unit_amount: Math.max(coreServiceCents, 50),
         },
         quantity: 1,
       },
-      // Dynamic additional vendor fees (these are already included in base_event_amount total)
       ...(booking.additional_fees || [])
         .filter(fee => fee.name && parseFloat(fee.amount) > 0)
         .map(fee => ({
@@ -209,11 +251,9 @@ Deno.serve(async (req) => {
         })),
     ];
 
-    // Verify line items sum to base_event_amount (what client pays)
     const lineItemsSum = lineItems.reduce((sum, item) => sum + item.price_data.unit_amount * item.quantity, 0);
     console.log(`[${requestId}] Line items sum: $${(lineItemsSum/100).toFixed(2)}, expected base_event_amount: $${booking.base_event_amount}`);
     
-    // If there's a rounding discrepancy, adjust the first item
     if (lineItemsSum !== baseAmountCents && Math.abs(lineItemsSum - baseAmountCents) <= 5) {
       lineItems[0].price_data.unit_amount += (baseAmountCents - lineItemsSum);
       console.log(`[${requestId}] Adjusted first item by ${baseAmountCents - lineItemsSum} cents for rounding`);
@@ -224,12 +264,7 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       line_items: lineItems,
       payment_intent_data: {
-        capture_method: 'manual', // ESCROW: Holds funds until manual capture
-        // application_fee_amount = total withheld from vendor by EVNT
-        // With Stripe Connect destination charges:
-        //   - Client pays: base_event_amount
-        //   - EVNT collects: platform_fee + tax + stripe_fee (all deducted from vendor)
-        //   - Vendor receives: base_event_amount - application_fee_amount = vendor_payout
+        capture_method: 'manual',
         application_fee_amount: platformFeeCents + taxCents + stripeFeeCents,
         transfer_data: {
           destination: vendor.stripe_account_id,

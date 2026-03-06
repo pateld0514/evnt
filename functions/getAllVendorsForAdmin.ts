@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -10,20 +10,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Fetch ALL vendors using service role, excluding test vendors
+    // Fetch ALL vendors using service role
     const allVendors = await base44.asServiceRole.entities.Vendor.list('-created_date', 1000);
 
-    // Get test vendor user IDs to exclude their associated vendor records
+    // Get test vendor user emails to exclude their associated vendor records
+    // Only exclude vendors whose creator is a designated test account (user_type === 'test_vendor')
     const allUsers = await base44.asServiceRole.entities.User.list('-created_date', 1000);
     const testVendorEmails = new Set(
       allUsers.filter(u => u.user_type === 'test_vendor').map(u => u.email)
     );
-    // Also hardcode known test vendor IDs
-    const testVendorIds = new Set(['699fa36c19956dc189f27101']);
 
-    const vendors = allVendors.filter(v => !testVendorEmails.has(v.created_by) && !testVendorIds.has(v.id));
+    const vendors = allVendors.filter(v => !testVendorEmails.has(v.created_by));
 
-    console.log(`[Admin] Fetched ${vendors.length} vendors (excluded test vendors)`);
+    console.log(`[Admin] Fetched ${vendors.length} vendors (excluded test vendors by user_type)`);
 
     return Response.json(vendors);
 
