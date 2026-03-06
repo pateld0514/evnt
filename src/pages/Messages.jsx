@@ -426,7 +426,7 @@ export default function MessagesPage() {
                          )}
                          <p className="text-base font-medium break-words leading-relaxed">{msg.message}</p>
                          <p className={`text-xs mt-1.5 ${isMe ? 'text-gray-400' : 'text-gray-500'}`}>
-                           {format(new Date(msg.created_date), 'h:mm a')}
+                           {formatTimestamp(msg.created_date)}
                          </p>
                         </div>
                       </div>

@@ -169,7 +169,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
               <SelectItem value={null}>New Booking (no event)</SelectItem>
               {events.map(event => (
                 <SelectItem key={event.id} value={event.id}>
-                  {event.name} - {format(new Date(event.event_date), "MMM d, yyyy")}
+                  {event.name} - {formatDate(event.event_date)}
                 </SelectItem>
               ))}
             </SelectContent>
