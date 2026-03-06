@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Send, Loader2, Plus, Store, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatTimestamp } from "../components/utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {

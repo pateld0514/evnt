@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Users, DollarSign, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { formatDate } from "../utils/dateUtils";
 import CityAutocomplete from "../forms/CityAutocomplete";
 
 export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
