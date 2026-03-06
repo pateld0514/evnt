@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DollarSign, RefreshCw, XCircle, AlertCircle, CheckCircle, Clock, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatDate, formatTimestamp } from "../components/utils/dateUtils";
 
 const paymentStatusConfig = {
   unpaid: { label: "Unpaid", color: "bg-gray-100 text-gray-800", icon: Clock },

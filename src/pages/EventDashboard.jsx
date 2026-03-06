@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar as CalendarIcon, MapPin, Users, DollarSign, Plus, Edit2, Trash2, MessageSquare, Loader2, Calendar as CalendarIconLucide } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatDate } from "../components/utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Calendar } from "@/components/ui/calendar";
