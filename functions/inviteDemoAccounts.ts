@@ -10,9 +10,8 @@ Deno.serve(async (req) => {
     }
 
     const demoEmails = [
-      { email: 'demo.blank@evnt-test.com', role: 'user' },
-      { email: 'demo.vendor@evnt-test.com', role: 'user' },
-      { email: 'demo.client@evnt-test.com', role: 'user' },
+      { email: 'evnttestvendor@gmail.com', role: 'user' },
+      { email: 'evnttestclient@gmail.com', role: 'user' },
     ];
 
     const results = [];
