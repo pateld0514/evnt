@@ -227,14 +227,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    await base44.asServiceRole.entities.Notification.create({
-      recipient_email: booking.client_email,
-      type: "booking_status",
-      title: statusNotif.client.title,
-      message: statusNotif.client.message,
-      link: `/Bookings?id=${booking.id}`,
-      read: false
-    });
+    try {
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: booking.client_email,
+        type: "booking_status",
+        title: statusNotif.client.title,
+        message: statusNotif.client.message,
+        link: `/Bookings?id=${booking.id}`,
+        read: false
+      });
+    } catch (notifErr) {
+      console.warn('Client notification failed (non-fatal):', notifErr.message);
+    }
 
     // Send to vendor
     const vendorContent = `
