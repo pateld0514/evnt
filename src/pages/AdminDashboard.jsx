@@ -583,48 +583,116 @@ export default function AdminDashboardPage() {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
+            {/* Demo Account Quick Actions */}
+            <Card className="border-2 border-purple-400 bg-purple-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-black text-purple-800 flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  Demo Accounts
+                </CardTitle>
+                <p className="text-sm text-purple-700">Use these for marketing videos. Invite first, then activate each account after logging in as that Google account.</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  onClick={async () => {
+                    try {
+                      const res = await base44.functions.invoke('inviteDemoAccounts', {});
+                      toast.success("Demo accounts invited! " + (res.data?.results?.map(r => r.email + ': ' + r.status).join(', ') || ''));
+                    } catch (e) {
+                      toast.error("Failed to invite: " + e.message);
+                    }
+                  }}
+                  className="bg-purple-700 hover:bg-purple-800 text-white font-bold w-full"
+                >
+                  Invite All 3 Demo Accounts
+                </Button>
+                {[
+                  { email: "evnttestvendor@gmail.com", label: "Demo Vendor", setupFn: "setupTestVendor", redirect: "VendorDashboard", color: "bg-purple-100 text-purple-800" },
+                  { email: "evnttestclient@gmail.com", label: "Demo Client", setupFn: "setupTestClient", redirect: "EventDashboard", color: "bg-blue-100 text-blue-800" },
+                  { email: "evnttestblank@gmail.com", label: "Blank Account", setupFn: null, redirect: "Onboarding", color: "bg-gray-100 text-gray-800" },
+                ].map((demo) => {
+                  const matchedUser = allUsers.find(u => u.email === demo.email);
+                  return (
+                    <div key={demo.email} className="flex items-center justify-between bg-white border-2 border-purple-200 rounded-lg p-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm">{demo.label}</p>
+                          <Badge className={demo.color + " text-xs"}>{matchedUser ? (matchedUser.user_type || 'no role') : 'not invited'}</Badge>
+                          {matchedUser && <Badge className="bg-green-100 text-green-800 text-xs">Invited ✓</Badge>}
+                        </div>
+                        <p className="text-xs text-gray-500 font-mono">{demo.email}</p>
+                      </div>
+                      {demo.setupFn && (
+                        <Button
+                          size="sm"
+                          className="bg-black text-white hover:bg-gray-800 font-bold text-xs"
+                          onClick={async () => {
+                            try {
+                              await base44.functions.invoke(demo.setupFn, {});
+                              queryClient.invalidateQueries(['admin-users']);
+                              toast.success(`${demo.label} re-activated!`);
+                            } catch (e) {
+                              toast.error("Setup failed: " + e.message);
+                            }
+                          }}
+                        >
+                          Re-activate
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
             <Card className="border-2 border-black">
               <CardHeader className="bg-black text-white">
                 <CardTitle className="font-black">All Users ({allUsers.length})</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-gray-200">
-                  {allUsers.map(u => (
-                    <div key={u.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                      <div>
-                        <p className="font-bold">{u.full_name}</p>
-                        <p className="text-sm text-gray-600">{u.email}</p>
-                        <Badge className={u.user_type === "vendor" ? "bg-purple-100 text-purple-800 mt-1" : "bg-blue-100 text-blue-800 mt-1"}>
-                          {u.user_type || "unknown"}
-                        </Badge>
+                  {allUsers.map(u => {
+                    const isDemoAccount = ["evnttestvendor@gmail.com", "evnttestclient@gmail.com", "evnttestblank@gmail.com"].includes(u.email);
+                    return (
+                      <div key={u.id} className={`flex items-center justify-between p-4 hover:bg-gray-50 ${isDemoAccount ? 'bg-purple-50' : ''}`}>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold">{u.full_name}</p>
+                            {isDemoAccount && <Badge className="bg-purple-200 text-purple-800 text-xs">Demo</Badge>}
+                          </div>
+                          <p className="text-sm text-gray-600">{u.email}</p>
+                          <Badge className={u.user_type === "vendor" ? "bg-purple-100 text-purple-800 mt-1" : "bg-blue-100 text-blue-800 mt-1"}>
+                            {u.user_type || "unknown"}
+                          </Badge>
+                        </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold">
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete <strong>{u.full_name}</strong> ({u.email}) and ALL their data: bookings, messages, reviews, notifications, etc. This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteUserMutation.mutate(u.email)}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                              >
+                                Delete Forever
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold">
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete User?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete <strong>{u.full_name}</strong> ({u.email}) and ALL their data: bookings, messages, reviews, notifications, etc. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteUserMutation.mutate(u.email)}
-                              className="bg-red-600 hover:bg-red-700 text-white"
-                            >
-                              Delete Forever
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
