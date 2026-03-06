@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Loader2, FileText, Download, Star, MessageSquare } from "lucide-react";
 import ReviewDialog from "../components/vendor/ReviewDialog";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatDate, formatTimestamp } from "../components/utils/dateUtils";
 import ProfessionalInvoice from "../components/documents/ProfessionalInvoice";
 import ProfessionalContract from "../components/documents/ProfessionalContract";
 import PaymentNegotiation from "../components/payment/PaymentNegotiation";
