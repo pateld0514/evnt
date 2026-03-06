@@ -268,14 +268,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    await base44.asServiceRole.entities.Notification.create({
-      recipient_email: vendorEmail,
-      type: "booking_status",
-      title: statusNotif.vendor.title,
-      message: statusNotif.vendor.message,
-      link: `/Bookings?id=${booking.id}`,
-      read: false
-    });
+    try {
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: vendorEmail,
+        type: "booking_status",
+        title: statusNotif.vendor.title,
+        message: statusNotif.vendor.message,
+        link: `/Bookings?id=${booking.id}`,
+        read: false
+      });
+    } catch (notifErr) {
+      console.warn('Vendor notification failed (non-fatal):', notifErr.message);
+    }
 
     return Response.json({ 
       success: true,
