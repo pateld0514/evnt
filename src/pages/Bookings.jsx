@@ -483,7 +483,7 @@ export default function BookingsPage() {
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Event Date</p>
-                        <p className="font-bold">{format(new Date(booking.event_date), "MMM d, yyyy")}</p>
+                        <p className="font-bold">{format(new Date(booking.event_date + 'T00:00:00'), "MMM d, yyyy")}</p>
                       </div>
                     </div>
                     {booking.location && (
