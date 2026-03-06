@@ -483,7 +483,7 @@ export default function BookingsPage() {
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Event Date</p>
-                        <p className="font-bold">{format(new Date(booking.event_date + 'T00:00:00'), "MMM d, yyyy")}</p>
+                        <p className="font-bold">{formatDate(booking.event_date)}</p>
                       </div>
                     </div>
                     {booking.location && (
@@ -568,7 +568,7 @@ export default function BookingsPage() {
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Event Date</p>
                     <p className="text-lg font-bold">
-                     {format(new Date(selectedBooking.event_date + 'T00:00:00'), "MMMM d, yyyy")}
+                     {formatDate(selectedBooking.event_date, "MMMM d, yyyy")}
                     </p>
                   </div>
                   {selectedBooking.location && (
@@ -949,7 +949,7 @@ export default function BookingsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-            <p><strong>Event Date:</strong> {bookingToCancel && format(new Date(bookingToCancel.event_date + 'T00:00:00'), "MMM d, yyyy")}</p>
+            <p><strong>Event Date:</strong> {bookingToCancel && formatDate(bookingToCancel.event_date)}</p>
             <p className="mt-2 text-green-700 font-medium">✓ You can cancel free up to 7 days before your event.</p>
           </div>
           <div className="flex gap-3 justify-end">
