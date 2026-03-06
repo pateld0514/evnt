@@ -12,7 +12,7 @@ const accounts = [
   {
     id: "blank",
     label: "Blank Account",
-    email: "demoblank@evnt-test.com",
+    email: "evnttestblank@gmail.com",
     description: "A fresh account with no role selected. Shows the onboarding and registration flow.",
     icon: UserX,
     color: "bg-gray-100 text-gray-800 border-gray-300",
