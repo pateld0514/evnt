@@ -157,7 +157,8 @@ export default function EventDashboardPage() {
       guest_count: formData.guest_count ? parseInt(formData.guest_count) : null,
       budget: formData.budget ? parseFloat(formData.budget) : null,
       notes: formData.notes,
-      status: formData.status || "planning"
+      status: formData.status || "planning",
+      owner_email: currentUser?.email,
     };
 
     if (editingEvent) {
