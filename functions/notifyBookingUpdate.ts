@@ -6,8 +6,11 @@ Deno.serve(async (req) => {
 
     const payload = await req.json();
 
-    // Internal automation endpoint - validate shared secret
-    if (payload._secret !== Deno.env.get('INTERNAL_SECRET')) {
+    // Allow calls from entity automations (no secret) OR internal function calls (with secret)
+    // Entity automations are called by the platform directly with no user token
+    const isAuthenticated = await base44.auth.isAuthenticated();
+    const hasSecret = payload._secret === Deno.env.get('INTERNAL_SECRET');
+    if (!isAuthenticated && !hasSecret) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
     
