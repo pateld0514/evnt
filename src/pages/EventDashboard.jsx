@@ -99,7 +99,7 @@ export default function EventDashboardPage() {
   const updateEventMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const event = events.find(e => e.id === id);
-      if (!event || event.created_by !== currentUser.email) {
+      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
         throw new Error("Unauthorized: You can only edit your own events");
       }
       return await base44.entities.Event.update(id, data);
