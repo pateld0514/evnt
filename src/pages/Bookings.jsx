@@ -949,7 +949,7 @@ export default function BookingsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-            <p><strong>Event Date:</strong> {bookingToCancel && format(new Date(bookingToCancel.event_date), "MMM d, yyyy")}</p>
+            <p><strong>Event Date:</strong> {bookingToCancel && format(new Date(bookingToCancel.event_date + 'T00:00:00'), "MMM d, yyyy")}</p>
             <p className="mt-2 text-green-700 font-medium">✓ You can cancel free up to 7 days before your event.</p>
           </div>
           <div className="flex gap-3 justify-end">
