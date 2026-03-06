@@ -152,7 +152,8 @@ async function processForPerson(base44, referred_email, referred_type) {
           referrer_email: referral.referrer_email,
           referrer_type: referrerType,
           referred_email,
-          reward_type: 'earned'
+          reward_type: 'earned',
+          _secret: Deno.env.get('INTERNAL_SECRET')
         });
       } catch (e) {
         console.error('Failed to send referral email to referrer:', e);

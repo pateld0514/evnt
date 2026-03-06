@@ -41,7 +41,8 @@ Deno.serve(async (req) => {
         vendor_email: vendorUser.email || vendor.contact_email,
         vendor_name: vendorUser.full_name || vendor.business_name,
         status: 'rejected',
-        rejection_reason: reason
+        rejection_reason: reason,
+        _secret: Deno.env.get('INTERNAL_SECRET')
       });
     }
 

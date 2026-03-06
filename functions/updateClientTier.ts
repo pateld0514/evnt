@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
           user_type: 'client',
           old_tier: oldTier,
           new_tier: tierLevel,
+          _secret: Deno.env.get('INTERNAL_SECRET'),
           benefits: [
             `${discount}% discount on all bookings`,
             'Priority customer support',

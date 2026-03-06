@@ -100,10 +100,11 @@ Deno.serve(async (req) => {
     if (tierChanged && tierLevel !== 'bronze') {
       try {
         await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
-          user_email: vendor_id, // This will be looked up in the function
+          user_email: vendor_id,
           user_type: 'vendor',
           old_tier: oldTier,
           new_tier: tierLevel,
+          _secret: Deno.env.get('INTERNAL_SECRET'),
           benefits: [
             `${feeDiscount}% platform fee discount`,
             'Enhanced profile visibility',
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
               user_type: 'vendor',
               old_tier: oldTier,
               new_tier: tierLevel,
+              _secret: Deno.env.get('INTERNAL_SECRET'),
               benefits: [
                 `${feeDiscount}% platform fee discount`,
                 'Enhanced profile visibility',

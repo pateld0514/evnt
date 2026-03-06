@@ -39,7 +39,8 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.functions.invoke('notifyVendorApproval', {
         vendor_email: vendorUser.email || vendor.contact_email,
         vendor_name: vendorUser.full_name || vendor.business_name,
-        status: 'approved'
+        status: 'approved',
+        _secret: Deno.env.get('INTERNAL_SECRET')
       });
     }
 
