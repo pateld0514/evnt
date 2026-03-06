@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -6,11 +6,7 @@ Deno.serve(async (req) => {
 
     const payload = await req.json();
 
-    // Internal automation endpoint - validate shared secret
-    if (payload._secret !== Deno.env.get('INTERNAL_SECRET')) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
+    // Entity automation payload: { event: { type, entity_name, entity_id }, data: {...} }
     const review = payload.data || payload.review;
     
     if (!review || !review.vendor_id) {
