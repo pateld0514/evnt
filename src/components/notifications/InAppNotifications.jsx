@@ -167,11 +167,13 @@ export default function InAppNotifications({ userEmail }) {
                         {notification.message}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {new Date(notification.created_date).toLocaleDateString('en-US', {
+                        {new Date(notification.created_date).toLocaleString('en-US', {
+                          timeZone: 'America/New_York',
                           month: 'short',
                           day: 'numeric',
                           hour: 'numeric',
-                          minute: '2-digit'
+                          minute: '2-digit',
+                          hour12: true,
                         })}
                       </p>
                     </div>
