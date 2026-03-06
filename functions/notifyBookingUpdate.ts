@@ -251,15 +251,17 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: vendorEmail,
-        from_name: "EVNT",
-        subject: statusNotif.vendor.emailSubject,
-        body: wrapEmail(vendorContent, statusNotif.vendor.message, vendorEmail)
-      });
-    } catch (emailErr) {
-      console.warn('Vendor email failed (non-fatal):', emailErr.message);
+    if (vendorEmail && vendorEmail.includes('@')) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: vendorEmail,
+          from_name: "EVNT",
+          subject: statusNotif.vendor.emailSubject,
+          body: wrapEmail(vendorContent, statusNotif.vendor.message, vendorEmail)
+        });
+      } catch (emailErr) {
+        console.warn('Vendor email failed (non-fatal):', emailErr.message);
+      }
     }
 
     await base44.asServiceRole.entities.Notification.create({
