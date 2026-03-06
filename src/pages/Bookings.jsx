@@ -568,7 +568,7 @@ export default function BookingsPage() {
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Event Date</p>
                     <p className="text-lg font-bold">
-                      {format(new Date(selectedBooking.event_date), "MMMM d, yyyy")}
+                     {format(new Date(selectedBooking.event_date + 'T00:00:00'), "MMMM d, yyyy")}
                     </p>
                   </div>
                   {selectedBooking.location && (
