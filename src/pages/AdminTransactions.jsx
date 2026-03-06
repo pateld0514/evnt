@@ -275,7 +275,7 @@ export default function AdminTransactionsPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <span>Client: {booking.client_name}</span>
                       <span>•</span>
-                      <span>{format(new Date(booking.event_date), "MMM d, yyyy")}</span>
+                      <span>{formatDate(booking.event_date)}</span>
                       <span>•</span>
                       <span className="font-bold">${(booking.total_amount_charged || booking.agreed_price || 0).toFixed(2)}</span>
                       {payout && <span>• Payout: ${payout.net_amount.toFixed(2)}</span>}
@@ -329,7 +329,7 @@ export default function AdminTransactionsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Event Date</p>
-                    <p className="text-lg font-bold">{format(new Date(selectedBooking.event_date), "MMMM d, yyyy")}</p>
+                    <p className="text-lg font-bold">{formatDate(selectedBooking.event_date, "MMMM d, yyyy")}</p>
                   </div>
                 </div>
 
