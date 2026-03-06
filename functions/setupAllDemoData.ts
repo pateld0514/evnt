@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
       budget: 25000,
       status: "confirmed",
       notes: "Outdoor ceremony at the National Cathedral gardens, indoor reception at the Willard Hotel. Need photographer, caterer, florist, and DJ.",
-      created_by: CLIENT_EMAIL,
+      owner_email: CLIENT_EMAIL,
     });
 
     const birthdayEvent = await db.entities.Event.create({
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       budget: 5000,
       status: "planning",
       notes: "Surprise party for mom's 60th. Looking for photographer and caterer.",
-      created_by: CLIENT_EMAIL,
+      owner_email: CLIENT_EMAIL,
     });
 
     // ---- Step 5: Create Bookings ----
