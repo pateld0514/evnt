@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const oldBookings = await db.entities.Booking.filter({ client_email: CLIENT_EMAIL });
     for (const b of oldBookings) await db.entities.Booking.delete(b.id);
 
-    const oldEvents = await db.entities.Event.filter({ created_by: CLIENT_EMAIL });
+    const oldEvents = await db.entities.Event.filter({ owner_email: CLIENT_EMAIL });
     for (const e of oldEvents) await db.entities.Event.delete(e.id);
 
     const oldMsgs1 = await db.entities.Message.filter({ sender_email: CLIENT_EMAIL });
