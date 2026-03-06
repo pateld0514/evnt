@@ -4,7 +4,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
-    
+
+    // Allow entity automation calls (no user token) OR authenticated users OR internal secret
+    const isAuthenticated = await base44.auth.isAuthenticated();
+    const hasSecret = payload._secret === Deno.env.get('INTERNAL_SECRET');
+    if (!isAuthenticated && !hasSecret) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const message = payload.data || payload.message;
     
     if (!message || !message.recipient_email) {

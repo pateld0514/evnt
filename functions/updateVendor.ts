@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     }
 
     // Security: Verify user can modify this vendor
-    const isAdmin = user.email === 'pateld0514@gmail.com' || user.role === 'admin';
+    const isAdmin = user.role === 'admin';
     const isOwner = vendor.created_by === user.email;
 
     if (!isAdmin && !isOwner) {
