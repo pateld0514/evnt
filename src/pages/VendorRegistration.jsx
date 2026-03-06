@@ -348,46 +348,15 @@ export default function VendorRegistrationPage() {
         }
       }
 
-      // Send admin notification
-      await base44.integrations.Core.SendEmail({
-        to: "pateld0514@gmail.com",
-        from_name: "EVNT System",
-        subject: "🔔 New Vendor Registration - Approval Required",
-        body: `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #fff; padding: 30px; text-center; }
-    .content { padding: 30px; background: #f9f9f9; }
-    .info-box { background: #fff; border: 2px solid #000; padding: 15px; margin: 15px 0; }
-    .button { display: inline-block; padding: 15px 30px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>New Vendor Registration</h1>
-    </div>
-    <div class="content">
-      <p>A new vendor has registered and requires your approval:</p>
-      <div class="info-box">
-        <strong>Business:</strong> ${formData.business_name}<br/>
-        <strong>Category:</strong> ${formData.category}<br/>
-        <strong>Email:</strong> ${formData.contact_email}<br/>
-        <strong>Location:</strong> ${formData.location}<br/>
-        <strong>Experience:</strong> ${formData.years_in_business} years<br/>
-        <strong>Average Price:</strong> $${formData.average_price}<br/>
-        <strong>Willing to Travel:</strong> ${formData.willing_to_travel ? 'Yes' : 'No'}
-      </div>
-      <p>Please log in to the admin dashboard to review and approve/reject this vendor.</p>
-    </div>
-  </div>
-</body>
-</html>
-        `
+      // Send admin notification via backend function (keeps admin email in server-side env var)
+      await base44.functions.invoke('notifyAdminNewVendor', {
+        business_name: formData.business_name,
+        category: formData.category,
+        contact_email: formData.contact_email,
+        location: formData.location,
+        years_in_business: formData.years_in_business,
+        average_price: formData.average_price,
+        willing_to_travel: formData.willing_to_travel
       });
 
       // Send welcome email to vendor

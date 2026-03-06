@@ -54,6 +54,7 @@ import AdminSetup from './pages/AdminSetup';
 import AdminTransactions from './pages/AdminTransactions';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
+import DemoAccounts from './pages/DemoAccounts';
 import EmailPreview from './pages/EmailPreview';
 import EventDashboard from './pages/EventDashboard';
 import EventVendors from './pages/EventVendors';
@@ -75,7 +76,6 @@ import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
 import VendorRewards from './pages/VendorRewards';
 import VendorView from './pages/VendorView';
-import DemoAccounts from './pages/DemoAccounts';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +87,7 @@ export const PAGES = {
     "AdminTransactions": AdminTransactions,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
+    "DemoAccounts": DemoAccounts,
     "EmailPreview": EmailPreview,
     "EventDashboard": EventDashboard,
     "EventVendors": EventVendors,
@@ -108,7 +109,6 @@ export const PAGES = {
     "VendorRegistration": VendorRegistration,
     "VendorRewards": VendorRewards,
     "VendorView": VendorView,
-    "DemoAccounts": DemoAccounts,
 }
 
 export const pagesConfig = {
