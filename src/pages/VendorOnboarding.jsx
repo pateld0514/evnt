@@ -269,19 +269,15 @@ export default function VendorOnboardingPage() {
         vendor_onboarding_step: null
       });
 
-      // Send admin notification
-      await base44.integrations.Core.SendEmail({
-        to: "pateld0514@gmail.com",
-        from_name: "EVNT System",
-        subject: "🔔 New Vendor Registration - Approval Required",
-        body: `
-          <h2>New Vendor Registration</h2>
-          <p><strong>Business:</strong> ${formData.business_name}</p>
-          <p><strong>Category:</strong> ${finalCategory}</p>
-          <p><strong>Email:</strong> ${formData.contact_email}</p>
-          <p><strong>Location:</strong> ${formData.location}</p>
-          <p>Please review in admin dashboard.</p>
-        `
+      // Send admin notification via secure backend function (uses ADMIN_EMAIL env var)
+      await base44.functions.invoke('notifyAdminNewVendor', {
+        business_name: formData.business_name,
+        category: finalCategory,
+        contact_email: formData.contact_email,
+        location: formData.location,
+        years_in_business: formData.years_in_business,
+        average_price: formData.average_price,
+        willing_to_travel: formData.willing_to_travel,
       });
 
       // Send vendor confirmation
