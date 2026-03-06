@@ -4,13 +4,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    const payload = await req.json();
+
     // Internal automation endpoint - validate shared secret
-    const secret = req.headers.get('x-internal-secret');
-    if (secret !== Deno.env.get('INTERNAL_SECRET')) {
+    if (payload._secret !== Deno.env.get('INTERNAL_SECRET')) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const payload = await req.json();
     
     // Extract vendor_id from payload or event data
     const vendor_id = payload.vendor_id || payload.data?.vendor_id;

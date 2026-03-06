@@ -4,14 +4,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // Get the deleted user info from the payload
+    const { event, data, _secret } = await req.json();
+
     // Internal automation endpoint - validate shared secret
-    const secret = req.headers.get('x-internal-secret');
-    if (secret !== Deno.env.get('INTERNAL_SECRET')) {
+    if (_secret !== Deno.env.get('INTERNAL_SECRET')) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    // Get the deleted user info from the payload
-    const { event, data } = await req.json();
     
     if (event.type !== 'delete') {
       return Response.json({ error: 'Invalid event type' }, { status: 400 });

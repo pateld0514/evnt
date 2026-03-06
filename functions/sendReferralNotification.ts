@@ -4,13 +4,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    const payload = await req.json();
+
     // Internal automation endpoint - validate shared secret
-    const secret = req.headers.get('x-internal-secret');
-    if (secret !== Deno.env.get('INTERNAL_SECRET')) {
+    if (payload._secret !== Deno.env.get('INTERNAL_SECRET')) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const payload = await req.json();
     const { referrer_email, referrer_type, referred_email, reward_type } = payload;
     
     if (!referrer_email || !referrer_type || !referred_email || !reward_type) {
