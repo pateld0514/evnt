@@ -292,7 +292,7 @@ export default function EventDashboardPage() {
                       <CalendarIcon className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-xs text-gray-500">Date</p>
-                        <p className="font-bold">{format(new Date(event.event_date), "MMM d, yyyy")}</p>
+                        <p className="font-bold">{formatDate(event.event_date)}</p>
                       </div>
                     </div>
                     {event.location && (
@@ -423,14 +423,22 @@ export default function EventDashboardPage() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.event_date ? format(new Date(formData.event_date), 'PPP') : 'Pick a date'}
+                      {formData.event_date ? formatDate(formData.event_date, "MMMM d, yyyy") : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={formData.event_date ? new Date(formData.event_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, event_date: date }))}
+                      selected={formData.event_date ? new Date(String(formData.event_date).split("T")[0] + "T00:00:00") : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          // Store as YYYY-MM-DD string to avoid timezone issues
+                          const y = date.getFullYear();
+                          const m = String(date.getMonth() + 1).padStart(2, "0");
+                          const d = String(date.getDate()).padStart(2, "0");
+                          setFormData(prev => ({ ...prev, event_date: `${y}-${m}-${d}` }));
+                        }
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
