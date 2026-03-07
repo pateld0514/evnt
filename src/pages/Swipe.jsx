@@ -251,16 +251,18 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // Wait for animation to complete before refreshing data
+      // After animation completes, remove card and refresh
       setTimeout(() => {
+        // Optimistically remove the swiped vendor from the display list
+        setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
+        setAnimatingVendorId(null);
+        setAnimatingDirection(null);
+        setIsProcessing(false);
         queryClient.invalidateQueries(['user-swipes']);
         if (variables.direction === "right") {
           queryClient.invalidateQueries(['saved-vendors']);
         }
-        setAnimatingVendorId(null);
-        setAnimatingDirection(null);
-        setIsProcessing(false);
-      }, 400);
+      }, 350);
     },
     onError: () => {
       toast.error("Failed to process swipe");
