@@ -570,6 +570,7 @@ export default function SwipePage() {
               <SwipeCard
                 key={vendor.id}
                 vendor={vendor}
+                eventId={eventId}
                 onSwipe={index === 0 ? handleSwipe : null}
                 isRemoving={vendor.id === animatingVendorId}
                 completedBookingsCount={0}
