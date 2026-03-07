@@ -82,20 +82,53 @@ async function processForPerson(base44, referred_email, referred_type, completio
     return { message: `No pending referrals for ${referred_email}` };
   }
 
-  // Verify they've actually completed at least one booking
+  // Verify they've completed sign-up AND completed at least one paid booking
+  let hasCompletedSignup = false;
   let hasCompletedBooking = false;
 
   if (referred_type === 'vendor') {
+    // Check 1: Vendor profile must be complete
     const users = await base44.asServiceRole.entities.User.filter({ email: referred_email });
-    if (users.length > 0 && users[0].vendor_id) {
-      const completedBookings = await base44.asServiceRole.entities.Booking.filter({
-        vendor_id: users[0].vendor_id,
-        status: 'completed',
-        payment_status: 'paid'
-      });
-      hasCompletedBooking = completedBookings.length >= 1;
+    if (users.length === 0) {
+      return { message: `${referred_email} user record not found` };
     }
+    
+    const user = users[0];
+    if (!user.vendor_id) {
+      return { message: `${referred_email} is not set up as a vendor yet` };
+    }
+
+    // Check 2: Vendor profile_complete must be true
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: user.vendor_id });
+    if (vendors.length === 0) {
+      return { message: `Vendor profile not found for ${referred_email}` };
+    }
+
+    if (!vendors[0].profile_complete) {
+      return { message: `${referred_email} hasn't completed their vendor profile setup` };
+    }
+
+    // Check 3: Must have completed at least one paid booking
+    const completedBookings = await base44.asServiceRole.entities.Booking.filter({
+      vendor_id: user.vendor_id,
+      status: 'completed',
+      payment_status: 'paid'
+    });
+    hasCompletedBooking = completedBookings.length >= 1;
   } else {
+    // CLIENT CHECKS
+    // Check 1: Onboarding must be complete
+    const users = await base44.asServiceRole.entities.User.filter({ email: referred_email });
+    if (users.length === 0) {
+      return { message: `${referred_email} user record not found` };
+    }
+
+    const user = users[0];
+    if (!user.onboarding_complete) {
+      return { message: `${referred_email} hasn't completed client onboarding yet` };
+    }
+
+    // Check 2: Must have completed at least one paid booking
     const completedBookings = await base44.asServiceRole.entities.Booking.filter({
       client_email: referred_email,
       status: 'completed',
