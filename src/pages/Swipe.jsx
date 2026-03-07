@@ -541,26 +541,43 @@ export default function SwipePage() {
                 <Heart className="w-12 h-12 text-white" />
               </div>
               <h3 className="text-2xl font-black text-black mb-3">
-                No More Vendors!
+                You've Seen All Vendors!
               </h3>
               <p className="text-gray-600 mb-6">
-                You've seen all vendors matching your filters.
+                Check your saved vendors or reset to browse passed ones again.
               </p>
-              <Button
-                onClick={clearFilters}
-                variant="outline"
-                className="border-2 border-black font-bold mb-2"
-              >
-                Clear Filters
-              </Button>
-              <Button
-                onClick={() => setResetConfirmOpen(true)}
-                className="bg-black text-white hover:bg-gray-800 font-bold"
-                disabled={isProcessing}
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset Seen Vendors
-              </Button>
+              <div className="flex flex-col gap-3 items-center">
+                <Button
+                  onClick={() => {
+                    queryClient.invalidateQueries(['vendors']);
+                    queryClient.invalidateQueries(['user-swipes']);
+                    queryClient.invalidateQueries(['saved-vendors']);
+                    queryClient.invalidateQueries(['reviews']);
+                    toast.success("Refreshed!");
+                  }}
+                  variant="outline"
+                  className="w-full border-2 border-black font-bold"
+                  disabled={isProcessing}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Session
+                </Button>
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="w-full border-2 border-gray-400 font-bold text-gray-700"
+                >
+                  Clear Filters
+                </Button>
+                <Button
+                  onClick={() => setResetConfirmOpen(true)}
+                  className="w-full bg-black text-white hover:bg-gray-800 font-bold"
+                  disabled={isProcessing}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset Passed Vendors
+                </Button>
+              </div>
             </div>
           </div>
         )}
