@@ -97,7 +97,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -105,7 +108,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // Real-time subscription for vendors
