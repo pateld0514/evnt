@@ -72,7 +72,14 @@ export default function EventDashboardPage() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
-    queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
+    queryFn: async () => {
+      const [byOwner, byCreated] = await Promise.all([
+        base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
+        base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
+      ]);
+      const all = [...byOwner, ...byCreated];
+      return all.filter((e, i) => all.findIndex(x => x.id === e.id) === i);
+    },
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
