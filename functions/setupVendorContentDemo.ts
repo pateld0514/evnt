@@ -15,6 +15,11 @@ Deno.serve(async (req) => {
     
     if (vendorByEmail.length > 0) {
       vendor = vendorByEmail[0];
+      // Update vendor to ensure it's properly linked
+      await base44.entities.Vendor.update(vendor.id, {
+        approval_status: 'approved',
+        profile_complete: true
+      });
     } else {
       // Create vendor if doesn't exist
       vendor = await base44.entities.Vendor.create({
@@ -35,8 +40,7 @@ Deno.serve(async (req) => {
         years_in_business: 15,
         willing_to_travel: true,
         travel_radius: 100,
-        profile_complete: true,
-        created_by: 'admin@evnt.com'
+        profile_complete: true
       });
     }
 
