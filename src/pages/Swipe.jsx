@@ -130,11 +130,8 @@ export default function SwipePage() {
     return () => unsubscribe();
   }, [queryClient]);
 
-  // Wait only for essential data: vendors and user-specific swipes/saves — reviews are optional for rendering
-  const dataReady = !isLoading && !swipesLoading && !savedLoading;
-
   useEffect(() => {
-    if (!dataReady) return;
+    if (isLoading) return;
     if (vendors.length === 0) {
       setDisplayableVendors([]);
       return;
@@ -217,7 +214,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, dataReady, locallySwipedIds]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading, locallySwipedIds]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -386,8 +383,7 @@ export default function SwipePage() {
     }
   };
 
-  // PHASE 1 FIX: Wait for all data to be ready, not just vendors
-  if (userLoading || !dataReady) {
+  if (userLoading || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
