@@ -83,7 +83,10 @@ export default function EventDashboardPage() {
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings', currentUser?.email],
-    queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
+    queryFn: async () => {
+      if (!currentUser?.email) return [];
+      return await base44.entities.Booking.filter({ client_email: currentUser.email });
+    },
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
