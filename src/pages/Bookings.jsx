@@ -153,9 +153,10 @@ export default function BookingsPage() {
     gcTime: 10 * 60 * 1000,
   });
 
+  // ISSUE 15 FIX: Filter by client_email instead of created_by to catch all reviews
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews', currentUser?.email],
-    queryFn: () => base44.entities.Review.filter({ created_by: currentUser.email }),
+    queryFn: () => base44.entities.Review.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
