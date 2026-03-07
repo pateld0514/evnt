@@ -103,9 +103,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     refetchInterval: 30000,
   });
 
@@ -114,9 +115,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     refetchInterval: 30000,
   });
 

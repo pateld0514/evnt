@@ -88,10 +88,10 @@ export default function SavedPage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     refetchInterval: 30000,
   });
 

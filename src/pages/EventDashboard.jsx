@@ -70,14 +70,15 @@ export default function EventDashboardPage() {
     retry: 1,
   });
 
-  const { data: events = [], isLoading: eventsLoading } = useQuery({
+  const { data: events = [] } = useQuery({
     queryKey: ['events', currentUser?.email],
     queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     refetchInterval: 30000,
   });
 
@@ -86,9 +87,10 @@ export default function EventDashboardPage() {
     queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     refetchInterval: 30000,
   });
 
