@@ -102,6 +102,8 @@ export default function SwipePage() {
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
@@ -110,6 +112,8 @@ export default function SwipePage() {
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
