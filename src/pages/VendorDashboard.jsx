@@ -265,6 +265,12 @@ Provide 4-5 specific, actionable insights in this JSON format:
     );
   }
 
+  // Redirect admins to AdminDashboard
+  if (currentUser?.role === "admin") {
+    navigate(createPageUrl("AdminDashboard"));
+    return null;
+  }
+
   if (!vendor) {
     return (
       <div className="flex items-center justify-center min-h-screen">
