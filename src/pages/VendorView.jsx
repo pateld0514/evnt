@@ -16,6 +16,7 @@ export default function VendorViewPage() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const vendorId = urlParams.get('id');
+  const eventId = urlParams.get('event');
   const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
