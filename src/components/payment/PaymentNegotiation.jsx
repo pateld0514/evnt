@@ -334,13 +334,13 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         </div>
 
         <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-900">
-            {isVendor 
-              ? `Client pays $${totals.totalAmount.toFixed(2)}. Deductions: ${(totals.finalFeePercent || platformFeePercent).toFixed(1)}% EVNT fee${totals.salesTax > 0 ? ` + ${(totals.salesTaxRate * 100).toFixed(1)}% tax` : ''} + Stripe processing fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
-              : `You pay $${totals.totalAmount.toFixed(2)} total. EVNT fee, ${totals.salesTax > 0 ? `${(totals.salesTaxRate * 100).toFixed(1)}% tax, ` : ''}and payment processing are deducted. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
-          </p>
-        </div>
+           <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+           <p className="text-sm text-blue-900">
+             {isVendor 
+               ? `Client pays $${totals.totalAmount.toFixed(2)}. Deductions: ${totals.vendorZeroFeeApplied ? '0%' : (totals.finalFeePercent || platformFeePercent).toFixed(1) + '%'} EVNT fee${totals.salesTax > 0 ? ` + ${(totals.salesTaxRate * 100).toFixed(1)}% tax` : ''} + Stripe processing fee. You receive: $${totals.vendorPayout.toFixed(2)}. ${totals.vendorZeroFeeApplied ? '🎁 Referral bonus applied!' : totals.finalFeePercent < platformFeePercent ? '✨ Tier discount applied!' : ''}`
+               : `You pay $${totals.totalAmount.toFixed(2)} total${totals.appliedDiscount > 0 ? ` (after $${totals.appliedDiscount.toFixed(2)} referral credit)` : ''}. EVNT fee, ${totals.salesTax > 0 ? `${(totals.salesTaxRate * 100).toFixed(1)}% tax, ` : ''}and payment processing are deducted. Vendor receives $${totals.vendorPayout.toFixed(2)}.`}
+           </p>
+         </div>
 
         {/* Action Buttons */}
         <div className="space-y-3">
