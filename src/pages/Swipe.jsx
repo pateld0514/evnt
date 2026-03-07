@@ -487,12 +487,20 @@ export default function SwipePage() {
               </div>
 
               <Button
-                onClick={handleReset}
+                onClick={clearFilters}
                 variant="outline"
                 className="w-full border-2 border-black"
+              >
+                Clear Filters
+              </Button>
+              <Button
+                onClick={() => setResetConfirmOpen(true)}
+                variant="outline"
+                className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50"
                 disabled={isProcessing}
               >
-                Reset All Filters
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset Seen Vendors
               </Button>
             </div>
           </SheetContent>
