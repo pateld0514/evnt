@@ -221,13 +221,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
               </div>
             </div>
             
-            <div 
-              className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50" 
-              style={{ pointerEvents: onSwipe && !isRemoving ? 'auto' : 'auto' }}
-              onMouseDown={(e) => {
-                e.stopPropagation();
-              }}
-            >
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50">
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
