@@ -79,28 +79,14 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
   });
 
-  const { data: bookings = [] } = useQuery({
-    queryKey: ['all-bookings'],
-    queryFn: () => base44.entities.Booking.list(),
-    initialData: [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
+  // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
+  // Tier badges now use VendorTier entity data embedded on vendor record (no user/booking leak)
   const { data: reviews = [] } = useQuery({
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-  });
-
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['all-users-for-swipe'],
-    queryFn: () => base44.entities.User.list(),
-    initialData: [],
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
   });
 
   // User-specific queries — enabled as soon as email is known
