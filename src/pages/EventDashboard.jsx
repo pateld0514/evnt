@@ -61,7 +61,8 @@ export default function EventDashboardPage() {
     location: "",
     guest_count: "",
     budget: "",
-    notes: ""
+    notes: "",
+    status: "planning"
   });
 
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
