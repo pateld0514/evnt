@@ -379,7 +379,7 @@ export default function EventDashboardPage() {
                           </Badge>
                           <Button
                             size="sm"
-                            onClick={() => navigate(createPageUrl("Swipe"))}
+                            onClick={() => navigate(createPageUrl("Swipe") + `?event=${event.id}`)}
                             className="bg-black text-white hover:bg-gray-800 font-bold"
                           >
                             <Plus className="w-4 h-4 mr-1" />
