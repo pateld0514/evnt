@@ -110,7 +110,6 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
 
     if (shouldSwipe) {
       const direction = info.offset.x > 0 || info.velocity.x > 0 ? "right" : "left";
-      setSwipeDirection(direction);
       onSwipe(direction);
     }
   };
