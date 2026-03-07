@@ -616,6 +616,8 @@ export default function SwipePage() {
         </div>
       </ErrorBoundary>
 
+      </ErrorBoundary>
+
       {visibleVendors.length > 0 && (
         <div className="flex justify-center items-center gap-4 md:gap-6">
           {swipeHistory.length > 0 && (
