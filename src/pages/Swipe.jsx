@@ -67,6 +67,8 @@ export default function SwipePage() {
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
     retry: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Redirect if onboarding not complete
@@ -94,8 +96,11 @@ export default function SwipePage() {
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // User-specific queries — enabled as soon as email is known
@@ -104,8 +109,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -113,8 +120,10 @@ export default function SwipePage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Real-time subscription for vendors
