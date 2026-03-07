@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     }
 
     if (!vendor) {
-      // Create test vendor if doesn't exist
+      // Create test vendor if doesn't exist with special metadata
       vendor = await base44.asServiceRole.entities.Vendor.create({
         business_name: 'EVNT Test Vendor',
         category: 'Event Planning',
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         location: 'Washington, DC',
         approval_status: 'approved',
         profile_complete: true,
-        is_test_vendor: false,
+        is_test_vendor: true,
         starting_price: 1500,
         price_range: '$$',
         specialties: ['Wedding', 'Corporate', 'Birthday', 'Dinner']
