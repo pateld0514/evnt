@@ -279,6 +279,7 @@ export default function SwipePage() {
     
     setIsProcessing(true);
     setAnimatingVendorId(currentVendor.id);
+    setAnimatingDirection(direction);
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
