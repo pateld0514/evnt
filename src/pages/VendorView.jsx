@@ -117,7 +117,21 @@ export default function VendorViewPage() {
     return { name: "Rising Star", icon: "🌟", color: "bg-green-100 text-green-800 border-green-300" };
   };
 
-  if (loading) {
+  if (!vendorId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-red-600 font-bold text-lg">No vendor selected</p>
+        <Button 
+          onClick={() => navigate(createPageUrl("Swipe"))}
+          className="mt-4 bg-black text-white hover:bg-gray-800 font-bold"
+        >
+          Back to Browse
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading || !vendor) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
@@ -125,8 +139,6 @@ export default function VendorViewPage() {
       </div>
     );
   }
-
-  if (!vendor) return null;
 
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
