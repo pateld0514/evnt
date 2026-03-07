@@ -322,6 +322,11 @@ export default function SwipePage() {
       }
       
       setSwipeHistory(prev => prev.slice(0, -1));
+      setLocallySwipedIds(prev => {
+        const next = new Set(prev);
+        next.delete(lastSwipe.vendorId);
+        return next;
+      });
       
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['saved-vendors']);
