@@ -159,8 +159,23 @@ export default function VendorDashboard() {
     ? ((bookings.filter(b => b.status === "confirmed" || b.status === "completed").length / bookings.length) * 100).toFixed(1)
     : 0, [bookings]);
 
+  // ISSUE 18 FIX: Cooldown timer effect
+  useEffect(() => {
+    if (!insightsCooldown) return;
+    const last = parseInt(localStorage.getItem('insights_last_generated') || '0');
+    const remaining = Math.ceil((60000 - (Date.now() - last)) / 1000);
+    setCooldownSecondsLeft(remaining > 0 ? remaining : 0);
+    if (remaining <= 0) { setInsightsCooldown(false); return; }
+    const interval = setInterval(() => {
+      const left = Math.ceil((60000 - (Date.now() - last)) / 1000);
+      if (left <= 0) { setInsightsCooldown(false); setCooldownSecondsLeft(0); clearInterval(interval); }
+      else setCooldownSecondsLeft(left);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [insightsCooldown]);
+
   const generateAIInsights = async () => {
-    if (!vendor || bookings.length === 0) return;
+    if (!vendor || bookings.length === 0 || insightsCooldown) return;
     
     setLoadingInsights(true);
     try {
