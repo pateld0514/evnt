@@ -534,6 +534,7 @@ export default function SwipePage() {
               isRemoving={vendor.id === animatingVendorId}
               removingDirection={vendor.id === animatingVendorId ? animatingDirection : null}
               completedBookingsCount={0}
+              eventId={eventId}
               style={{
                 position: 'absolute',
                 width: '100%',
