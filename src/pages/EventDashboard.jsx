@@ -75,8 +75,13 @@ export default function EventDashboardPage() {
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      const allEvents = await base44.entities.Event.list('-event_date');
-      return allEvents.filter(e => e.created_by === currentUser.email || e.owner_email === currentUser.email);
+      try {
+        const allEvents = await base44.entities.Event.list();
+        return allEvents.filter(e => e.created_by === currentUser.email || e.owner_email === currentUser.email).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        return [];
+      }
     },
     enabled: !!currentUser?.email,
     initialData: [],
