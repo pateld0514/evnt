@@ -205,7 +205,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
