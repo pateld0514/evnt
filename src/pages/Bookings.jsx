@@ -695,10 +695,10 @@ export default function BookingsPage() {
                     not currentUser.vendor_id (client-side, tamperable) */}
                 {isVendor && (selectedBooking.status === "confirmed" || selectedBooking.status === "in_progress" || selectedBooking.status === "completed") && (
                   <VendorDocumentUpload 
-                    booking={selectedBooking} 
-                    vendorId={selectedBooking.vendor_id}
-                    onUploadComplete={() => queryClient.invalidateQueries(['bookings'])}
-                  />
+                     booking={selectedBooking} 
+                     vendorId={selectedBooking.vendor_id}
+                     onUploadComplete={() => queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] })}
+                   />
                 )}
 
                 {/* Message Button */}
