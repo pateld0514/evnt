@@ -47,11 +47,12 @@ Deno.serve(async (req) => {
     const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
     const booking = bookings[0];
 
+    // SECURITY FIX: Admin check BEFORE 404 to prevent booking ID enumeration by non-admins
+    requireAdmin(user);
+
     if (!booking) {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
-
-    requireAdmin(user);
 
     if (booking.payment_status !== 'paid' && booking.payment_status !== 'escrow') {
       return Response.json({ error: 'Cannot refund - payment not processed yet' }, { status: 400 });
