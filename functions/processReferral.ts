@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function processForPerson(base44, referred_email, referred_type) {
+async function processForPerson(base44, referred_email, referred_type, bookingData = null) {
   // Check if this person was referred and has pending rewards
   const pendingReferrals = await base44.asServiceRole.entities.ReferralReward.filter({
     referred_email,
