@@ -79,7 +79,6 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -92,29 +91,26 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
   // User-specific queries — enabled as soon as email is known
-  const { data: swipedVendors = [] } = useQuery({
+  const { data: swipedVendors = [], isLoading: swipesLoading } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: savedVendors = [] } = useQuery({
+  const { data: savedVendors = [], isLoading: savedLoading } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 2 * 60 * 1000,
   });
 
@@ -389,7 +385,7 @@ export default function SwipePage() {
     }
   };
 
-  if (userLoading || isLoading || (displayableVendors.length === 0 && (isLoading || !vendors.length))) {
+  if (userLoading || isLoading || swipesLoading || savedLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />

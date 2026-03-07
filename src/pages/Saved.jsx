@@ -80,7 +80,6 @@ export default function SavedPage() {
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -92,7 +91,6 @@ export default function SavedPage() {
     enabled: !!currentUser?.email,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    initialData: [],
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
