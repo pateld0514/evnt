@@ -77,10 +77,9 @@ export default function VendorViewPage() {
     initialData: [],
   });
 
-  const vendor = allVendors.find(v => v.id === vendorId) || null;
   const completedBookings = completedBookingsData.length;
   const isSaved = savedVendorsList.length > 0;
-  const loading = vendorsLoading;
+  const loading = vendorLoading;
 
   const queryClient = useQueryClient();
 
