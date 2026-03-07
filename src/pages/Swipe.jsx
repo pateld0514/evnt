@@ -261,25 +261,12 @@ export default function SwipePage() {
     }
   });
 
-  const availableCategories = vendors
-    .filter(v => {
-      const ownerUser = allUsers?.find(u => u.email === v.created_by);
-      return v.approval_status === "approved" && v.profile_complete === true && ownerUser?.user_type !== 'test_vendor';
-    })
-    .map(v => v.category);
-  
-  const uniqueAvailableCategories = [...new Set(availableCategories)];
-  
-  // Pre-compute completed booking counts per vendor for performance
-  const completedBookingsByVendor = React.useMemo(() => {
-    const map = {};
-    bookings.forEach(b => {
-      if (b.status === "completed") {
-        map[b.vendor_id] = (map[b.vendor_id] || 0) + 1;
-      }
-    });
-    return map;
-  }, [bookings]);
+  const uniqueAvailableCategories = React.useMemo(() => {
+    const cats = vendors
+      .filter(v => v.approval_status === "approved" && v.profile_complete === true && !v.is_test_vendor)
+      .map(v => v.category);
+    return [...new Set(cats)];
+  }, [vendors]);
 
   const currentVendor = displayableVendors[0];
 
