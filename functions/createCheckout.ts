@@ -206,9 +206,8 @@ Deno.serve(async (req) => {
     const stripeFeeAmount = booking.stripe_fee_amount;
     const stripeFeeCents = Math.round(stripeFeeAmount * 100);
 
-    // Get redirect URLs
-    const referer = req.headers.get('referer') || req.headers.get('origin') || '';
-    const baseUrl = referer ? new URL(referer).origin : 'https://evnt.app';
+    // ISSUE 9 FIX: Use APP_URL env var — never trust client-supplied Referer header (open redirect risk)
+    const baseUrl = Deno.env.get('APP_URL') || 'https://joinevnt.com';
     
     const additionalFeesTotal = (booking.additional_fees || []).reduce((sum, f) => sum + parseFloat(f.amount || 0), 0);
     const coreServiceCents = Math.round((booking.base_event_amount - additionalFeesTotal) * 100);
