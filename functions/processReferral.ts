@@ -190,6 +190,31 @@ async function processForPerson(base44, referred_email, referred_type) {
       }
     }
 
+    // --- If a CLIENT was referred, also reward the VENDOR they booked ---
+    // The vendor who served the referred client's first booking earns a commission-free booking too
+    if (referred_type === 'client' && bookingData?.vendor_id) {
+      const bookedVendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: bookingData.vendor_id });
+      if (bookedVendorRecords.length > 0) {
+        const bookedVendorEmail = bookedVendorRecords[0].created_by || bookedVendorRecords[0].contact_email;
+        if (bookedVendorEmail) {
+          const bookedVendorUsers = await base44.asServiceRole.entities.User.filter({ email: bookedVendorEmail });
+          if (bookedVendorUsers.length > 0) {
+            const bookedVendorUser = bookedVendorUsers[0];
+            await base44.asServiceRole.entities.User.update(bookedVendorUser.id, {
+              commission_free_bookings: (bookedVendorUser.commission_free_bookings || 0) + 1
+            });
+            await base44.asServiceRole.entities.Notification.create({
+              recipient_email: bookedVendorEmail,
+              type: 'payment_received',
+              title: 'Referral Reward: 0% EVNT Fee! 🎉',
+              message: `A referred client completed their first booking with you! You've earned 1 commission-free (0% EVNT fee) booking as a thank-you.`,
+              read: false
+            });
+          }
+        }
+      }
+    }
+
     rewardsProcessed++;
   }
 
