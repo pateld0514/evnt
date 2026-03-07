@@ -174,7 +174,7 @@ export default function SwipePage() {
       }
       if (!minPriceValid || !maxPriceValid) return false;
       
-      return isApproved && profileComplete && !isTestVendor && notSwipedLeft && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+      return isApproved && profileComplete && !isTestVendor && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       
       const userLocation = currentUser?.location?.toLowerCase() || filters.location?.toLowerCase() || "";
