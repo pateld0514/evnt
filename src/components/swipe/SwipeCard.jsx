@@ -131,13 +131,8 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
           y: -80,
           rotate: removingDirection === "left" ? -30 : 30,
           opacity: 0,
-        } : {
-          x: 0,
-          y: 0,
-          rotate: 0,
-          opacity: 1,
-        }}
-        transition={isRemoving ? { duration: 0.35, ease: "easeOut" } : { duration: 0 }}
+        } : undefined}
+        transition={{ duration: 0.35, ease: "easeOut" }}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
