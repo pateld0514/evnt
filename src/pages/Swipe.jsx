@@ -14,22 +14,24 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 
-const categories = [
-  { value: "all", label: "All Vendors" },
-  { value: "dj", label: "DJs" },
-  { value: "photographer", label: "Photographers" },
-  { value: "videographer", label: "Videographers" },
-  { value: "photo_booth", label: "Photo Booth" },
-  { value: "caterer", label: "Caterers" },
-  { value: "food_truck", label: "Food Trucks" },
-  { value: "baker", label: "Bakers" },
-  { value: "balloon_decorator", label: "Balloon Decorators" },
-  { value: "event_stylist", label: "Event Stylists" },
-  { value: "banquet_hall", label: "Banquet Halls" },
-  { value: "rental_services", label: "Rental Services" },
-  { value: "event_planner", label: "Event Planners" },
-  { value: "luxury_car_rental", label: "Luxury Car Rental" }
-];
+const categoryLabels = {
+  all: "All Vendors",
+  dj: "DJ",
+  photographer: "Photographer",
+  videographer: "Videographer",
+  photo_booth: "Photo Booth",
+  caterer: "Caterer",
+  food_truck: "Food Truck",
+  baker: "Baker",
+  balloon_decorator: "Balloon Decorator",
+  event_stylist: "Event Stylist",
+  banquet_hall: "Banquet Hall",
+  rental_services: "Rental Services",
+  event_planner: "Event Planner",
+  luxury_car_rental: "Luxury Car Rental"
+};
+
+const categories = Object.entries(categoryLabels).map(([value, label]) => ({ value, label }));
 
 export default function SwipePage() {
   const navigate = useNavigate();

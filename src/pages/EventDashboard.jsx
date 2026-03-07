@@ -623,19 +623,19 @@ export default function EventDashboardPage() {
                       <p className="text-sm font-semibold">Selected Vendors ({selectedVendors.length}):</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedVendors.map(vendorId => {
-                          const vendor = vendors.find(v => v.id === vendorId);
-                          return (
-                            <Badge key={vendorId} variant="secondary" className="flex items-center gap-1">
-                              {vendor?.business_name}
-                              <button
-                                onClick={() => setSelectedVendors(selectedVendors.filter(id => id !== vendorId))}
-                                className="ml-1 text-xs hover:text-red-600"
-                              >
-                                ✕
-                              </button>
-                            </Badge>
-                          );
-                        })}
+                                const vendor = vendors.find(v => v.id === vendorId);
+                                return (
+                                  <Badge key={vendorId} variant="secondary" className="flex items-center gap-1 text-sm">
+                                    {vendor?.business_name}
+                                    <button
+                                      onClick={() => setSelectedVendors(selectedVendors.filter(id => id !== vendorId))}
+                                      className="ml-1 text-xs hover:text-red-600 font-bold"
+                                    >
+                                      ✕
+                                    </button>
+                                  </Badge>
+                                );
+                              })}
                       </div>
                       <Button
                         type="button"
