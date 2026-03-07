@@ -540,11 +540,19 @@ export default function SwipePage() {
                 You've seen all vendors matching your filters.
               </p>
               <Button
-                onClick={handleReset}
+                onClick={clearFilters}
+                variant="outline"
+                className="border-2 border-black font-bold mb-2"
+              >
+                Clear Filters
+              </Button>
+              <Button
+                onClick={() => setResetConfirmOpen(true)}
                 className="bg-black text-white hover:bg-gray-800 font-bold"
                 disabled={isProcessing}
               >
-                Reset Filters
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset Seen Vendors
               </Button>
             </div>
           </div>
