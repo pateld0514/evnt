@@ -75,14 +75,7 @@ export default function EventDashboardPage() {
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      try {
-        // RLS will automatically filter to current user, so just list all
-        const allEvents = await base44.entities.Event.list('-event_date');
-        return allEvents;
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        return [];
-      }
+      return await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
     },
     enabled: !!currentUser?.email,
     initialData: [],
@@ -115,31 +108,24 @@ export default function EventDashboardPage() {
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
-    onSuccess: async () => {
-      // Refetch fresh user data to ensure email is current
-      const freshUser = await base44.auth.me();
-      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       setCreateOpen(false);
       resetForm();
       toast.success("Event created!");
-    },
-    onError: (error) => {
-      console.error('Error creating event:', error);
-      toast.error(error.message || "Failed to create event");
     },
   });
 
   const updateEventMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser?.email && event.created_by !== currentUser?.email)) {
+      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
         throw new Error("Unauthorized: You can only edit your own events");
       }
       return await base44.entities.Event.update(id, data);
     },
-    onSuccess: async () => {
-      const freshUser = await base44.auth.me();
-      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       setEditingEvent(null);
       resetForm();
       setSelectedVendors([]);
@@ -153,7 +139,7 @@ export default function EventDashboardPage() {
   const createBookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
+      queryClient.invalidateQueries(['bookings']);
       setSelectedVendors([]);
       toast.success("Vendor added to event!");
     },
@@ -165,14 +151,13 @@ export default function EventDashboardPage() {
   const deleteEventMutation = useMutation({
     mutationFn: async (id) => {
       const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser?.email && event.created_by !== currentUser?.email)) {
+      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
         throw new Error("Unauthorized: You can only delete your own events");
       }
       return await base44.entities.Event.delete(id);
     },
-    onSuccess: async () => {
-      const freshUser = await base44.auth.me();
-      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       toast.success("Event deleted");
     },
     onError: (error) => {
@@ -260,7 +245,7 @@ export default function EventDashboardPage() {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
-  if (userLoading || !currentUser) {
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
