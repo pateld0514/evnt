@@ -102,7 +102,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
   const handleDragEnd = (event, info) => {
     if (!onSwipe || isRemoving) return;
     
-    const threshold = 50; // Lower threshold for easier swiping
+    const threshold = 80;
     if (Math.abs(info.offset.x) > threshold) {
       const direction = info.offset.x > 0 ? "right" : "left";
       onSwipe(direction);
@@ -118,17 +118,15 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           rotate: onSwipe && !isRemoving ? rotate : 0,
         }}
         drag={onSwipe && !isRemoving ? "x" : false}
-        dragConstraints={{ left: -500, right: 500 }}
-        dragElastic={0.2}
+        dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
-        whileDrag={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
           x: 1000,
-          y: -50,
-          rotate: 30,
+          y: -100,
+          rotate: -30,
           opacity: 0,
-          transition: { duration: 0.4, ease: "easeInOut" }
+          transition: { duration: 0.3 }
         } : !onSwipe ? { 
           scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
           y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,

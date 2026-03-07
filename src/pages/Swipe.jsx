@@ -97,10 +97,7 @@ export default function SwipePage() {
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -108,10 +105,7 @@ export default function SwipePage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   // Real-time subscription for vendors
@@ -252,13 +246,15 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // Refresh queries and continue immediately
-      queryClient.invalidateQueries(['user-swipes']);
-      if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
-      }
-      setAnimatingVendorId(null);
-      setIsProcessing(false);
+      // Wait for animation to complete before refreshing data
+      setTimeout(() => {
+        queryClient.invalidateQueries(['user-swipes']);
+        if (variables.direction === "right") {
+          queryClient.invalidateQueries(['saved-vendors']);
+        }
+        setAnimatingVendorId(null);
+        setIsProcessing(false);
+      }, 400);
     },
     onError: () => {
       toast.error("Failed to process swipe");
@@ -281,13 +277,6 @@ export default function SwipePage() {
     
     setIsProcessing(true);
     setAnimatingVendorId(currentVendor.id);
-    
-    // Optimistically update UI first for smooth experience
-    setDisplayableVendors(prev => {
-      const updated = [...prev];
-      updated.shift(); // Remove current card immediately
-      return updated;
-    });
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
@@ -350,13 +339,14 @@ export default function SwipePage() {
     setResetConfirmOpen(false);
     try {
       setIsProcessing(true);
-      // Only reset LEFT swipes (skipped/passed vendors) — saved vendors stay
       const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
       clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
-      toast.success("Passed vendors restored! Saved vendors remain.");
+      queryClient.invalidateQueries(['vendors']);
+      queryClient.invalidateQueries(['reviews']);
+      toast.success("Passed vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
     } finally {

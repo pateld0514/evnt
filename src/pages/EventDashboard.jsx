@@ -75,10 +75,7 @@ export default function EventDashboardPage() {
     queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -86,10 +83,7 @@ export default function EventDashboardPage() {
     queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 1 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const createEventMutation = useMutation({
