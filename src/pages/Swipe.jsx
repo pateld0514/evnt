@@ -57,6 +57,7 @@ export default function SwipePage() {
   });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
+  const eventId = urlParams.get('eventId') || null;
 
   // Load current user - fires immediately
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
