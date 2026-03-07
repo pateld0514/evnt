@@ -164,45 +164,47 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {events.length > 0 && (
         <div className="space-y-2">
-          <Label>Link to Existing Event (Optional)</Label>
-          <Select value={formData.event_id} onValueChange={(value) => {
-            const event = events.find(e => e.id === value);
-            if (event) {
-              // Normalize date to YYYY-MM-DD format for the date input
-              let normalizedDate = "";
-              if (event.event_date) {
-                const d = new Date(event.event_date);
-                if (!isNaN(d.getTime())) {
-                  normalizedDate = d.toISOString().split('T')[0];
-                } else {
-                  normalizedDate = event.event_date.split('T')[0];
+          <Label>Event</Label>
+          {eventId ? (
+            <div className="p-3 bg-black text-white rounded-lg font-bold text-sm flex items-center gap-2">
+              <Calendar className="w-4 h-4 flex-shrink-0" />
+              {events.find(e => e.id === eventId)?.name || "Selected Event"} — Adding vendor to this event
+            </div>
+          ) : (
+            <Select value={formData.event_id} onValueChange={(value) => {
+              const event = events.find(e => e.id === value);
+              if (event) {
+                let normalizedDate = "";
+                if (event.event_date) {
+                  const d = new Date(event.event_date);
+                  normalizedDate = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : event.event_date.split('T')[0];
                 }
+                setFormData(prev => ({
+                  ...prev,
+                  event_id: value,
+                  event_type: event.event_type || prev.event_type,
+                  event_date: normalizedDate || prev.event_date,
+                  location: event.location || prev.location,
+                  guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
+                  budget: event.budget ? String(event.budget) : prev.budget
+                }));
+              } else {
+                setFormData(prev => ({ ...prev, event_id: "" }));
               }
-              setFormData(prev => ({
-                ...prev,
-                event_id: value,
-                event_type: event.event_type || prev.event_type,
-                event_date: normalizedDate || prev.event_date,
-                location: event.location || prev.location,
-                guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
-                budget: event.budget ? String(event.budget) : prev.budget
-              }));
-            } else {
-              setFormData(prev => ({ ...prev, event_id: "" }));
-            }
-          }}>
-            <SelectTrigger className="border-2 border-gray-300">
-              <SelectValue placeholder="Select an event or create new" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={null}>New Booking (no event)</SelectItem>
-              {events.map(event => (
-                <SelectItem key={event.id} value={event.id}>
-                  {event.name} - {formatDate(event.event_date)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            }}>
+              <SelectTrigger className="border-2 border-gray-300">
+                <SelectValue placeholder="Select an event or create new" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>New Booking (no event)</SelectItem>
+                {events.map(event => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.name} - {formatDate(event.event_date)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
 
