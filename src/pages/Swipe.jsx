@@ -130,8 +130,8 @@ export default function SwipePage() {
     return () => unsubscribe();
   }, [queryClient]);
 
-  // PHASE 1 FIX: Wait for reviews to load before filtering to prevent incomplete data rendering
-  const dataReady = !isLoading && !swipesLoading && !savedLoading && reviews.length > 0 || (reviews.length === 0 && isLoading === false && swipesLoading === false && savedLoading === false);
+  // Wait only for essential data: vendors and user-specific swipes/saves — reviews are optional for rendering
+  const dataReady = !isLoading && !swipesLoading && !savedLoading;
 
   useEffect(() => {
     if (!dataReady) return;
@@ -267,20 +267,17 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // PHASE 2 FIX: Let locallySwipedIds trigger the filter effect to remove the card immediately
-      // No manual removal of displayableVendors — the filter effect will handle it
+      // Remove card from display immediately via locallySwipedIds
       setTimeout(() => {
+        setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
         setAnimatingVendorId(null);
         setAnimatingDirection(null);
         setIsProcessing(false);
-        
-        // PHASE 3 FIX: Delay refetch to avoid conflicts with UI re-renders
-        setTimeout(() => {
-          queryClient.invalidateQueries(['user-swipes']);
-          if (variables.direction === "right") {
-            queryClient.invalidateQueries(['saved-vendors']);
-          }
-        }, 100);
+        // Refetch user swipes after animation to sync with server
+        queryClient.invalidateQueries(['user-swipes']);
+        if (variables.direction === "right") {
+          queryClient.invalidateQueries(['saved-vendors']);
+        }
       }, 350);
     },
     onError: () => {
