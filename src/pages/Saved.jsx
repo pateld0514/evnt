@@ -83,40 +83,34 @@ export default function SavedPage() {
   });
 
   // Saved vendors load as soon as user email is known
-  const { data: savedVendors = [] } = useQuery({
+  const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 30 * 1000,
+    staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
-  // Force refetch when user logs in
-  useEffect(() => {
-    if (currentUser?.email) {
-      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
-    }
-  }, [currentUser?.email, queryClient]);
-
   const deleteMutation = useMutation({
-   mutationFn: async (savedVendorId) => {
-     const saved = savedVendors.find(s => s.id === savedVendorId);
-     if (!saved || saved.created_by !== currentUser.email) {
-       throw new Error("Unauthorized: You can only remove your own saved vendors");
-     }
-     return await base44.entities.SavedVendor.delete(savedVendorId);
-   },
-   onSuccess: () => {
-     queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
-     queryClient.invalidateQueries({ queryKey: ['user-swipes'] });
-     toast.success("Removed from favorites");
-   },
-   onError: (error) => {
-     toast.error(error.message || "Failed to remove vendor");
-   },
+    mutationFn: async (savedVendorId) => {
+      const saved = savedVendors.find(s => s.id === savedVendorId);
+      if (!saved || saved.created_by !== currentUser.email) {
+        throw new Error("Unauthorized: You can only remove your own saved vendors");
+      }
+      return await base44.entities.SavedVendor.delete(savedVendorId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['saved-vendors']);
+      queryClient.invalidateQueries(['user-swipes']);
+      toast.success("Removed from favorites");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to remove vendor");
+    },
   });
 
   // Get unique categories from saved vendors

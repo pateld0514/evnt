@@ -63,22 +63,22 @@ export default function EventDashboardPage() {
     notes: ""
   });
 
-  const { data: currentUser = null, isLoading: userLoading, isError: userError } = useQuery({
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
-    retry: 1,
+    retry: false,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
     queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -86,64 +86,56 @@ export default function EventDashboardPage() {
     queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
-  // Force refetch when user logs in
-  useEffect(() => {
-    if (currentUser?.email) {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-    }
-  }, [currentUser?.email, queryClient]);
-
   const createEventMutation = useMutation({
-   mutationFn: (data) => base44.entities.Event.create(data),
-   onSuccess: () => {
-     queryClient.invalidateQueries({ queryKey: ['events'] });
-     setCreateOpen(false);
-     resetForm();
-     toast.success("Event created!");
-   },
+    mutationFn: (data) => base44.entities.Event.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
+      setCreateOpen(false);
+      resetForm();
+      toast.success("Event created!");
+    },
   });
 
   const updateEventMutation = useMutation({
-   mutationFn: async ({ id, data }) => {
-     const event = events.find(e => e.id === id);
-     if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
-       throw new Error("Unauthorized: You can only edit your own events");
-     }
-     return await base44.entities.Event.update(id, data);
-   },
-   onSuccess: () => {
-     queryClient.invalidateQueries({ queryKey: ['events'] });
-     setEditingEvent(null);
-     resetForm();
-     toast.success("Event updated!");
-   },
-   onError: (error) => {
-     toast.error(error.message || "Failed to update event");
-   },
+    mutationFn: async ({ id, data }) => {
+      const event = events.find(e => e.id === id);
+      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+        throw new Error("Unauthorized: You can only edit your own events");
+      }
+      return await base44.entities.Event.update(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
+      setEditingEvent(null);
+      resetForm();
+      toast.success("Event updated!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update event");
+    },
   });
 
   const deleteEventMutation = useMutation({
-   mutationFn: async (id) => {
-     const event = events.find(e => e.id === id);
-     if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
-       throw new Error("Unauthorized: You can only delete your own events");
-     }
-     return await base44.entities.Event.delete(id);
-   },
-   onSuccess: () => {
-     queryClient.invalidateQueries({ queryKey: ['events'] });
-     toast.success("Event deleted");
-   },
-   onError: (error) => {
-     toast.error(error.message || "Failed to delete event");
-   },
+    mutationFn: async (id) => {
+      const event = events.find(e => e.id === id);
+      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+        throw new Error("Unauthorized: You can only delete your own events");
+      }
+      return await base44.entities.Event.delete(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
+      toast.success("Event deleted");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete event");
+    },
   });
 
   const resetForm = () => {
@@ -201,25 +193,11 @@ export default function EventDashboardPage() {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
-  if (userLoading) {
+  if (userLoading || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
         <p className="text-gray-600 font-medium">Loading events...</p>
-      </div>
-    );
-  }
-
-  if (userError || !currentUser) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-center px-4">
-          <h2 className="text-2xl font-black mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-6">Please log in to view your events.</p>
-          <Button onClick={() => window.location.href = '/'} className="bg-black text-white hover:bg-gray-800">
-            Go Home
-          </Button>
-        </div>
       </div>
     );
   }
