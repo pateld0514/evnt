@@ -85,6 +85,7 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
@@ -104,6 +105,7 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -112,6 +114,7 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   // Real-time subscription for vendors
