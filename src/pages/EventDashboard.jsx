@@ -75,19 +75,14 @@ export default function EventDashboardPage() {
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      // Fetch by owner_email first (most common case)
-      const ownedEvents = await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
-      // Also fetch events created_by user (in case owner_email isn't set)
-      const createdEvents = await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
-      // Merge and deduplicate by id
-      const allEvents = [...ownedEvents];
-      const ownedIds = new Set(ownedEvents.map(e => e.id));
-      createdEvents.forEach(e => {
-        if (!ownedIds.has(e.id)) {
-          allEvents.push(e);
-        }
-      });
-      return allEvents.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+      try {
+        // RLS will automatically filter to current user, so just list all
+        const allEvents = await base44.entities.Event.list('-event_date');
+        return allEvents;
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        return [];
+      }
     },
     enabled: !!currentUser?.email,
     initialData: [],
