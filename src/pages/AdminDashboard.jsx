@@ -73,16 +73,14 @@ export default function AdminDashboardPage() {
     enabled: !!currentUser,
   });
 
+  // H-1 FIX: Use server-side admin-authenticated function (no 500-record truncation, no stale cache bypass)
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
-    // ISSUE 15 FIX: Use already-cached vendors instead of double-fetching getAllVendorsForAdmin
     queryFn: async () => {
-      const batch = await base44.entities.Booking.list('-created_date', 500);
-      const cachedVendors = vendors.length > 0 ? vendors : (await base44.functions.invoke('getAllVendorsForAdmin', {}).then(r => r.data || []));
-      const realVendorIds = new Set(cachedVendors.map(v => v.id));
-      return batch.filter(b => realVendorIds.has(b.vendor_id));
+      const response = await base44.functions.invoke('getAllBookingsForAdmin', {});
+      return response.data || [];
     },
-    enabled: !!currentUser && vendors.length > 0,
+    enabled: !!currentUser,
     initialData: [],
   });
 
