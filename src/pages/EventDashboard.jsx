@@ -418,7 +418,7 @@ export default function EventDashboardPage() {
                     <div className="text-center py-8 bg-gray-50 rounded-lg">
                       <p className="text-gray-500 mb-4">No vendors booked yet</p>
                       <Button
-                        onClick={() => navigate(createPageUrl("Swipe"))}
+                        onClick={() => navigate(createPageUrl("Swipe") + `?event=${event.id}`)}
                         className="bg-black text-white hover:bg-gray-800 font-bold"
                       >
                         <Plus className="w-4 h-4 mr-2" />
