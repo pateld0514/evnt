@@ -71,14 +71,14 @@ export default function EventDashboardPage() {
     retry: false,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
       return await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
     },
     enabled: !!currentUser?.email,
-    placeholderData: [],
+    initialData: [],
     staleTime: 2 * 60 * 1000,
   });
 
@@ -89,7 +89,7 @@ export default function EventDashboardPage() {
       return await base44.entities.Booking.filter({ client_email: currentUser.email });
     },
     enabled: !!currentUser?.email,
-    placeholderData: [],
+    initialData: [],
     staleTime: 2 * 60 * 1000,
   });
 
@@ -108,8 +108,8 @@ export default function EventDashboardPage() {
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
-    onSuccess: (newEvent) => {
-      queryClient.setQueryData(['events', currentUser?.email], (old) => [...(old || []), newEvent]);
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       setCreateOpen(false);
       resetForm();
       toast.success("Event created!");
@@ -124,10 +124,8 @@ export default function EventDashboardPage() {
       }
       return await base44.entities.Event.update(id, data);
     },
-    onSuccess: (updatedEvent) => {
-      queryClient.setQueryData(['events', currentUser?.email], (old) =>
-        (old || []).map(e => e.id === updatedEvent.id ? updatedEvent : e)
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       setEditingEvent(null);
       resetForm();
       setSelectedVendors([]);
@@ -140,8 +138,8 @@ export default function EventDashboardPage() {
 
   const createBookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
-    onSuccess: (newBooking) => {
-      queryClient.setQueryData(['bookings', currentUser?.email], (old) => [...(old || []), newBooking]);
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
       setSelectedVendors([]);
       toast.success("Vendor added to event!");
     },
@@ -158,10 +156,8 @@ export default function EventDashboardPage() {
       }
       return await base44.entities.Event.delete(id);
     },
-    onSuccess: (_, deletedId) => {
-      queryClient.setQueryData(['events', currentUser?.email], (old) =>
-        (old || []).filter(e => e.id !== deletedId)
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries(['events']);
       toast.success("Event deleted");
     },
     onError: (error) => {
@@ -249,7 +245,7 @@ export default function EventDashboardPage() {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
-  if (userLoading || !currentUser) {
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
