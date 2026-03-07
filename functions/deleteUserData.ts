@@ -34,11 +34,17 @@ Deno.serve(async (req) => {
       vendor: 0
     };
 
-    // Delete messages sent by or received by this user
-    const messages = await base44.asServiceRole.entities.Message.list();
-    const userMessages = messages.filter(m => 
-      m.sender_email === userEmail || m.recipient_email === userEmail
-    );
+    // Delete messages sent by or received by this user — use targeted filters, not list()
+    const [sentMessages, receivedMessages] = await Promise.all([
+      base44.asServiceRole.entities.Message.filter({ sender_email: userEmail }),
+      base44.asServiceRole.entities.Message.filter({ recipient_email: userEmail }),
+    ]);
+    const messageIds = new Set();
+    const userMessages = [...sentMessages, ...receivedMessages].filter(m => {
+      if (messageIds.has(m.id)) return false;
+      messageIds.add(m.id);
+      return true;
+    });
     for (const msg of userMessages) {
       await base44.asServiceRole.entities.Message.delete(msg.id);
       deletedItems.messages++;
