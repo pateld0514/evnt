@@ -83,8 +83,16 @@ Deno.serve(async (req) => {
     }
     
     const booking = bookings[0];
-    
-    // C-4 FIX: Idempotency guard — also handle gracefully if unique constraint fires on concurrent create
+
+    // SECURITY: Re-verify booking status from DB (don't trust automation payload alone).
+    // A concurrent status rollback (e.g. cancellation) could arrive between the automation
+    // trigger and this DB read — re-validating here prevents payout on non-completed bookings.
+    if (booking.status !== 'completed') {
+      console.warn(`[processVendorPayout] Booking ${booking_id} is no longer completed (status: ${booking.status}) — skipping payout`);
+      return Response.json({ success: true, message: `Booking not in completed state (${booking.status}), skipping payout` });
+    }
+
+    // Idempotency guard — handle gracefully if unique constraint fires on concurrent create
     const existingPayouts = await base44.asServiceRole.entities.VendorPayout.filter({ booking_id: booking.id });
     if (existingPayouts.length > 0) {
       return Response.json({ success: true, message: 'Payout already processed', idempotent: true });
