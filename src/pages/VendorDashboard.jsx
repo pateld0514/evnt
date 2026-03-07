@@ -376,7 +376,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                     </div>
                     <Badge className={
                       booking.status === "pending" ? "bg-yellow-100 text-yellow-800 border-yellow-300" :
-                      booking.status === "accepted" ? "bg-green-100 text-green-800 border-green-300" :
+                      booking.status === "confirmed" ? "bg-green-100 text-green-800 border-green-300" :
                       "bg-gray-100 text-gray-800 border-gray-300"
                     }>
                       {booking.status}
