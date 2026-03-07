@@ -450,9 +450,10 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
           </DialogHeader>
           
           <BookingForm
-            vendor={vendor}
-            onSuccess={() => setBookingOpen(false)}
-            onCancel={() => setBookingOpen(false)}
+           vendor={vendor}
+           eventId={eventId}
+           onSuccess={() => setBookingOpen(false)}
+           onCancel={() => setBookingOpen(false)}
           />
         </DialogContent>
       </Dialog>
