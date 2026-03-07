@@ -176,7 +176,7 @@ export default function SwipePage() {
       return isApproved && profileComplete && !isTestVendor && notSwipedLeft && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       
-      const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
+      const userLocation = currentUser?.location?.toLowerCase() || filters.location?.toLowerCase() || "";
       const aLocationMatch = a.location?.toLowerCase() === userLocation;
       const bLocationMatch = b.location?.toLowerCase() === userLocation;
       if (aLocationMatch && !bLocationMatch) return -1;
