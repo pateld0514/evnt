@@ -198,7 +198,7 @@ export default function EventDashboardPage() {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
-  if (userLoading || (eventsLoading && currentUser?.email)) {
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
