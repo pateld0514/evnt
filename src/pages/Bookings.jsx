@@ -568,7 +568,7 @@ export default function BookingsPage() {
                     <div>
                       <p className="text-sm text-gray-500 font-medium">Client Phone</p>
                       <p className="text-lg font-bold">
-                        {allUsers.find(u => u.email === selectedBooking.client_email)?.phone || 'Not provided'}
+                        {selectedBooking.client_phone || 'Not provided'}
                       </p>
                     </div>
                   )}
