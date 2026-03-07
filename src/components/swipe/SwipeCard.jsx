@@ -222,6 +222,10 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
                 style={{ pointerEvents: "auto" }}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (!vendor?.id) {
+                    toast.error("Vendor data not loaded");
+                    return;
+                  }
                   navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
                 }}
               >
