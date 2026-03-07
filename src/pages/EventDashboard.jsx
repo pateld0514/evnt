@@ -101,19 +101,6 @@ export default function EventDashboardPage() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors-list'],
-    queryFn: async () => {
-      return await base44.entities.Vendor.filter({ 
-        approval_status: "approved",
-        profile_complete: true,
-        is_test_vendor: false
-      });
-    },
-    initialData: [],
-    staleTime: 5 * 60 * 1000,
-  });
-
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
     onSuccess: () => {
