@@ -129,9 +129,9 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
         onDragEnd={handleDragEnd}
         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
-          x: swipeDirection === "left" ? -1200 : 1200,
+          x: removingDirection === "left" ? -1200 : 1200,
           y: -80,
-          rotate: swipeDirection === "left" ? -30 : 30,
+          rotate: removingDirection === "left" ? -30 : 30,
           opacity: 0,
           transition: { duration: 0.35, ease: "easeOut" }
         } : {}}
