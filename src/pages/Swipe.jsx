@@ -130,8 +130,11 @@ export default function SwipePage() {
     return () => unsubscribe();
   }, [queryClient]);
 
+  // PHASE 1 FIX: Wait for reviews to load before filtering to prevent incomplete data rendering
+  const dataReady = !isLoading && !swipesLoading && !savedLoading && reviews.length > 0 || (reviews.length === 0 && isLoading === false && swipesLoading === false && savedLoading === false);
+
   useEffect(() => {
-    if (isLoading || swipesLoading || savedLoading) return;
+    if (!dataReady) return;
     if (vendors.length === 0) {
       setDisplayableVendors([]);
       return;
@@ -214,7 +217,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading, swipesLoading, savedLoading, locallySwipedIds]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, dataReady, locallySwipedIds]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -252,7 +255,8 @@ export default function SwipePage() {
       return { swipeId: swipeResult.id, savedVendorId };
     },
     onSuccess: (result, variables) => {
-      // Immediately mark as swiped locally so it never reappears even after query re-fetches
+      // PHASE 2 FIX: Immediately mark as swiped locally so it never reappears even after query re-fetches
+      // This is the source of truth for UI visibility — not server data
       setLocallySwipedIds(prev => new Set([...prev, variables.vendorId]));
 
       setSwipeHistory(prev => [...prev, { 
@@ -263,16 +267,20 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // After animation completes, remove card and refresh
+      // PHASE 2 FIX: Let locallySwipedIds trigger the filter effect to remove the card immediately
+      // No manual removal of displayableVendors — the filter effect will handle it
       setTimeout(() => {
-        setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
         setAnimatingVendorId(null);
         setAnimatingDirection(null);
         setIsProcessing(false);
-        queryClient.invalidateQueries(['user-swipes']);
-        if (variables.direction === "right") {
-          queryClient.invalidateQueries(['saved-vendors']);
-        }
+        
+        // PHASE 3 FIX: Delay refetch to avoid conflicts with UI re-renders
+        setTimeout(() => {
+          queryClient.invalidateQueries(['user-swipes']);
+          if (variables.direction === "right") {
+            queryClient.invalidateQueries(['saved-vendors']);
+          }
+        }, 100);
       }, 350);
     },
     onError: () => {
