@@ -511,7 +511,7 @@ export default function SwipePage() {
               vendor={vendor}
               onSwipe={index === 0 ? handleSwipe : null}
               isRemoving={vendor.id === animatingVendorId}
-              completedBookingsCount={completedBookingsByVendor[vendor.id] || 0}
+              completedBookingsCount={0}
               style={{
                 position: 'absolute',
                 width: '100%',
