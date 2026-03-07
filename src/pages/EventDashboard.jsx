@@ -299,7 +299,7 @@ export default function EventDashboardPage() {
                       <CalendarIcon className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-xs text-gray-500">Date</p>
-                        <p className="font-bold">{formatDate(event.event_date)}</p>
+                          <p className="font-bold">{event.event_date ? formatDate(event.event_date) : "—"}</p>
                       </div>
                     </div>
                     {event.location && (
@@ -430,7 +430,7 @@ export default function EventDashboardPage() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.event_date ? formatDate(formData.event_date, "MMMM d, yyyy") : 'Pick a date'}
+                      {formData.event_date ? String(formData.event_date).includes("T") ? formatDate(formData.event_date, "MMMM d, yyyy") : formatDate(formData.event_date + "T00:00:00", "MMMM d, yyyy") : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
