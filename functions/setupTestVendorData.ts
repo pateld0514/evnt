@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     const reviews = [
       {
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'client1@example.com',
         client_name: 'Sarah Johnson',
         rating: 5,
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
       },
       {
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'client2@example.com',
         client_name: 'Michael Chen',
         rating: 5,
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
       },
       {
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'client3@example.com',
         client_name: 'Emma Williams',
         rating: 4,
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       },
       {
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'client4@example.com',
         client_name: 'David Martinez',
         rating: 5,
