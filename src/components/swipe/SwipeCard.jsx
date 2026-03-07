@@ -463,6 +463,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           
           <BookingForm
             vendor={vendor}
+            eventId={eventId}
             onSuccess={() => setBookingOpen(false)}
             onCancel={() => setBookingOpen(false)}
           />
