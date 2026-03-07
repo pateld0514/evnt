@@ -165,13 +165,14 @@ export default function EventDashboardPage() {
   const deleteEventMutation = useMutation({
     mutationFn: async (id) => {
       const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+      if (!event || (event.owner_email !== currentUser?.email && event.created_by !== currentUser?.email)) {
         throw new Error("Unauthorized: You can only delete your own events");
       }
       return await base44.entities.Event.delete(id);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
+    onSuccess: async () => {
+      const freshUser = await base44.auth.me();
+      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
       toast.success("Event deleted");
     },
     onError: (error) => {
