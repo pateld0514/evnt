@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
+import ErrorBoundary from "../components/common/ErrorBoundary";
 
 const categoryLabels = {
   all: "All Vendors",
