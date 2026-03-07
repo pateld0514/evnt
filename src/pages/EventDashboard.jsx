@@ -121,6 +121,10 @@ export default function EventDashboardPage() {
       resetForm();
       toast.success("Event created!");
     },
+    onError: (error) => {
+      console.error('Error creating event:', error);
+      toast.error(error.message || "Failed to create event");
+    },
   });
 
   const updateEventMutation = useMutation({
