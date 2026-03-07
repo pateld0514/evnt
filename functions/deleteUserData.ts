@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -175,11 +175,17 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.ClientTier.delete(tier.id);
     }
 
-    // Delete referral rewards (as referrer or referee)
-    const allReferrals = await base44.asServiceRole.entities.ReferralReward.list();
-    const userReferrals = allReferrals.filter(r => 
-      r.referrer_email === userEmail || r.referred_email === userEmail
-    );
+    // Delete referral rewards (as referrer or referee) — use targeted filters, not list()
+    const [referrerRewards, refereeRewards] = await Promise.all([
+      base44.asServiceRole.entities.ReferralReward.filter({ referrer_email: userEmail }),
+      base44.asServiceRole.entities.ReferralReward.filter({ referred_email: userEmail }),
+    ]);
+    const referralIds = new Set();
+    const userReferrals = [...referrerRewards, ...refereeRewards].filter(r => {
+      if (referralIds.has(r.id)) return false;
+      referralIds.add(r.id);
+      return true;
+    });
     for (const referral of userReferrals) {
       await base44.asServiceRole.entities.ReferralReward.delete(referral.id);
     }

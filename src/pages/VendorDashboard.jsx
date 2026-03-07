@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,27 +33,38 @@ export default function VendorDashboard() {
     retry: false,
   });
 
-  const { data: allVendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+  // Fetch only the vendor(s) belonging to this user — avoids fetching all vendors platform-wide.
+  // Admins get the first vendor returned; demo vendors use a fixed email.
+  const { data: vendorData = null, isLoading: vendorsLoading } = useQuery({
+    queryKey: ['my-vendor', currentUser?.email, currentUser?.vendor_id, currentUser?.role, currentUser?.demo_mode],
+    queryFn: async () => {
+      if (!currentUser) return null;
+      // Demo mode: look up by demo email
+      if (currentUser.demo_mode === "vendor") {
+        const results = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
+        return results[0] || null;
+      }
+      // Admin: fetch first approved vendor for preview purposes
+      if (currentUser.role === "admin") {
+        const results = await base44.entities.Vendor.list('-created_date', 1);
+        return results[0] || null;
+      }
+      // Normal vendor: try vendor_id first, then created_by, then contact_email
+      if (currentUser.vendor_id) {
+        const byId = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
+        if (byId.length > 0) return byId[0];
+      }
+      const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
+      if (byCreator.length > 0) return byCreator[0];
+      const byContact = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
+      return byContact[0] || null;
+    },
+    enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    initialData: [],
   });
 
-  const vendor = React.useMemo(() => {
-    if (!currentUser || allVendors.length === 0) return null;
-    if (currentUser.demo_mode === "vendor") {
-      return allVendors.find(v => v.contact_email === "demo_vendor_admin@test.com") || null;
-    }
-    const isAdmin = currentUser.role === "admin";
-    const found = allVendors.find(v => v.id === currentUser.vendor_id)
-      || allVendors.find(v => v.created_by === currentUser.email)
-      || allVendors.find(v => v.contact_email === currentUser.email);
-    if (found) return found;
-    if (isAdmin && allVendors.length > 0) return allVendors[0];
-    return null;
-  }, [currentUser, allVendors]);
+  const vendor = vendorData;
 
   const loading = userLoading || vendorsLoading;
 
