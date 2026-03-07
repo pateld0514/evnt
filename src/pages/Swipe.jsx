@@ -122,13 +122,7 @@ export default function SwipePage() {
      return () => unsubscribe();
    }, [queryClient]);
 
-   // Refetch all user-dependent queries when currentUser resolves
-   useEffect(() => {
-     if (currentUser?.email) {
-       queryClient.invalidateQueries(['user-swipes']);
-       queryClient.invalidateQueries(['saved-vendors']);
-     }
-   }, [currentUser?.email, queryClient]);
+
 
   useEffect(() => {
     if (userLoading) return;

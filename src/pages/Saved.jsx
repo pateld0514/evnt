@@ -94,12 +94,7 @@ export default function SavedPage() {
     refetchOnWindowFocus: true,
   });
 
-  // Refetch saved vendors when user resolves
-  useEffect(() => {
-    if (currentUser?.email) {
-      queryClient.invalidateQueries(['saved-vendors']);
-    }
-  }, [currentUser?.email, queryClient]);
+
 
   const deleteMutation = useMutation({
     mutationFn: async (savedVendorId) => {
