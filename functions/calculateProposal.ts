@@ -99,13 +99,62 @@ Deno.serve(async (req) => {
       console.warn('Failed to calculate dynamic fee, using base:', error);
     }
 
-    // Check for referral credits the client has earned (as a referred person)
-    // Single lookup — reused for both referral credit check and state fallback (no duplicate query)
+    // ======= REFERRAL DISCOUNT LOGIC =======
+    // Check if client has earned a referral discount and hasn't used it yet
     let appliedDiscount = 0;
+    let appliedDiscountInfo = null;
+    
     const clientUserRecords = await base44.asServiceRole.entities.User.filter({ email: booking.client_email });
     const clientUserRecord = clientUserRecords[0] || null;
-    if (clientUserRecord && clientUserRecord.referral_credit > 0) {
-      appliedDiscount = Math.min(clientUserRecord.referral_credit, agreedAmount);
+    
+    // SECURITY: Only apply discount if:
+    // 1. User has not already used their one-time referral discount
+    // 2. They have an "earned" referral reward
+    if (clientUserRecord && !clientUserRecord.referral_discount_used) {
+      // Check for earned referral rewards (status "earned" means they completed their first booking)
+      const earnedReferrals = await base44.asServiceRole.entities.ReferralReward.filter({
+        referred_email: booking.client_email,
+        status: 'earned'
+      });
+      
+      if (earnedReferrals.length > 0) {
+        // Client has earned a referral reward that hasn't been used yet
+        // For clients, the reward is $25 credit (determined by referral type at creation)
+        appliedDiscount = 25;
+        appliedDiscountInfo = {
+          referral_id: earnedReferrals[0].id,
+          referral_type: earnedReferrals[0].referral_type,
+          reward_type: earnedReferrals[0].reward_type // Should always be "twenty_five_dollar_credit" for clients
+        };
+      }
+    }
+    
+    // Check if vendor has earned a commission-free booking and hasn't used it yet
+    let vendorZeroFeeApplied = false;
+    let vendorZeroFeeInfo = null;
+    
+    if (isVendor && booking.vendor_id) {
+      const vendor = vendorAuthRecords[0];
+      const vendorUserRecords = await base44.asServiceRole.entities.User.filter({ email: user.email });
+      const vendorUserRecord = vendorUserRecords[0] || null;
+      
+      if (vendorUserRecord && !vendorUserRecord.referral_discount_used) {
+        // Check for earned referral rewards for this vendor
+        const earnedReferrals = await base44.asServiceRole.entities.ReferralReward.filter({
+          referred_email: user.email,
+          status: 'earned'
+        });
+        
+        if (earnedReferrals.length > 0) {
+          // Vendor has earned a 0% fee reward
+          vendorZeroFeeApplied = true;
+          vendorZeroFeeInfo = {
+            referral_id: earnedReferrals[0].id,
+            referral_type: earnedReferrals[0].referral_type,
+            reward_type: earnedReferrals[0].reward_type // Should always be "zero_percent_fee" for vendors
+          };
+        }
+      }
     }
 
     // Apply discount to agreed amount
