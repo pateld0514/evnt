@@ -121,8 +121,8 @@ export default function SwipePage() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (userLoading) return;
-    if (!currentUser || vendors.length === 0) {
+    if (isLoading) return;
+    if (vendors.length === 0) {
       setDisplayableVendors([]);
       return;
     }
