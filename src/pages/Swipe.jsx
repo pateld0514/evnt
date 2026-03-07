@@ -379,6 +379,12 @@ export default function SwipePage() {
         <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">
           Swipe right to save, left to pass
         </p>
+        {eventId && (
+          <div className="mt-3 inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm font-bold">
+            <CalendarIcon className="w-4 h-4" />
+            Adding vendor to your event
+          </div>
+        )}
       </div>
 
       <div className="mb-4 md:mb-6">
