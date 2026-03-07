@@ -102,7 +102,7 @@ export default function SwipePage() {
   });
 
   // User-specific queries — enabled as soon as email is known
-  const { data: swipedVendors = [] } = useQuery({
+  const { data: swipedVendors = [], isLoading: swipesLoading } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
@@ -112,7 +112,7 @@ export default function SwipePage() {
     refetchOnWindowFocus: true,
   });
 
-  const { data: savedVendors = [] } = useQuery({
+  const { data: savedVendors = [], isLoading: savedLoading } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
@@ -131,7 +131,7 @@ export default function SwipePage() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || swipesLoading || savedLoading) return;
     if (vendors.length === 0) {
       setDisplayableVendors([]);
       return;
@@ -214,7 +214,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading, locallySwipedIds]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading, swipesLoading, savedLoading, locallySwipedIds]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -381,7 +381,7 @@ export default function SwipePage() {
     }
   };
 
-  if (userLoading || isLoading) {
+  if (userLoading || isLoading || (currentUser?.email && (swipesLoading || savedLoading))) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
