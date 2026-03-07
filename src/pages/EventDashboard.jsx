@@ -98,8 +98,20 @@ export default function EventDashboardPage() {
     },
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // Real-time subscription for booking updates
+  useEffect(() => {
+    const unsubscribe = base44.entities.Booking.subscribe((event) => {
+      if (event.type === 'create' && currentUser?.email) {
+        queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
+      }
+    });
+    return () => unsubscribe();
+  }, [currentUser?.email, queryClient]);
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
@@ -123,7 +135,6 @@ export default function EventDashboardPage() {
       queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
       setEditingEvent(null);
       resetForm();
-      setSelectedVendors([]);
       toast.success("Event updated!");
     },
     onError: (error) => {
