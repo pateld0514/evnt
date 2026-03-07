@@ -126,7 +126,7 @@ export default function EventDashboardPage() {
     },
     onSuccess: (updatedEvent) => {
       queryClient.setQueryData(['events', currentUser?.email], (old) =>
-        old.map(e => e.id === updatedEvent.id ? updatedEvent : e)
+        (old || []).map(e => e.id === updatedEvent.id ? updatedEvent : e)
       );
       setEditingEvent(null);
       resetForm();
@@ -160,7 +160,7 @@ export default function EventDashboardPage() {
     },
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['events', currentUser?.email], (old) =>
-        old.filter(e => e.id !== deletedId)
+        (old || []).filter(e => e.id !== deletedId)
       );
       toast.success("Event deleted");
     },
