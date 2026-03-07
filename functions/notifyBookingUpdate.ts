@@ -6,11 +6,14 @@ Deno.serve(async (req) => {
 
     const payload = await req.json();
 
-    // Allow calls from entity automations (no secret) OR internal function calls (with secret)
-    // Entity automations are called by the platform directly with no user token
+    // Allow calls from:
+    // 1. Authenticated users (direct frontend calls via SDK)
+    // 2. Internal function calls with INTERNAL_SECRET
+    // 3. Entity automation triggers (platform calls with no user token and no secret — these have event.type set)
     const isAuthenticated = await base44.auth.isAuthenticated();
     const hasSecret = payload._secret === Deno.env.get('INTERNAL_SECRET');
-    if (!isAuthenticated && !hasSecret) {
+    const isAutomationTrigger = payload.event?.type === 'update' || payload.event?.type === 'create';
+    if (!isAuthenticated && !hasSecret && !isAutomationTrigger) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
     
