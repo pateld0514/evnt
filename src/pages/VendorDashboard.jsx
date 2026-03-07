@@ -17,6 +17,13 @@ export default function VendorDashboard() {
   const navigate = useNavigate();
   const [aiInsights, setAiInsights] = useState(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
+  // ISSUE 18 FIX: 60-second cooldown after generating insights
+  const [insightsCooldown, setInsightsCooldown] = useState(() => {
+    const last = localStorage.getItem('insights_last_generated');
+    if (!last) return false;
+    return Date.now() - parseInt(last) < 60000;
+  });
+  const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
 
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
