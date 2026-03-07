@@ -134,9 +134,8 @@ export default function SwipePage() {
       const profileComplete = vendor.profile_complete === true;
       // Use the is_test_vendor flag directly — no User list fetch needed
       const isTestVendor = vendor.is_test_vendor === true;
-      // Only exclude vendors the user explicitly passed (left swipe).
-      // Saved (right-swiped) vendors should still appear so users can browse them again.
-      const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+      // Exclude ALL swiped vendors (both left passes and right likes) — once seen, never shown again
+      const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id) && !locallySwipedIds.has(vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
       const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
       
