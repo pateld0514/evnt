@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
     }
 
     const isAdmin = user?.role === 'admin';
-    const isClient = booking.client_email === user.email;
+    // H-4 FIX: Verify user_type is client (not just email match) to prevent dual-role bypass
+    const isClient = booking.client_email === user.email && (user.user_type === 'client' || user.role === 'admin');
     
     if (!isAdmin && !isClient) {
       console.error('Unauthorized cancelBooking attempt', { email: user?.email, booking_id: bookingId });

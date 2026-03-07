@@ -194,7 +194,8 @@ export default function BookingsPage() {
         throw new Error("Booking was modified by another user. Please refresh and try again.");
       }
       
-      const updated = await base44.entities.Booking.update(bookingId, data);
+      // H-3 FIX: Route through updateBooking backend function for server-side IDOR + state machine
+      const updated = await base44.functions.invoke('updateBooking', { bookingId, updates: data });
       
       // Send notifications in background (don't await to prevent blocking)
       if (booking && data.status && oldStatus !== data.status) {

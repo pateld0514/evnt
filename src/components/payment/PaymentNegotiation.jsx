@@ -13,9 +13,10 @@ import { createPageUrl } from "@/utils";
 export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const queryClient = useQueryClient();
   
+  // H-2 FIX: Route through updateBooking backend function for server-side IDOR protection + state machine
   const updateBookingMutation = useMutation({
     mutationFn: async ({ bookingId, data }) => {
-      return await base44.entities.Booking.update(bookingId, data);
+      return await base44.functions.invoke('updateBooking', { bookingId, updates: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
