@@ -558,14 +558,14 @@ export default function SwipePage() {
       </div>
 
       <div className="relative h-[460px] md:h-[540px] mt-2 mb-6 md:mb-8">
-        {visibleVendors.length > 0 ? (
-          visibleVendors.map((vendor, index) => (
-            <SwipeCard
-              key={vendor.id}
-              vendor={vendor}
-              onSwipe={index === 0 ? handleSwipe : null}
-              isRemoving={vendor.id === animatingVendorId}
-              completedBookingsCount={0}
+         {visibleVendors.length > 0 ? (
+           visibleVendors.map((vendor, index) => (
+             <SwipeCard
+               key={vendor.id}
+               vendor={vendor}
+               onSwipe={index === 0 ? handleSwipe : null}
+               isRemoving={vendor.id === animatingVendorId}
+               completedBookingsCount={vendorBookingCounts[vendor.id] || 0}
               style={{
                 position: 'absolute',
                 width: '100%',
