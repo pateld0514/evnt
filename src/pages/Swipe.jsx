@@ -38,6 +38,7 @@ export default function SwipePage() {
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [animatingVendorId, setAnimatingVendorId] = useState(null);
+  const [animatingDirection, setAnimatingDirection] = useState(null);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [filters, setFilters] = useState(() => {
     try {
