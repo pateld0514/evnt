@@ -52,6 +52,34 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
     staleTime: 2 * 60 * 1000,
   });
 
+  // Auto-fill form when eventId is provided and events are loaded
+  useEffect(() => {
+    if (eventId && events.length > 0) {
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        // Normalize date to YYYY-MM-DD format for the date input
+        let normalizedDate = "";
+        if (event.event_date) {
+          const d = new Date(event.event_date);
+          if (!isNaN(d.getTime())) {
+            normalizedDate = d.toISOString().split('T')[0];
+          } else {
+            normalizedDate = event.event_date.split('T')[0];
+          }
+        }
+        setFormData(prev => ({
+          ...prev,
+          event_id: eventId,
+          event_type: event.event_type || prev.event_type,
+          event_date: normalizedDate || prev.event_date,
+          location: event.location || prev.location,
+          guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
+          budget: event.budget ? String(event.budget) : prev.budget
+        }));
+      }
+    }
+  }, [eventId, events]);
+
   const bookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onMutate: async (newBooking) => {
