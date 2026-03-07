@@ -90,10 +90,16 @@ export default function SavedPage() {
     initialData: [],
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: 'stale',
-    refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // Force refetch when user logs in
+  useEffect(() => {
+    if (currentUser?.email) {
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
+    }
+  }, [currentUser?.email, queryClient]);
 
   const deleteMutation = useMutation({
     mutationFn: async (savedVendorId) => {

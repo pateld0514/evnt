@@ -77,9 +77,8 @@ export default function EventDashboardPage() {
     initialData: [],
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: 'stale',
-    refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -89,10 +88,17 @@ export default function EventDashboardPage() {
     initialData: [],
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: 'stale',
-    refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // Force refetch when user logs in
+  useEffect(() => {
+    if (currentUser?.email) {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    }
+  }, [currentUser?.email, queryClient]);
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),

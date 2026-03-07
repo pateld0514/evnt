@@ -72,8 +72,8 @@ export default function SwipePage() {
     }
   }, [currentUser, navigate]);
 
-  // All data queries fire in parallel immediately (vendors/bookings/reviews/users don't need auth)
-  const { data: vendors = [] } = useQuery({
+  // All data queries fire in parallel immediately (vendors/reviews don't need auth)
+  const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
@@ -81,12 +81,9 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchInterval: 30000,
   });
 
-  // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
-  // Tier badges now use VendorTier entity data embedded on vendor record (no user/booking leak)
-  const { data: reviews = [] } = useQuery({
+  const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
@@ -94,33 +91,38 @@ export default function SwipePage() {
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchInterval: 30000,
   });
 
   // User-specific queries — enabled as soon as email is known
-  const { data: swipedVendors = [] } = useQuery({
+  const { data: swipedVendors = [], isLoading: swipesLoading } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: 'stale',
-    refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
-  const { data: savedVendors = [] } = useQuery({
+  const { data: savedVendors = [], isLoading: savedLoading } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: 'stale',
-    refetchInterval: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+
+  // Force refetch when user logs in
+  useEffect(() => {
+    if (currentUser?.email) {
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
+    }
+  }, [currentUser?.email, queryClient]);
 
   // Real-time subscription for vendors
   useEffect(() => {
@@ -131,8 +133,13 @@ export default function SwipePage() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (userLoading) return;
-    if (!currentUser || vendors.length === 0) {
+    // Wait for all data to be ready before filtering
+    const dataReady = !userLoading && !vendorsLoading && !reviewsLoading && !swipesLoading && !savedLoading;
+    if (!dataReady || !currentUser) {
+      setDisplayableVendors([]);
+      return;
+    }
+    if (vendors.length === 0) {
       setDisplayableVendors([]);
       return;
     }
@@ -214,7 +221,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading, vendorsLoading, reviewsLoading, swipesLoading, savedLoading]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
