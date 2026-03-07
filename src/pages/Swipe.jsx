@@ -562,27 +562,28 @@ export default function SwipePage() {
         </Sheet>
       </div>
 
-      <div className="relative h-[460px] md:h-[540px] mt-2 mb-6 md:mb-8">
-        {visibleVendors.length > 0 ? (
-          visibleVendors.map((vendor, index) => (
-            <SwipeCard
-              key={vendor.id}
-              vendor={vendor}
-              onSwipe={index === 0 ? handleSwipe : null}
-              isRemoving={vendor.id === animatingVendorId}
-              completedBookingsCount={0}
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                zIndex: visibleVendors.length - index,
-                transform: `scale(${1 - index * 0.04}) translateY(${index * 12}px)`,
-                opacity: index === 0 ? 1 : index === 1 ? 0.85 : 0.7,
-                pointerEvents: index === 0 && !isProcessing ? 'auto' : 'none'
-              }}
-            />
-          ))
-        ) : (
+      <ErrorBoundary>
+        <div className="relative h-[460px] md:h-[540px] mt-2 mb-6 md:mb-8">
+          {visibleVendors.length > 0 ? (
+            visibleVendors.map((vendor, index) => (
+              <SwipeCard
+                key={vendor.id}
+                vendor={vendor}
+                onSwipe={index === 0 ? handleSwipe : null}
+                isRemoving={vendor.id === animatingVendorId}
+                completedBookingsCount={0}
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  zIndex: visibleVendors.length - index,
+                  transform: `scale(${1 - index * 0.04}) translateY(${index * 12}px)`,
+                  opacity: index === 0 ? 1 : index === 1 ? 0.85 : 0.7,
+                  pointerEvents: index === 0 && !isProcessing ? 'auto' : 'none'
+                }}
+              />
+            ))
+          ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-3xl border-4 border-dashed border-gray-300">
             <div className="text-center px-8">
               <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
