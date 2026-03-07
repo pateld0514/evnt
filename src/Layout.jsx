@@ -22,8 +22,8 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['unread-messages', currentUserEmail],
     queryFn: async () => {
       if (!currentUserEmail) return [];
-      const allMessages = await base44.entities.Message.list('-created_date');
-      return allMessages.filter(m => m.recipient_email === currentUserEmail);
+      // Use targeted filter — never fetch all messages platform-wide
+      return await base44.entities.Message.filter({ recipient_email: currentUserEmail }, '-created_date');
     },
     enabled: !!currentUserEmail,
     refetchInterval: 30000,
