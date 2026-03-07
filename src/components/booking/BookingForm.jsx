@@ -35,7 +35,18 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
 
   const { data: events = [] } = useQuery({
     queryKey: ['user-events', currentUser?.email],
-    queryFn: () => base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
+    queryFn: async () => {
+      if (!currentUser?.email) return [];
+      const byCreator = await base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date');
+      const byOwner = await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
+      const combined = [...byCreator, ...byOwner];
+      const uniqueIds = new Set();
+      return combined.filter(e => {
+        if (uniqueIds.has(e.id)) return false;
+        uniqueIds.add(e.id);
+        return true;
+      });
+    },
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
