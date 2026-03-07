@@ -109,12 +109,6 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
     }
   };
 
-  const handleMouseDown = (e) => {
-    if (e.target.closest('button')) {
-      e.preventDefault();
-    }
-  };
-
   return (
     <>
       <motion.div
