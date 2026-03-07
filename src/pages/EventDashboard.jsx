@@ -66,18 +66,19 @@ export default function EventDashboardPage() {
   const { data: currentUser = null, isLoading: userLoading, isError: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch (error) {
-        base44.auth.redirectToLogin(createPageUrl('EventDashboard'));
-        throw error;
+      const user = await base44.auth.me();
+      if (!user) {
+        navigate(createPageUrl('Profile'));
+        return null;
       }
+      return user;
     },
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
   if (userError) {
+    navigate(createPageUrl('Profile'));
     return null;
   }
 
