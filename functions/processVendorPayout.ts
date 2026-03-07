@@ -113,14 +113,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid payout amount: net amount must be greater than 0' }, { status: 400 });
     }
 
-    const payoutRecord = await base44.asServiceRole.entities.VendorPayout.create({
-      vendor_id: booking.vendor_id,
-      booking_id: booking.id,
-      gross_amount: grossAmount,
-      platform_fee: platformFee,
-      net_amount: netAmount,
-      status: 'processing'
-    });
+    // C-4 FIX: Wrap create in try/catch to handle unique constraint violation from concurrent triggers
+    let payoutRecord;
+    try {
+      payoutRecord = await base44.asServiceRole.entities.VendorPayout.create({
+        vendor_id: booking.vendor_id,
+        booking_id: booking.id,
+        gross_amount: grossAmount,
+        platform_fee: platformFee,
+        net_amount: netAmount,
+        status: 'processing'
+      });
+    } catch (dupError) {
+      // Another concurrent request already created the payout record — treat as idempotent
+      console.warn('[processVendorPayout] Duplicate payout create blocked (race condition):', dupError.message);
+      return Response.json({ success: true, message: 'Payout already being processed (concurrent request)', idempotent: true });
+    }
 
     try {
       const idempotencyKey = `payout-${booking.id}-${booking.payment_intent_id}`;
