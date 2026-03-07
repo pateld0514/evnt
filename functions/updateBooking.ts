@@ -43,7 +43,14 @@ Deno.serve(async (req) => {
 
     const isAdmin = user.role === 'admin';
     const isClient = booking.client_email === user.email;
-    const isVendor = user.vendor_id && booking.vendor_id === user.vendor_id;
+
+    // ISSUE 6 FIX: Cross-validate vendor ownership via Vendor entity's created_by,
+    // not just user.vendor_id, to prevent IDOR via profile tampering.
+    let isVendor = false;
+    if (!isAdmin && !isClient) {
+      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+      isVendor = vendorRecords[0]?.created_by === user.email;
+    }
 
     if (!isAdmin && !isClient && !isVendor) {
       return Response.json({ error: 'Forbidden: Cannot modify this booking' }, { status: 403 });
