@@ -221,13 +221,14 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
                 style={{ pointerEvents: "auto" }}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  if (!vendor?.id) {
-                    toast.error("Vendor data not loaded");
-                    return;
-                  }
-                  navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
-                }}
+                   e.stopPropagation();
+                   if (!vendor?.id) {
+                     toast.error("Vendor data not loaded");
+                     return;
+                   }
+                   const url = `${createPageUrl("VendorView")}?id=${vendor.id}${eventId ? `&event=${eventId}` : ''}`;
+                   navigate(url);
+                 }}
               >
                 View Profile
               </Button>
