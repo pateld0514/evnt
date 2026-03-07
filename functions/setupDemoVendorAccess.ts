@@ -10,13 +10,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    // Find the test vendor
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({
+    // Find the test vendor - try multiple strategies
+    let vendors = await base44.asServiceRole.entities.Vendor.filter({
       is_test_vendor: true
     });
 
+    // If not found, try by contact email
     if (vendors.length === 0) {
-      return Response.json({ error: 'Test vendor not found. Run setupTestVendorData first.' }, { status: 404 });
+      vendors = await base44.asServiceRole.entities.Vendor.filter({
+        contact_email: 'evnttestvendor@gmail.com'
+      });
+    }
+
+    // If still not found, just get most recent vendor
+    if (vendors.length === 0) {
+      vendors = await base44.asServiceRole.entities.Vendor.list('-created_date', 1);
+    }
+
+    if (vendors.length === 0) {
+      return Response.json({ error: 'No vendors found. Run setupTestVendorData first.' }, { status: 404 });
     }
 
     const testVendor = vendors[0];
