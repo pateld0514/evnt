@@ -131,18 +131,6 @@ export default function EventDashboardPage() {
     },
   });
 
-  const createBookingMutation = useMutation({
-    mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      setSelectedVendors([]);
-      toast.success("Vendor added to event!");
-    },
-    onError: () => {
-      toast.error("Failed to add vendor");
-    },
-  });
-
   const deleteEventMutation = useMutation({
     mutationFn: async (id) => {
       const event = events.find(e => e.id === id);
