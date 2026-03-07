@@ -100,27 +100,31 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
     : null;
 
   const handleDragEnd = (event, info) => {
-    if (!onSwipe || isRemoving) return;
-    
-    const threshold = 80;
-    if (Math.abs(info.offset.x) > threshold) {
-      const direction = info.offset.x > 0 ? "right" : "left";
-      onSwipe(direction);
-    }
-  };
+     if (!onSwipe || isRemoving) return;
+
+     const threshold = 80;
+     const velocity = Math.abs(info.velocity.x);
+
+     // Use velocity-based detection + distance threshold
+     if (Math.abs(info.offset.x) > threshold || velocity > 500) {
+       const direction = info.offset.x > 0 ? "right" : "left";
+       onSwipe(direction);
+     }
+   };
 
   return (
     <>
       <motion.div
-        style={{ 
-          ...style,
-          x: onSwipe && !isRemoving ? x : 0,
-          rotate: onSwipe && !isRemoving ? rotate : 0,
-        }}
-        drag={onSwipe && !isRemoving ? "x" : false}
-        dragConstraints={{ left: 0, right: 0 }}
-        onDragEnd={handleDragEnd}
-        whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
+         style={{ 
+           ...style,
+           x: onSwipe && !isRemoving ? x : 0,
+           rotate: onSwipe && !isRemoving ? rotate : 0,
+         }}
+         drag={onSwipe && !isRemoving ? "x" : false}
+         dragConstraints={{ left: -500, right: 500 }}
+         dragElastic={0.3}
+         onDragEnd={handleDragEnd}
+         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
           x: 1000,
           y: -100,
