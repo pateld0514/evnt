@@ -328,6 +328,30 @@ export default function SwipePage() {
     }
   };
 
+  // Automatically reset seen vendors if page loads with no displayable vendors
+  useEffect(() => {
+    if (displayableVendors.length === 0 && !isProcessing && swipedVendors.length > 0) {
+      const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
+      if (leftSwipes.length > 0) {
+        // Auto-reset silently without opening confirmation dialog
+        (async () => {
+          try {
+            setIsProcessing(true);
+            await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
+            setSwipeHistory([]);
+            queryClient.invalidateQueries({ queryKey: ['user-swipes', currentUser?.email] });
+            queryClient.invalidateQueries({ queryKey: ['saved-vendors', currentUser?.email] });
+            queryClient.invalidateQueries({ queryKey: ['vendors'] });
+          } catch (error) {
+            console.error("Auto-reset failed:", error);
+          } finally {
+            setIsProcessing(false);
+          }
+        })();
+      }
+    }
+  }, [displayableVendors.length, isProcessing, swipedVendors, currentUser?.email, queryClient]);
+
   // Persist filters to sessionStorage whenever they change
   useEffect(() => {
     sessionStorage.setItem('swipe_filters', JSON.stringify(filters));
