@@ -241,7 +241,7 @@ export default function EventDashboardPage() {
         <div className="grid gap-6">
           {events.map(event => {
             const eventBookings = getEventBookings(event.id);
-            const acceptedBookings = eventBookings.filter(b => b.status === "accepted").length;
+            const confirmedBookings = eventBookings.filter(b => b.status === "confirmed" || b.status === "in_progress").length;
             
             return (
               <Card key={event.id} className="border-2 border-black">
@@ -344,7 +344,7 @@ export default function EventDashboardPage() {
                         <h3 className="font-bold">Vendors ({eventBookings.length})</h3>
                         <div className="flex items-center gap-2">
                           <Badge className="bg-green-600 text-white">
-                            {acceptedBookings} Confirmed
+                            {confirmedBookings} Confirmed
                           </Badge>
                           <Button
                             size="sm"
