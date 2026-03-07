@@ -112,6 +112,11 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       return;
     }
 
+    if (!formData.event_id) {
+      toast.error("Please select or create an event first");
+      return;
+    }
+
     if (!formData.event_type || !formData.event_date) {
       toast.error("Please fill in all required fields");
       return;
