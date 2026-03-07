@@ -12,17 +12,12 @@ Deno.serve(async (req) => {
     // Find or create the test vendor
     let vendor = null;
     
-    // Try to find by ID first
-    try {
-      vendor = await base44.asServiceRole.entities.Vendor.get('69ab4d57efd7f8b8d0af9876');
-    } catch (e) {
-      // ID might be different, search by email
-      const vendors = await base44.asServiceRole.entities.Vendor.filter({
-        created_by: 'evnttestvendor@gmail.com'
-      });
-      if (vendors.length > 0) {
-        vendor = vendors[0];
-      }
+    // Search by test vendor flag
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({
+      is_test_vendor: true
+    });
+    if (vendors.length > 0) {
+      vendor = vendors[0];
     }
 
     if (!vendor) {
