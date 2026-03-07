@@ -141,7 +141,7 @@ export default function EventDashboardPage() {
   const createBookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
       setSelectedVendors([]);
       toast.success("Vendor added to event!");
     },
