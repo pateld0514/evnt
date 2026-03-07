@@ -214,17 +214,23 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50">
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
-                onClick={() => navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
+                }}
               >
                 View Profile
               </Button>
               <Button
                 className="bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 text-sm md:text-base"
-                onClick={() => setBookingOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBookingOpen(true);
+                }}
               >
                 <Calendar className="w-4 h-4 mr-1.5" />
                 Book Now
