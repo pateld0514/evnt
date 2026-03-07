@@ -192,7 +192,7 @@ export default function PortfolioManager({ vendorId }) {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {portfolioItems.map((item) => (
               <div key={item.id} className="border rounded-lg overflow-hidden group relative">
-                <div className={`${item.type === "image" ? "aspect-square" : "aspect-video"} bg-gray-100 relative`}>
+                <div className="aspect-video bg-gray-100 relative">
                   {item.type === "image" ? (
                     <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
                   ) : (
