@@ -387,7 +387,10 @@ export default function SwipePage() {
     }
   };
 
-  if (userLoading || isLoading || swipesLoading || savedLoading) {
+  // Guard: ensure data is loaded before rendering cards
+  const isDataReady = !userLoading && !isLoading && !swipesLoading && !savedLoading && currentUser;
+
+  if (!isDataReady) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
@@ -397,6 +400,24 @@ export default function SwipePage() {
   }
 
   const visibleVendors = displayableVendors.slice(0, 3);
+  
+  // Guard: ensure first card has complete data before rendering
+  if (visibleVendors.length === 0) {
+    // No vendors available - show empty state
+  } else if (!visibleVendors[0]?.id) {
+    // First card data corrupted - safety fallback
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-red-600 font-bold mb-4">Error loading vendor data</p>
+        <Button 
+          onClick={() => window.location.reload()}
+          className="bg-black text-white hover:bg-gray-800 font-bold"
+        >
+          Reload Page
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 md:py-8">
