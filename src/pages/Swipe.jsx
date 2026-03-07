@@ -73,13 +73,14 @@ export default function SwipePage() {
   }, [currentUser, navigate]);
 
   // All data queries fire in parallel immediately (vendors/bookings/reviews/users don't need auth)
-  const { data: vendors = [], isLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
-    initialData: [],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+   const { data: vendors = [], isLoading } = useQuery({
+     queryKey: ['vendors'],
+     queryFn: () => base44.entities.Vendor.list(),
+     initialData: [],
+     staleTime: 5 * 60 * 1000,
+     gcTime: 10 * 60 * 1000,
+     refetchOnWindowFocus: true,
+   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
   // Tier badges now use VendorTier entity data embedded on vendor record (no user/booking leak)
@@ -89,6 +90,7 @@ export default function SwipePage() {
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   // User-specific queries — enabled as soon as email is known
@@ -98,6 +100,8 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -106,15 +110,25 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 
-  // Real-time subscription for vendors
-  useEffect(() => {
-    const unsubscribe = base44.entities.Vendor.subscribe(() => {
-      queryClient.invalidateQueries(['vendors']);
-    });
-    return () => unsubscribe();
-  }, [queryClient]);
+  // Real-time subscription for vendors + auto-refetch when user resolves
+   useEffect(() => {
+     const unsubscribe = base44.entities.Vendor.subscribe(() => {
+       queryClient.invalidateQueries(['vendors']);
+     });
+     return () => unsubscribe();
+   }, [queryClient]);
+
+   // Refetch all user-dependent queries when currentUser resolves
+   useEffect(() => {
+     if (currentUser?.email) {
+       queryClient.invalidateQueries(['user-swipes']);
+       queryClient.invalidateQueries(['saved-vendors']);
+     }
+   }, [currentUser?.email, queryClient]);
 
   useEffect(() => {
     if (userLoading) return;
