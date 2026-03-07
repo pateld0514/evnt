@@ -83,7 +83,7 @@ export default function SavedPage() {
   });
 
   // Saved vendors load as soon as user email is known
-  const { data: savedVendors = [], isLoading: loadingSaved } = useQuery({
+  const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
     enabled: !!currentUser?.email,
