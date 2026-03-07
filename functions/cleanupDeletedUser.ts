@@ -93,6 +93,15 @@ Deno.serve(async (req) => {
       }),
       base44.asServiceRole.entities.VendorView.filter({ viewer_email: userEmail }).then(views => {
         return Promise.all(views.map(v => base44.asServiceRole.entities.VendorView.delete(v.id)));
+      }),
+      base44.asServiceRole.entities.VendorView.filter({ vendor_id: { $exists: true } }).then(views => {
+        // Also delete views of vendors created by this user
+        const vendorCreatedByUser = vendors.map(v => v.id);
+        const viewsToDelete = views.filter(v => vendorCreatedByUser.includes(v.vendor_id));
+        return Promise.all(viewsToDelete.map(v => base44.asServiceRole.entities.VendorView.delete(v.id)));
+      }),
+      base44.asServiceRole.entities.BugReport.filter({ reporter_email: userEmail }).then(reports => {
+        return Promise.all(reports.map(r => base44.asServiceRole.entities.BugReport.delete(r.id)));
       })
     );
 
