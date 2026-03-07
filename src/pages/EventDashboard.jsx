@@ -109,7 +109,7 @@ export default function EventDashboardPage() {
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
+      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
       setCreateOpen(false);
       resetForm();
       toast.success("Event created!");
@@ -125,7 +125,7 @@ export default function EventDashboardPage() {
       return await base44.entities.Event.update(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
+      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
       setEditingEvent(null);
       resetForm();
       setSelectedVendors([]);
@@ -139,7 +139,7 @@ export default function EventDashboardPage() {
   const createBookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
     onSuccess: () => {
-      queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
       setSelectedVendors([]);
       toast.success("Vendor added to event!");
     },
@@ -157,7 +157,7 @@ export default function EventDashboardPage() {
       return await base44.entities.Event.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
+      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
       toast.success("Event deleted");
     },
     onError: (error) => {
