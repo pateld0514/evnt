@@ -63,11 +63,11 @@ export default function EventDashboardPage() {
     notes: ""
   });
 
-  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+  const { data: currentUser = null, isLoading: userLoading, isError: userError } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
-    retry: false,
+    retry: 1,
   });
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
@@ -198,6 +198,20 @@ export default function EventDashboardPage() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
         <p className="text-gray-600 font-medium">Loading events...</p>
+      </div>
+    );
+  }
+
+  if (userError || !currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="text-center px-4">
+          <h2 className="text-2xl font-black mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please log in to view your events.</p>
+          <Button onClick={() => window.location.href = '/'} className="bg-black text-white hover:bg-gray-800">
+            Go Home
+          </Button>
+        </div>
       </div>
     );
   }
