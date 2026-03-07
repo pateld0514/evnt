@@ -63,38 +63,27 @@ export default function EventDashboardPage() {
     notes: ""
   });
 
-  const { data: currentUser = null, isLoading: userLoading, isError: userError } = useQuery({
+  const { data: currentUser = null, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
-  // Handle auth redirect safely in a useEffect, never in render body
-  useEffect(() => {
-    if (userError) {
-      navigate(createPageUrl('Profile'));
-    }
-  }, [userError, navigate]);
-
-  const { data: events = [], isLoading: eventsLoading } = useQuery({
+  const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
     queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
-    placeholderData: [],
+    initialData: [],
     staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings', currentUser?.email],
     queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
-    placeholderData: [],
+    initialData: [],
     staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
   });
 
   const createEventMutation = useMutation({
@@ -198,7 +187,7 @@ export default function EventDashboardPage() {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
 
-  if (userLoading) {
+  if (userLoading || isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />

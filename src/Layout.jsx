@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
     });
 
     return () => unsubscribe();
-  }, [location, currentUserEmail]);
+  }, [location]);
 
   const unreadCount = messages.filter(m => !m.read && m.recipient_email === currentUserEmail).length;
 

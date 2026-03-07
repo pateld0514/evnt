@@ -80,7 +80,6 @@ export default function SavedPage() {
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: true,
   });
 
   // Saved vendors load as soon as user email is known
@@ -91,10 +90,7 @@ export default function SavedPage() {
     initialData: [],
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
   });
-
-
 
   const deleteMutation = useMutation({
     mutationFn: async (savedVendorId) => {
