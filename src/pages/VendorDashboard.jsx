@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,6 +125,33 @@ export default function VendorDashboard() {
     staleTime: 0,
   });
 
+  // ISSUE 6 FIX: Compute derived stats here so generateAIInsights closure can access them
+  // These calculations are now memoized and defined after all relevant data queries.
+  const pendingBookings = useMemo(() => bookings.filter(b => b.status === "pending").length, [bookings]);
+  const unreadMessages = useMemo(() => messages.filter(m => !m.read && m.recipient_email === currentUser?.email).length, [messages, currentUser]);
+
+  // Sales calculations - use agreed_price, not budget
+  const completedBookings = useMemo(() => bookings.filter(b => b.status === "completed" || b.status === "confirmed" || b.status === "in_progress"), [bookings]);
+  const totalRevenue = useMemo(() => completedBookings.reduce((sum, b) => sum + (b.agreed_price || b.budget || 0), 0), [completedBookings]);
+  const vendorRevenue = useMemo(() => completedBookings.reduce((sum, b) => sum + (b.vendor_payout || b.agreed_price || b.budget || 0), 0), [completedBookings]);
+  const avgBookingValue = useMemo(() => completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0, [completedBookings, totalRevenue]);
+
+  // Analytics
+  const bookingsByLocation = useMemo(() => bookings.reduce((acc, b) => {
+    const loc = b.location || "Unknown";
+    acc[loc] = (acc[loc] || 0) + 1;
+    return acc;
+  }, {}), [bookings]);
+
+  const bookingsByEventType = useMemo(() => bookings.reduce((acc, b) => {
+    acc[b.event_type] = (acc[b.event_type] || 0) + 1;
+    return acc;
+  }, {}), [bookings]);
+
+  const conversionRate = useMemo(() => bookings.length > 0
+    ? ((bookings.filter(b => b.status === "accepted" || b.status === "completed").length / bookings.length) * 100).toFixed(1)
+    : 0, [bookings]);
+
   const generateAIInsights = async () => {
     if (!vendor || bookings.length === 0) return;
     
@@ -204,32 +232,6 @@ Provide 4-5 specific, actionable insights in this JSON format:
       </div>
     );
   }
-
-  // Calculate stats after loading is complete
-  const pendingBookings = bookings.filter(b => b.status === "pending").length;
-  const unreadMessages = messages.filter(m => !m.read && m.recipient_email === currentUser?.email).length;
-
-  // Sales calculations - use agreed_price, not budget
-  const completedBookings = bookings.filter(b => b.status === "completed" || b.status === "confirmed" || b.status === "in_progress");
-  const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.agreed_price || b.budget || 0), 0);
-  const vendorRevenue = completedBookings.reduce((sum, b) => sum + (b.vendor_payout || b.agreed_price || b.budget || 0), 0);
-  const avgBookingValue = completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0;
-
-  // Analytics
-  const bookingsByLocation = bookings.reduce((acc, b) => {
-    const loc = b.location || "Unknown";
-    acc[loc] = (acc[loc] || 0) + 1;
-    return acc;
-  }, {});
-
-  const bookingsByEventType = bookings.reduce((acc, b) => {
-    acc[b.event_type] = (acc[b.event_type] || 0) + 1;
-    return acc;
-  }, {});
-
-  const conversionRate = bookings.length > 0 
-    ? ((bookings.filter(b => b.status === "accepted" || b.status === "completed").length / bookings.length) * 100).toFixed(1)
-    : 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
