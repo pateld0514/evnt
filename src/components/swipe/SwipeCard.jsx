@@ -103,9 +103,15 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
   const handleDragEnd = (event, info) => {
     if (!onSwipe || isRemoving) return;
     
-    const threshold = 80;
-    if (Math.abs(info.offset.x) > threshold) {
-      const direction = info.offset.x > 0 ? "right" : "left";
+    const swipeThreshold = 80;
+    const velocityThreshold = 500;
+    const shouldSwipe =
+      Math.abs(info.offset.x) > swipeThreshold ||
+      Math.abs(info.velocity.x) > velocityThreshold;
+
+    if (shouldSwipe) {
+      const direction = info.offset.x > 0 || info.velocity.x > 0 ? "right" : "left";
+      setSwipeDirection(direction);
       onSwipe(direction);
     }
   };
