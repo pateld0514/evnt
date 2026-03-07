@@ -29,14 +29,15 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, message: 'Vendor lookup failed, skipping notification' });
     }
 
-    // Get vendor user email — ISSUE 22 FIX: fall back to vendor.contact_email
+    // Get vendor user email — fall back to vendor.contact_email
     vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
     const vendorEmail = vendorUsers?.[0]?.email || vendor.contact_email;
     if (!vendorEmail) {
       console.warn('No email found for vendor_id:', review.vendor_id, '— skipping notification');
       return Response.json({ success: true, message: 'Vendor email not found, skipping notification' });
     }
-    const vendorName = vendorUsers[0].full_name || vendor.business_name;
+    // FIX: Guard full_name access — vendorUsers may be empty, fall back to business_name
+    const vendorName = vendorUsers?.[0]?.full_name || vendor.business_name;
     const stars = '⭐'.repeat(review.rating);
 
     const emailContent = `
