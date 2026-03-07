@@ -190,6 +190,11 @@ export default function EventDashboardPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    if (!currentUser?.email) {
+      toast.error("User not loaded. Please refresh the page.");
+      return;
+    }
+
     const eventData = {
       name: formData.name,
       event_type: formData.event_type,
@@ -199,7 +204,7 @@ export default function EventDashboardPage() {
       budget: formData.budget ? parseFloat(formData.budget) : null,
       notes: formData.notes,
       status: formData.status || "planning",
-      owner_email: currentUser?.email,
+      owner_email: currentUser.email,
     };
 
     if (editingEvent) {
