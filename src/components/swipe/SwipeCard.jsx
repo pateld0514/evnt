@@ -125,20 +125,17 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           rotate: onSwipe && !isRemoving ? rotate : 0,
         }}
         drag={onSwipe && !isRemoving ? "x" : false}
-        dragConstraints={{ left: 0, right: 0 }}
+        dragConstraints={{ left: -1000, right: 1000 }}
+        dragElastic={0.9}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
-          x: 1000,
-          y: -100,
-          rotate: -30,
+          x: swipeDirection === "left" ? -1200 : 1200,
+          y: -80,
+          rotate: swipeDirection === "left" ? -30 : 30,
           opacity: 0,
-          transition: { duration: 0.3 }
-        } : !onSwipe ? { 
-          scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
-          y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
-          opacity: style?.opacity || 1,
-          transition: { type: "spring", stiffness: 300, damping: 30 }
+          transition: { duration: 0.35, ease: "easeOut" }
         } : {}}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
