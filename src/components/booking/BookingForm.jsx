@@ -176,16 +176,12 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
             <SelectValue placeholder="Link to existing event or create new" />
           </SelectTrigger>
           <SelectContent>
+            {events.length > 0 && events.map(event => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.name} - {formatDate(event.event_date)}
+              </SelectItem>
+            ))}
             <SelectItem value={null}>New Booking (no event link)</SelectItem>
-            {events.length > 0 && (
-              <>
-                {events.map(event => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.name} - {formatDate(event.event_date)}
-                  </SelectItem>
-                ))}
-              </>
-            )}
           </SelectContent>
         </Select>
         {events.length === 0 && (
