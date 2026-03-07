@@ -34,7 +34,7 @@ const categories = [
 export default function SwipePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [displayableVendors, setDisplayableVendors] = useState([]);
+  const [deck, setDeck] = useState([]);
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [animatingVendorId, setAnimatingVendorId] = useState(null);
@@ -124,104 +124,99 @@ export default function SwipePage() {
     }
   }, [currentUser?.email, queryClient]);
 
-  // Real-time subscription for vendors
+  // Build swipe deck ONCE when vendors and swipes load
   useEffect(() => {
-    const unsubscribe = base44.entities.Vendor.subscribe(() => {
-      queryClient.invalidateQueries(['vendors']);
-    });
-    return () => unsubscribe();
-  }, [queryClient]);
-
-  useEffect(() => {
-    // Wait for all data to be ready before filtering
-    const dataReady = !userLoading && !vendorsLoading && !reviewsLoading && !swipesLoading && !savedLoading;
+    const dataReady = !userLoading && !vendorsLoading && !swipesLoading && !savedLoading;
     if (!dataReady || !currentUser) {
-      setDisplayableVendors([]);
-      return;
-    }
-    if (vendors.length === 0) {
-      setDisplayableVendors([]);
+      setDeck([]);
       return;
     }
 
-    const filteredAndSorted = vendors.filter(vendor => {
-      const isApproved = vendor.approval_status === "approved";
-      const profileComplete = vendor.profile_complete === true;
-      // Use the is_test_vendor flag directly — no User list fetch needed
-      const isTestVendor = vendor.is_test_vendor === true;
-      const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
-      const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
-      const matchesCategory = filters.category === "all" || vendor.category === filters.category;
-      const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
-      
-      let matchesPrice = true;
-      if (filters.minPrice && vendor.starting_price) {
-        matchesPrice = vendor.starting_price >= parseFloat(filters.minPrice);
-      }
-      if (filters.maxPrice && vendor.starting_price) {
-        matchesPrice = matchesPrice && vendor.starting_price <= parseFloat(filters.maxPrice);
-      }
-      
-      const matchesLocation = !filters.location || 
-        vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
+    // Create set of already-swiped and saved vendor IDs
+    const swipedIds = new Set(swipedVendors.map(s => s.vendor_id));
+    const savedIds = new Set(savedVendors.map(s => s.vendor_id));
 
-      let matchesRating = true;
-      if (filters.minRating !== "all") {
-        const vendorReviews = reviews.filter(r => r.vendor_id === vendor.id);
-        if (vendorReviews.length > 0) {
-          const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
-          matchesRating = avgRating >= parseFloat(filters.minRating);
-        } else {
-          matchesRating = false; 
+    // Build deck: approved, complete, unswiped, not-saved vendors
+    const newDeck = vendors
+      .filter(vendor => {
+        const isApproved = vendor.approval_status === "approved";
+        const profileComplete = vendor.profile_complete === true;
+        const isTestVendor = vendor.is_test_vendor === true;
+        const notSwiped = !swipedIds.has(vendor.id);
+        const notSaved = !savedIds.has(vendor.id);
+
+        return isApproved && profileComplete && !isTestVendor && notSwiped && notSaved;
+      })
+      .filter(vendor => {
+        // Apply filters
+        const matchesCategory = filters.category === "all" || vendor.category === filters.category;
+        const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
+        
+        let matchesPrice = true;
+        if (filters.minPrice && vendor.starting_price) {
+          matchesPrice = vendor.starting_price >= parseFloat(filters.minPrice);
         }
-      }
-      
-      // Fix: Validate price inputs are non-negative numbers
-      let minPriceValid = true;
-      let maxPriceValid = true;
-      if (filters.minPrice) {
-        const minVal = parseFloat(filters.minPrice);
-        minPriceValid = !isNaN(minVal) && minVal >= 0;
-      }
-      if (filters.maxPrice) {
-        const maxVal = parseFloat(filters.maxPrice);
-        maxPriceValid = !isNaN(maxVal) && maxVal >= 0;
-      }
-      if (!minPriceValid || !maxPriceValid) return false;
-      
-      return isApproved && profileComplete && !isTestVendor && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
-    }).sort((a, b) => {
-      
-      const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
-      const aLocationMatch = a.location?.toLowerCase() === userLocation;
-      const bLocationMatch = b.location?.toLowerCase() === userLocation;
-      if (aLocationMatch && !bLocationMatch) return -1;
-      if (!aLocationMatch && bLocationMatch) return 1;
-      
-      const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
-      const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
-      if (aLocationPartial && !bLocationPartial) return -1;
-      if (!aLocationPartial && bLocationPartial) return 1;
-      
-      const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
-      const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
-      if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
-      if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
-      
-      const aReviews = reviews.filter(r => r.vendor_id === a.id);
-      const bReviews = reviews.filter(r => r.vendor_id === b.id);
-      if (aReviews.length > 0 && bReviews.length > 0) {
-        const aAvgRating = aReviews.reduce((sum, r) => sum + r.rating, 0) / aReviews.length;
-        const bAvgRating = bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length;
-        if (aAvgRating !== bAvgRating) return bAvgRating - aAvgRating;
-      }
-      
-      if (aReviews.length !== bReviews.length) return bReviews.length - aReviews.length;
-      
-      return 0;
-    });
-    setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading, vendorsLoading, reviewsLoading, swipesLoading, savedLoading]);
+        if (filters.maxPrice && vendor.starting_price) {
+          matchesPrice = matchesPrice && vendor.starting_price <= parseFloat(filters.maxPrice);
+        }
+
+        const matchesLocation = !filters.location || 
+          vendor.location?.toLowerCase().includes(filters.location.toLowerCase());
+
+        let matchesRating = true;
+        if (filters.minRating !== "all") {
+          const vendorReviews = reviews.filter(r => r.vendor_id === vendor.id);
+          if (vendorReviews.length > 0) {
+            const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
+            matchesRating = avgRating >= parseFloat(filters.minRating);
+          } else {
+            matchesRating = false;
+          }
+        }
+
+        let minPriceValid = true, maxPriceValid = true;
+        if (filters.minPrice) {
+          const minVal = parseFloat(filters.minPrice);
+          minPriceValid = !isNaN(minVal) && minVal >= 0;
+        }
+        if (filters.maxPrice) {
+          const maxVal = parseFloat(filters.maxPrice);
+          maxPriceValid = !isNaN(maxVal) && maxVal >= 0;
+        }
+
+        return matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating && minPriceValid && maxPriceValid;
+      })
+      .sort((a, b) => {
+        const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
+        const aLocationMatch = a.location?.toLowerCase() === userLocation;
+        const bLocationMatch = b.location?.toLowerCase() === userLocation;
+        if (aLocationMatch && !bLocationMatch) return -1;
+        if (!aLocationMatch && bLocationMatch) return 1;
+
+        const aLocationPartial = userLocation && a.location?.toLowerCase().includes(userLocation);
+        const bLocationPartial = userLocation && b.location?.toLowerCase().includes(userLocation);
+        if (aLocationPartial && !bLocationPartial) return -1;
+        if (!aLocationPartial && bLocationPartial) return 1;
+
+        const aSpecialtiesMatch = a.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
+        const bSpecialtiesMatch = b.specialties?.some(s => s.toLowerCase().includes(eventType.toLowerCase()));
+        if (aSpecialtiesMatch && !bSpecialtiesMatch) return -1;
+        if (!aSpecialtiesMatch && bSpecialtiesMatch) return 1;
+
+        const aReviews = reviews.filter(r => r.vendor_id === a.id);
+        const bReviews = reviews.filter(r => r.vendor_id === b.id);
+        if (aReviews.length > 0 && bReviews.length > 0) {
+          const aAvgRating = aReviews.reduce((sum, r) => sum + r.rating, 0) / aReviews.length;
+          const bAvgRating = bReviews.reduce((sum, r) => sum + r.rating, 0) / bReviews.length;
+          if (aAvgRating !== bAvgRating) return bAvgRating - aAvgRating;
+        }
+
+        if (aReviews.length !== bReviews.length) return bReviews.length - aReviews.length;
+        return 0;
+      });
+
+    setDeck(newDeck);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading, vendorsLoading, swipesLoading, savedLoading]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -267,16 +262,13 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // Refresh queries and continue immediately
-      queryClient.invalidateQueries(['user-swipes']);
-      if (variables.direction === "right") {
-        queryClient.invalidateQueries(['saved-vendors']);
-      }
       setAnimatingVendorId(null);
       setIsProcessing(false);
     },
     onError: () => {
       toast.error("Failed to process swipe");
+      // Restore card to deck on error
+      setDeck(prev => [swipeMutation.variables.vendor, ...prev]);
       setAnimatingVendorId(null);
       setIsProcessing(false);
     }
@@ -289,7 +281,7 @@ export default function SwipePage() {
     return [...new Set(cats)];
   }, [vendors]);
 
-  const currentVendor = displayableVendors[0];
+  const currentVendor = deck[0];
 
   const handleSwipe = (direction) => {
     if (!currentVendor || !currentUser || isProcessing) return;
@@ -297,12 +289,8 @@ export default function SwipePage() {
     setIsProcessing(true);
     setAnimatingVendorId(currentVendor.id);
     
-    // Optimistically update UI first for smooth experience
-    setDisplayableVendors(prev => {
-      const updated = [...prev];
-      updated.shift(); // Remove current card immediately
-      return updated;
-    });
+    // Remove card from deck immediately for smooth UX
+    setDeck(prev => prev.slice(1));
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
@@ -371,6 +359,8 @@ export default function SwipePage() {
       setSwipeHistory([]);
       clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
+      // Rebuild deck after reset
+      queryClient.invalidateQueries(['user-swipes']);
       toast.success("Passed vendors restored! Saved vendors remain.");
     } catch (error) {
       toast.error("Failed to reset");
@@ -388,7 +378,7 @@ export default function SwipePage() {
     );
   }
 
-  const visibleVendors = displayableVendors.slice(0, 3);
+  const visibleVendors = deck.slice(0, 3);
 
   return (
     <div className="max-w-2xl mx-auto px-4 md:px-6 py-6 md:py-8">
@@ -559,10 +549,10 @@ export default function SwipePage() {
                 <Heart className="w-12 h-12 text-white" />
               </div>
               <h3 className="text-2xl font-black text-black mb-3">
-                No More Vendors!
+                You've Seen All Vendors!
               </h3>
               <p className="text-gray-600 mb-6">
-                You've seen all vendors matching your filters.
+                {filters.category !== "all" || filters.location || filters.priceRange !== "all" ? "Try clearing filters to see more." : "Check back soon for new vendors!"}
               </p>
               <Button
                 onClick={clearFilters}
@@ -622,7 +612,7 @@ export default function SwipePage() {
       <div className="text-center mt-4 md:mt-6 text-sm md:text-base text-gray-600 font-bold">
         {visibleVendors.length > 0 && (
           <>
-            {displayableVendors.length} vendor{displayableVendors.length !== 1 ? 's' : ''} remaining
+            {deck.length} vendor{deck.length !== 1 ? 's' : ''} remaining
           </>
         )}
       </div>
