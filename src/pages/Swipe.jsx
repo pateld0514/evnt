@@ -601,6 +601,27 @@ export default function SwipePage() {
           </>
         )}
       </div>
+
+      {/* M-3 FIX: Confirmation dialog for destructive reset action */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent className="border-2 border-black">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black">Reset Seen Vendors?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              This will restore all vendors you previously passed on. Your saved favorites will not be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel className="border-2 border-gray-300 font-bold">Keep History</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetSwipes}
+              className="bg-black hover:bg-gray-800 text-white font-bold"
+            >
+              Yes, Reset
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
