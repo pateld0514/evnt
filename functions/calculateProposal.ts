@@ -216,7 +216,8 @@ Deno.serve(async (req) => {
     
     const totalAmount = discountedAmount; // Client pays the discounted agreed price
 
-    // Return validated financial breakdown with standardized field names - Fix #1: ensure stripe_fee_amount returned
+    // Return validated financial breakdown with standardized field names
+    // Include referral discount details so both client and vendor see applied benefits
     return Response.json({
       success: true,
       calculation: {
@@ -224,7 +225,15 @@ Deno.serve(async (req) => {
         additional_fees: fees,
         additional_total: additionalTotal,
         subtotal: agreedAmount,
-        discount_applied: appliedDiscount,
+        
+        // Client-side referral discount (if any)
+        client_referral_discount_applied: appliedDiscount,
+        client_referral_info: appliedDiscountInfo,
+        
+        // Vendor-side referral discount (if any)
+        vendor_referral_fee_waived: vendorZeroFeeApplied,
+        vendor_referral_info: vendorZeroFeeInfo,
+        
         base_event_amount: discountedAmount,
         agreed_price: discountedAmount,
         platform_fee_percent: finalFeePercent,
@@ -233,7 +242,7 @@ Deno.serve(async (req) => {
         sales_tax_amount: parseFloat(salesTax.toFixed(2)),
         tax_label: taxLabel,
         state_abbreviation: stateAbbr || null,
-        stripe_fee_amount: stripeFeeAmount, // Fix #1: standardized name, no fallback needed
+        stripe_fee_amount: stripeFeeAmount,
         total_amount_charged: parseFloat(totalAmount.toFixed(2)),
         vendor_payout: parseFloat(vendorPayout.toFixed(2)),
         service_description: serviceDescription || null
