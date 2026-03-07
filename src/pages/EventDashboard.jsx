@@ -204,29 +204,6 @@ export default function EventDashboardPage() {
     setCreateOpen(true);
   };
 
-  const handleAddVendorsToEvent = () => {
-    if (selectedVendors.length === 0) {
-      toast.error("Please select at least one vendor");
-      return;
-    }
-
-    selectedVendors.forEach(vendorId => {
-      const vendor = vendors.find(v => v.id === vendorId);
-      if (vendor) {
-        createBookingMutation.mutate({
-          event_id: editingEvent.id,
-          vendor_id: vendorId,
-          vendor_name: vendor.business_name,
-          client_email: currentUser.email,
-          client_name: currentUser.full_name,
-          event_type: editingEvent.event_type,
-          event_date: editingEvent.event_date,
-          status: "pending"
-        });
-      }
-    });
-  };
-
   const getEventBookings = (eventId) => {
     return bookings.filter(b => b.event_id === eventId && b.client_email === currentUser?.email);
   };
