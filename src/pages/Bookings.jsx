@@ -110,13 +110,13 @@ export default function BookingsPage() {
       
       // Handle test_vendor or regular vendor
       if ((currentUser.user_type === "vendor" || currentUser.user_type === "test_vendor")) {
-        const allBookings = await base44.entities.Booking.list('-created_date');
+        // ISSUE 14 FIX: Filter server-side to avoid fetching all bookings
         const allVendors = await base44.entities.Vendor.list();
         const myVendor = allVendors.find(v => v.id === currentUser.vendor_id)
           || allVendors.find(v => v.created_by === currentUser.email)
           || allVendors.find(v => v.contact_email === currentUser.email);
         if (myVendor) {
-          return allBookings.filter(b => b.vendor_id === myVendor.id);
+          return await base44.entities.Booking.filter({ vendor_id: myVendor.id }, '-created_date');
         }
         return [];
       } else if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
