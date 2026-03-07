@@ -259,7 +259,7 @@ Deno.serve(async (req) => {
     const tierData = {
       vendor_id: vendorId,
       tier_level: 'gold',
-      completed_bookings: bookings.length,
+      completed_bookings: createdBookings.length,
       average_rating: 4.75,
       bookings_this_month: 1,
       total_revenue: totalRevenue,
@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.VendorTier.create(tierData);
 
     // Create vendor payouts
-    const payouts = bookings.map(booking => ({
+    const payouts = createdBookings.map((booking, idx) => ({
       vendor_id: vendorId,
       booking_id: booking.id,
       gross_amount: booking.base_event_amount,
