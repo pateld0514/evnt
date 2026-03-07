@@ -134,12 +134,6 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           opacity: style?.opacity || 1,
           transition: { type: "spring", stiffness: 300, damping: 30 }
         } : {}}
-        onPointerDown={(e) => {
-          const isButton = e.target.closest('button');
-          if (isButton && onSwipe) {
-            e.preventDefault();
-          }
-        }}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
@@ -221,10 +215,11 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50">
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50" style={{ pointerEvents: "auto" }}>
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
+                style={{ pointerEvents: "auto" }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
@@ -234,6 +229,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
               </Button>
               <Button
                 className="bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 text-sm md:text-base"
+                style={{ pointerEvents: "auto" }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setBookingOpen(true);

@@ -278,23 +278,6 @@ export default function SwipePage() {
     return [...new Set(cats)];
   }, [vendors]);
 
-  // Fetch completed bookings count for visible vendors
-  const { data: vendorBookingCounts = {} } = useQuery({
-    queryKey: ['vendor-booking-counts', visibleVendors?.map(v => v.id)],
-    queryFn: async () => {
-      const counts = {};
-      for (const vendor of visibleVendors) {
-        const completedBookings = await base44.entities.Booking.filter({
-          vendor_id: vendor.id,
-          status: "completed"
-        });
-        counts[vendor.id] = completedBookings.length;
-      }
-      return counts;
-    },
-    enabled: visibleVendors.length > 0,
-  });
-
   const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {
@@ -558,14 +541,14 @@ export default function SwipePage() {
       </div>
 
       <div className="relative h-[460px] md:h-[540px] mt-2 mb-6 md:mb-8">
-         {visibleVendors.length > 0 ? (
-           visibleVendors.map((vendor, index) => (
-             <SwipeCard
-               key={vendor.id}
-               vendor={vendor}
-               onSwipe={index === 0 ? handleSwipe : null}
-               isRemoving={vendor.id === animatingVendorId}
-               completedBookingsCount={vendorBookingCounts[vendor.id] || 0}
+        {visibleVendors.length > 0 ? (
+          visibleVendors.map((vendor, index) => (
+            <SwipeCard
+              key={vendor.id}
+              vendor={vendor}
+              onSwipe={index === 0 ? handleSwipe : null}
+              isRemoving={vendor.id === animatingVendorId}
+              completedBookingsCount={0}
               style={{
                 position: 'absolute',
                 width: '100%',
