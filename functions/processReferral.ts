@@ -42,9 +42,9 @@ Deno.serve(async (req) => {
 
     const results = [];
 
-    // Process client referral
+    // Process client referral - pass bookingData so vendor can be rewarded too
     if (bookingData.client_email) {
-      const clientResult = await processForPerson(base44, bookingData.client_email, 'client');
+      const clientResult = await processForPerson(base44, bookingData.client_email, 'client', bookingData);
       results.push({ type: 'client', result: clientResult });
     }
 
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       if (vendorRecords.length > 0) {
         const vendorEmail = vendorRecords[0].created_by || vendorRecords[0].contact_email;
         if (vendorEmail) {
-          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor');
+          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor', bookingData);
           results.push({ type: 'vendor', result: vendorResult });
         }
       }
