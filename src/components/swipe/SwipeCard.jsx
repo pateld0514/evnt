@@ -215,8 +215,8 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
                   </Badge>
                 </div>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </motion.div>
 
         <div className="absolute bottom-0 left-0 right-0 flex justify-between gap-2 px-4 py-3 z-50 pointer-events-auto">
