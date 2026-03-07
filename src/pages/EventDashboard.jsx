@@ -413,9 +413,19 @@ export default function EventDashboardPage() {
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold">Bookings ({eventBookings.length})</h3>
-                        <Badge className="bg-green-600 text-white">
-                          {acceptedBookings} Confirmed
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                          <Badge className="bg-green-600 text-white">
+                            {acceptedBookings} Confirmed
+                          </Badge>
+                          <Button
+                            size="sm"
+                            onClick={() => handleEdit(event)}
+                            className="bg-black text-white hover:bg-gray-800 font-bold"
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Vendor
+                          </Button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         {eventBookings.map(booking => (
@@ -447,13 +457,22 @@ export default function EventDashboardPage() {
                   ) : (
                     <div className="text-center py-8 bg-gray-50 rounded-lg">
                       <p className="text-gray-500 mb-4">No vendors booked yet</p>
-                      <Button
-                        onClick={() => navigate(createPageUrl("Swipe"))}
-                        variant="outline"
-                        className="border-2 border-black"
-                      >
-                        Browse Vendors
-                      </Button>
+                      <div className="flex gap-3 justify-center">
+                        <Button
+                          onClick={() => handleEdit(event)}
+                          className="bg-black text-white hover:bg-gray-800 font-bold"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Vendors
+                        </Button>
+                        <Button
+                          onClick={() => navigate(createPageUrl("Swipe"))}
+                          variant="outline"
+                          className="border-2 border-black"
+                        >
+                          Browse Vendors
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>
