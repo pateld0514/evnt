@@ -73,12 +73,15 @@ export default function SwipePage() {
   }, [currentUser, navigate]);
 
   // All data queries fire in parallel immediately (vendors/bookings/reviews/users don't need auth)
-  const { data: vendors = [], isLoading } = useQuery({
+  const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
@@ -87,8 +90,11 @@ export default function SwipePage() {
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // User-specific queries — enabled as soon as email is known
