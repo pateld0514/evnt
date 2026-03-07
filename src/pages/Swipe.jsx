@@ -168,10 +168,6 @@ export default function SwipePage() {
       
       return isApproved && profileComplete && !isTestVendor && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
-      const tierA = getVendorTier(a.id);
-      const tierB = getVendorTier(b.id);
-      // Tier sorting removed (no bookings data); fall through to location/specialty/rating sort
-      if (tierA !== tierB) return tierB - tierA;
       
       const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
       const aLocationMatch = a.location?.toLowerCase() === userLocation;
