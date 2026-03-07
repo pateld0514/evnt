@@ -116,11 +116,15 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           ...style,
           x: onSwipe && !isRemoving ? x : 0,
           rotate: onSwipe && !isRemoving ? rotate : 0,
-          pointerEvents: onSwipe && !isRemoving ? "none" : "auto",
         }}
         drag={onSwipe && !isRemoving ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
+        onPointerDown={(e) => {
+          if (e.target.closest('button')) {
+            e.preventDefault();
+          }
+        }}
         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
           x: 1000,
