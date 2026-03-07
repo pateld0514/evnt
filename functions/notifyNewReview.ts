@@ -15,11 +15,13 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Get vendor
-    const vendor = await base44.asServiceRole.entities.Vendor.get(review.vendor_id);
-    if (!vendor) {
-      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+    // Get vendor — non-fatal if not found
+    const vendorList = await base44.asServiceRole.entities.Vendor.filter({ id: review.vendor_id });
+    if (!vendorList || vendorList.length === 0) {
+      console.warn('Vendor not found for vendor_id:', review.vendor_id, '— skipping notification');
+      return Response.json({ success: true, message: 'Vendor not found, skipping notification' });
     }
+    const vendor = vendorList[0];
 
     // Get vendor user email — ISSUE 2 FIX: non-fatal if vendor user not found
     const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
