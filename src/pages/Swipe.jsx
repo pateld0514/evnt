@@ -363,7 +363,7 @@ export default function SwipePage() {
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
       queryClient.invalidateQueries(['reviews']);
-      toast.success("Passed vendors restored!");
+      toast.success("Swipe history cleared! All vendors restored.");
     } catch (error) {
       toast.error("Failed to reset");
     } finally {
