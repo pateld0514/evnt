@@ -1,31 +1,30 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { requireAdmin } from './lib/auth.js';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Inlined from lib/auth.js — no local imports allowed in Deno Deploy
+function requireAdmin(user) {
+  if (!user || user.role !== 'admin') throw new Error('Forbidden: Admin access required');
+  return true;
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // CRITICAL: Admin-only check using centralized auth
+    // CRITICAL: Admin-only check
     requireAdmin(user);
 
     const { vendorId, userId } = await req.json();
 
     if (!vendorId || !userId) {
-      return Response.json({ 
-        error: 'vendorId and userId are required' 
-      }, { status: 400 });
+      return Response.json({ error: 'vendorId and userId are required' }, { status: 400 });
     }
 
     // Update vendor approval status
-    await base44.asServiceRole.entities.Vendor.update(vendorId, { 
-      approval_status: "approved" 
-    });
+    await base44.asServiceRole.entities.Vendor.update(vendorId, { approval_status: "approved" });
 
     // Update user approval status
-    await base44.asServiceRole.entities.User.update(userId, { 
-      approval_status: "approved" 
-    });
+    await base44.asServiceRole.entities.User.update(userId, { approval_status: "approved" });
 
     // Fetch vendor and user details for notification
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
@@ -35,7 +34,6 @@ Deno.serve(async (req) => {
       const vendor = vendors[0];
       const vendorUser = users[0];
 
-      // Send approval notification
       await base44.asServiceRole.functions.invoke('notifyVendorApproval', {
         vendor_email: vendorUser.email || vendor.contact_email,
         vendor_name: vendorUser.full_name || vendor.business_name,
@@ -44,15 +42,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ 
-      success: true,
-      message: 'Vendor approved successfully' 
-    });
+    return Response.json({ success: true, message: 'Vendor approved successfully' });
 
   } catch (error) {
     console.error('Approve vendor error:', error);
-    return Response.json({ 
-      error: error.message || 'Failed to approve vendor' 
-    }, { status: 500 });
+    return Response.json({ error: error.message || 'Failed to approve vendor' }, { status: 500 });
   }
 });
