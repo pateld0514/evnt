@@ -334,18 +334,28 @@ export default function EventDashboardPage() {
                   {eventBookings.length > 0 ? (
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold">Bookings ({eventBookings.length})</h3>
-                        <Badge className="bg-green-600 text-white">
-                          {acceptedBookings} Confirmed
-                        </Badge>
+                        <h3 className="font-bold">Vendors ({eventBookings.length})</h3>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-600 text-white">
+                            {acceptedBookings} Confirmed
+                          </Badge>
+                          <Button
+                            size="sm"
+                            className="bg-black text-white hover:bg-gray-800 font-bold"
+                            onClick={() => navigate(createPageUrl("Swipe") + `?eventId=${event.id}`)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Vendor
+                          </Button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         {eventBookings.map(booking => (
                           <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex-1">
                               <p className="font-bold">{booking.vendor_name}</p>
-                              <Badge className={`${bookingStatusConfig[booking.status].color} text-xs`}>
-                                {bookingStatusConfig[booking.status].label}
+                              <Badge className={`${bookingStatusConfig[booking.status]?.color || "bg-gray-100 text-gray-800"} text-xs`}>
+                                {bookingStatusConfig[booking.status]?.label || booking.status}
                               </Badge>
                             </div>
                             <Button
@@ -364,7 +374,7 @@ export default function EventDashboardPage() {
                     <div className="text-center py-8 bg-gray-50 rounded-lg">
                       <p className="text-gray-500 mb-4">No vendors booked yet</p>
                       <Button
-                        onClick={() => navigate(createPageUrl("Swipe"))}
+                        onClick={() => navigate(createPageUrl("Swipe") + `?eventId=${event.id}`)}
                         variant="outline"
                         className="border-2 border-black"
                       >
