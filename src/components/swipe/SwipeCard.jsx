@@ -119,8 +119,6 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
       <motion.div
         style={{ 
           ...style,
-          x: onSwipe && !isRemoving ? x : 0,
-          rotate: onSwipe && !isRemoving ? rotate : 0,
         }}
         drag={onSwipe && !isRemoving ? "x" : false}
         dragConstraints={{ left: -1000, right: 1000 }}
