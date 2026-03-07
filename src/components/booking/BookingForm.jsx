@@ -133,49 +133,56 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {events.length > 0 && (
-        <div className="space-y-2">
-          <Label>Link to Existing Event (Optional)</Label>
-          <Select value={formData.event_id} onValueChange={(value) => {
-            const event = events.find(e => e.id === value);
-            if (event) {
-              // Normalize date to YYYY-MM-DD format for the date input
-              let normalizedDate = "";
-              if (event.event_date) {
-                const d = new Date(event.event_date);
-                if (!isNaN(d.getTime())) {
-                  normalizedDate = d.toISOString().split('T')[0];
-                } else {
-                  normalizedDate = event.event_date.split('T')[0];
-                }
+      <div className="space-y-2">
+        <Label className="text-base font-bold">Event *</Label>
+        <Select value={formData.event_id} onValueChange={(value) => {
+          const event = events.find(e => e.id === value);
+          if (event) {
+            // Normalize date to YYYY-MM-DD format for the date input
+            let normalizedDate = "";
+            if (event.event_date) {
+              const d = new Date(event.event_date);
+              if (!isNaN(d.getTime())) {
+                normalizedDate = d.toISOString().split('T')[0];
+              } else {
+                normalizedDate = event.event_date.split('T')[0];
               }
-              setFormData(prev => ({
-                ...prev,
-                event_id: value,
-                event_type: event.event_type || prev.event_type,
-                event_date: normalizedDate || prev.event_date,
-                location: event.location || prev.location,
-                guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
-                budget: event.budget ? String(event.budget) : prev.budget
-              }));
-            } else {
-              setFormData(prev => ({ ...prev, event_id: "" }));
             }
-          }}>
-            <SelectTrigger className="border-2 border-gray-300">
-              <SelectValue placeholder="Select an event or create new" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={null}>New Booking (no event)</SelectItem>
-              {events.map(event => (
-                <SelectItem key={event.id} value={event.id}>
-                  {event.name} - {formatDate(event.event_date)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+            setFormData(prev => ({
+              ...prev,
+              event_id: value,
+              event_type: event.event_type || prev.event_type,
+              event_date: normalizedDate || prev.event_date,
+              location: event.location || prev.location,
+              guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
+              budget: event.budget ? String(event.budget) : prev.budget
+            }));
+          } else {
+            setFormData(prev => ({ ...prev, event_id: "" }));
+          }
+        }}>
+          <SelectTrigger className="border-2 border-gray-300">
+            <SelectValue placeholder="Link to existing event or create new" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={null}>New Booking (no event link)</SelectItem>
+            {events.length > 0 && (
+              <>
+                {events.map(event => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.name} - {formatDate(event.event_date)}
+                  </SelectItem>
+                ))}
+              </>
+            )}
+          </SelectContent>
+        </Select>
+        {events.length === 0 && (
+          <p className="text-sm text-gray-600 mt-1">
+            You haven't created any events yet. You can create one from your Events dashboard or proceed with just vendor details.
+          </p>
+        )}
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="event_type" className="text-base font-bold">Event Type *</Label>
