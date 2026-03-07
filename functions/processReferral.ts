@@ -1,9 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
     const payload = await req.json();
 
     // Internal automation endpoint - validate shared secret
@@ -12,8 +11,6 @@ Deno.serve(async (req) => {
     }
 
     // When triggered from the Booking entity automation on update
-    // We need to determine who completed the booking (client or vendor)
-    // and check if they were referred
     let bookingData = null;
 
     if (payload.event?.type === 'update') {
@@ -28,7 +25,7 @@ Deno.serve(async (req) => {
     } else if (!payload.event) {
       // Direct call - requires referred_email + referred_type
       if (payload.referred_email && payload.referred_type) {
-        const result = await processForPerson(base44, payload.referred_email, payload.referred_type);
+        const result = await processForPerson(base44, payload.referred_email, payload.referred_type, null);
         return Response.json({ success: true, result });
       }
       return Response.json({ error: 'referred_email and referred_type are required for direct calls' }, { status: 400 });
@@ -44,7 +41,7 @@ Deno.serve(async (req) => {
 
     // Process client referral
     if (bookingData.client_email) {
-      const clientResult = await processForPerson(base44, bookingData.client_email, 'client');
+      const clientResult = await processForPerson(base44, bookingData.client_email, 'client', bookingData.id);
       results.push({ type: 'client', result: clientResult });
     }
 
@@ -54,7 +51,7 @@ Deno.serve(async (req) => {
       if (vendorRecords.length > 0) {
         const vendorEmail = vendorRecords[0].created_by || vendorRecords[0].contact_email;
         if (vendorEmail) {
-          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor');
+          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor', bookingData.id);
           results.push({ type: 'vendor', result: vendorResult });
         }
       }
@@ -68,7 +65,13 @@ Deno.serve(async (req) => {
   }
 });
 
-async function processForPerson(base44, referred_email, referred_type) {
+/**
+ * Process referral for a person who just completed their first booking.
+ * - Move their referral from "pending" → "earned"
+ * - Reward both the referrer and the referred person based on referral type
+ * - Ensure one-time use is enforced (marked on User record)
+ */
+async function processForPerson(base44, referred_email, referred_type, completionBookingId) {
   // Check if this person was referred and has pending rewards
   const pendingReferrals = await base44.asServiceRole.entities.ReferralReward.filter({
     referred_email,
@@ -108,86 +111,78 @@ async function processForPerson(base44, referred_email, referred_type) {
   let rewardsProcessed = 0;
 
   for (const referral of pendingReferrals) {
-    // Mark referral as earned
+    // SECURITY: Mark as "earned" (not "used" yet) — actual use happens during checkout
     await base44.asServiceRole.entities.ReferralReward.update(referral.id, {
       status: 'earned',
       completion_date: new Date().toISOString()
     });
 
-    // --- Reward the REFERRER ---
+    // Get the referrer's user record to determine their type
     const referrerUsers = await base44.asServiceRole.entities.User.filter({ email: referral.referrer_email });
-    if (referrerUsers.length > 0) {
-      const referrer = referrerUsers[0];
-      const referrerType = referrer.user_type;
-
-      if (referrerType === 'client') {
-        // Give referrer $25 credit
-        await base44.asServiceRole.entities.User.update(referrer.id, {
-          referral_credit: (referrer.referral_credit || 0) + 25
-        });
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: referral.referrer_email,
-          type: 'payment_received',
-          title: 'Referral Reward Earned! 🎉',
-          message: `Your referral ${referred_email} completed their first booking! $25 credit has been added to your account.`,
-          read: false
-        });
-      } else if (referrerType === 'vendor') {
-        // Give referrer a commission-free booking
-        await base44.asServiceRole.entities.User.update(referrer.id, {
-          commission_free_bookings: (referrer.commission_free_bookings || 0) + 1
-        });
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: referral.referrer_email,
-          type: 'payment_received',
-          title: 'Referral Reward Earned! 🎉',
-          message: `Your referral ${referred_email} completed their first booking! You've earned 1 commission-free booking.`,
-          read: false
-        });
-      }
-
-      // Email the referrer
-      try {
-        await base44.asServiceRole.functions.invoke('sendReferralNotification', {
-          referrer_email: referral.referrer_email,
-          referrer_type: referrerType,
-          referred_email,
-          reward_type: 'earned',
-          _secret: Deno.env.get('INTERNAL_SECRET')
-        });
-      } catch (e) {
-        console.error('Failed to send referral email to referrer:', e);
-      }
+    if (referrerUsers.length === 0) {
+      console.warn(`[processReferral] Referrer user not found: ${referral.referrer_email}`);
+      continue;
     }
 
-    // --- Reward the REFERRED PERSON ---
-    const referredUsers = await base44.asServiceRole.entities.User.filter({ email: referred_email });
-    if (referredUsers.length > 0) {
-      const referred = referredUsers[0];
+    const referrer = referrerUsers[0];
+    const referrerType = referrer.user_type;
 
-      if (referred_type === 'client') {
-        await base44.asServiceRole.entities.User.update(referred.id, {
-          referral_credit: (referred.referral_credit || 0) + 25
-        });
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: referred_email,
-          type: 'payment_received',
-          title: 'Welcome Bonus Unlocked! 🎁',
-          message: `You've completed your first booking! $25 credit has been added to your account as a welcome bonus.`,
-          read: false
-        });
-      } else if (referred_type === 'vendor') {
-        await base44.asServiceRole.entities.User.update(referred.id, {
-          commission_free_bookings: (referred.commission_free_bookings || 0) + 1
-        });
-        await base44.asServiceRole.entities.Notification.create({
-          recipient_email: referred_email,
-          type: 'payment_received',
-          title: 'Welcome Bonus Unlocked! 🎁',
-          message: `You've completed your first booking! You've earned 1 commission-free booking as a welcome bonus.`,
-          read: false
-        });
-      }
+    // Determine reward type based on referral combination
+    // This was set when the referral was created (immutable)
+    const rewardType = referral.reward_type;
+
+    // Notify referrer
+    try {
+      const rewardText = rewardType === 'zero_percent_fee'
+        ? '1 commission-free booking'
+        : '$25 credit';
+
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: referral.referrer_email,
+        type: 'payment_received',
+        title: 'Referral Reward Earned! 🎉',
+        message: `Your referral ${referred_email} completed their first booking! You've earned ${rewardText}.`,
+        read: false
+      });
+
+      // Email the referrer
+      await base44.asServiceRole.functions.invoke('sendReferralNotification', {
+        referrer_email: referral.referrer_email,
+        referrer_type: referrerType,
+        referred_email,
+        reward_type: rewardType,
+        status: 'earned',
+        _secret: Deno.env.get('INTERNAL_SECRET')
+      });
+    } catch (e) {
+      console.error('[processReferral] Failed to notify referrer:', e);
+    }
+
+    // Notify referred person
+    try {
+      const rewardText = referral.reward_type === 'zero_percent_fee'
+        ? '1 commission-free booking'
+        : '$25 credit';
+
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: referred_email,
+        type: 'payment_received',
+        title: 'Welcome Bonus Unlocked! 🎁',
+        message: `You've completed your first booking! You've earned ${rewardText} as a welcome bonus.`,
+        read: false
+      });
+
+      // Email the referred person
+      await base44.asServiceRole.functions.invoke('sendReferralNotification', {
+        referrer_email: referral.referrer_email,
+        referred_email,
+        referred_type,
+        reward_type: rewardType,
+        status: 'earned',
+        _secret: Deno.env.get('INTERNAL_SECRET')
+      });
+    } catch (e) {
+      console.error('[processReferral] Failed to notify referred person:', e);
     }
 
     rewardsProcessed++;
