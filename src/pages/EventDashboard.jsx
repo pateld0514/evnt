@@ -53,7 +53,6 @@ export default function EventDashboardPage() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [selectedVendors, setSelectedVendors] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     event_type: "",
