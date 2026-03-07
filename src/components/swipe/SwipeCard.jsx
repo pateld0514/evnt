@@ -111,137 +111,137 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
 
   return (
     <>
-      <div style={{ ...style, position: 'relative' }}>
-        <motion.div
-          style={{ 
-            x: onSwipe && !isRemoving ? x : 0,
-            rotate: onSwipe && !isRemoving ? rotate : 0,
-          }}
-          drag={onSwipe && !isRemoving ? "x" : false}
-          dragConstraints={{ left: 0, right: 0 }}
-          onDragEnd={handleDragEnd}
-          dragElastic={0.2}
-          whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
-          animate={isRemoving ? {
-            x: 1000,
-            y: -100,
-            rotate: -30,
-            opacity: 0,
-            transition: { duration: 0.3 }
-          } : !onSwipe ? { 
-            scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
-            y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
-            opacity: style?.opacity || 1,
-            transition: { type: "spring", stiffness: 300, damping: 30 }
-          } : {}}
-          className="h-full"
-        >
-          <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
-            <div className="relative flex-shrink-0" style={{ height: '55%' }}>
-              <img
-                src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
-                alt={vendor.business_name}
-                className="w-full h-full object-cover"
-              />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              
-              <div className="absolute top-4 right-4 flex gap-2">
-                <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
-                  {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
-                </Badge>
-                <Badge className={`${tier.color} border-2 text-sm px-3 py-1.5 font-bold`}>
-                  {tier.icon} {tier.name}
-                </Badge>
-              </div>
-
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
-              >
-                <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
-                  LIKE
-                </div>
-              </motion.div>
-              
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
-              >
-                <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
-                  PASS
-                </div>
-              </motion.div>
+      <motion.div
+        style={{ 
+          ...style,
+          x: onSwipe && !isRemoving ? x : 0,
+          rotate: onSwipe && !isRemoving ? rotate : 0,
+        }}
+        drag={onSwipe && !isRemoving ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        dragElastic={0.2}
+        whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
+        animate={isRemoving ? {
+          x: 1000,
+          y: -100,
+          rotate: -30,
+          opacity: 0,
+          transition: { duration: 0.3 }
+        } : !onSwipe ? { 
+          scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
+          y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
+          opacity: style?.opacity || 1,
+          transition: { type: "spring", stiffness: 300, damping: 30 }
+        } : {}}
+      >
+        <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+          <div className="relative flex-shrink-0" style={{ height: '55%' }}>
+            <img
+              src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
+              alt={vendor.business_name}
+              className="w-full h-full object-cover"
+            />
+            
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+            
+            <div className="absolute top-4 right-4 flex gap-2">
+              <Badge className="bg-white text-black text-sm px-3 py-1.5 font-bold border-2 border-black">
+                {categoryIcons[vendor.category]} {categoryLabels[vendor.category]}
+              </Badge>
+              <Badge className={`${tier.color} border-2 text-sm px-3 py-1.5 font-bold`}>
+                {tier.icon} {tier.name}
+              </Badge>
             </div>
 
-            <div className="flex flex-col" style={{ height: '45%', padding: '0.875rem 1rem' }}>
-              <div className="flex-1 overflow-hidden mb-2.5">
-                <h2 className="text-xl md:text-2xl font-black text-black mb-1.5 leading-tight">
-                  {vendor.business_name}
-                </h2>
-                
-                <p className="text-sm md:text-base text-gray-700 mb-2.5 line-clamp-2 leading-snug">
-                  {vendor.description}
-                </p>
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
+            >
+              <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
+                LIKE
+              </div>
+            </motion.div>
+            
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
+            >
+              <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
+                PASS
+              </div>
+            </motion.div>
+          </div>
 
-                <div className="flex flex-wrap gap-1 md:gap-1.5">
-                  {vendor.location && (
-                    <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="hidden sm:inline">{vendor.location}</span>
-                    </Badge>
-                  )}
-                  {avgRating && (
-                    <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      {avgRating}
-                    </Badge>
-                  )}
-                  {vendor.price_range && (
-                    <Badge variant="outline" className="flex items-center gap-0.5 md:gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                      <DollarSign className="w-4 h-4" />
-                      {vendor.price_range}
-                    </Badge>
-                  )}
-                  {vendor.starting_price && (
-                    <Badge variant="outline" className="border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                      From ${vendor.starting_price}
-                    </Badge>
-                  )}
+          <div className="flex flex-col" style={{ height: '45%', padding: '0.875rem 1rem' }}>
+            <div className="flex-1 overflow-hidden mb-2.5">
+              <h2 className="text-xl md:text-2xl font-black text-black mb-1.5 leading-tight">
+                {vendor.business_name}
+              </h2>
+              
+              <p className="text-sm md:text-base text-gray-700 mb-2.5 line-clamp-2 leading-snug">
+                {vendor.description}
+              </p>
+
+              <div className="flex flex-wrap gap-1 md:gap-1.5">
+                {vendor.location && (
                   <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
-                    <Award className="w-4 h-4" />
-                    <span className="hidden sm:inline">{completedBookings} events</span>
-                    <span className="sm:hidden">{completedBookings}</span>
+                    <MapPin className="w-4 h-4" />
+                    <span className="hidden sm:inline">{vendor.location}</span>
                   </Badge>
-                </div>
+                )}
+                {avgRating && (
+                  <Badge variant="outline" className="flex items-center gap-1 border-2 border-yellow-300 bg-yellow-50 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    {avgRating}
+                  </Badge>
+                )}
+                {vendor.price_range && (
+                  <Badge variant="outline" className="flex items-center gap-0.5 md:gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    <DollarSign className="w-4 h-4" />
+                    {vendor.price_range}
+                  </Badge>
+                )}
+                {vendor.starting_price && (
+                  <Badge variant="outline" className="border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                    From ${vendor.starting_price}
+                  </Badge>
+                )}
+                <Badge variant="outline" className="flex items-center gap-1 border-2 border-gray-300 text-xs md:text-sm font-bold py-0.5 px-1.5 md:px-2">
+                  <Award className="w-4 h-4" />
+                  <span className="hidden sm:inline">{completedBookings} events</span>
+                  <span className="sm:hidden">{completedBookings}</span>
+                </Badge>
               </div>
             </div>
-          </Card>
-        </motion.div>
-
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between gap-2 px-4 py-3 z-50 pointer-events-auto">
-          <Button
-            variant="outline"
-            className="flex-1 border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
-            }}
-          >
-            View Profile
-          </Button>
-          <Button
-            className="flex-1 bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 text-sm md:text-base"
-            onClick={(e) => {
-              e.stopPropagation();
-              setBookingOpen(true);
-            }}
-          >
-            <Calendar className="w-4 h-4 mr-1.5" />
-            Book Now
-          </Button>
-        </div>
-      </div>
+            
+            <div className="grid grid-cols-2 gap-2 flex-shrink-0 relative z-50" style={{ pointerEvents: "auto" }}>
+              <Button
+                variant="outline"
+                className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
+                style={{ pointerEvents: "auto" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`);
+                }}
+              >
+                View Profile
+              </Button>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 font-bold h-11 md:h-12 text-sm md:text-base"
+                style={{ pointerEvents: "auto" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBookingOpen(true);
+                }}
+              >
+                <Calendar className="w-4 h-4 mr-1.5" />
+                Book Now
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
 
       {/* Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
