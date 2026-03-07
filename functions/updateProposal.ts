@@ -1,5 +1,23 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { validateTransition } from './lib/bookingStateMachine.js';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Inlined from lib/bookingStateMachine.js — no local imports allowed in Deno Deploy
+const VALID_TRANSITIONS = {
+  pending: ['negotiating', 'declined', 'cancelled'],
+  negotiating: ['payment_pending', 'cancelled', 'declined'],
+  payment_pending: ['confirmed', 'cancelled'],
+  confirmed: ['in_progress', 'cancelled'],
+  in_progress: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: [],
+  declined: [],
+};
+function validateTransition(currentStatus, newStatus) {
+  if (!VALID_TRANSITIONS[currentStatus]) throw new Error(`Invalid current status: ${currentStatus}`);
+  if (!VALID_TRANSITIONS[currentStatus].includes(newStatus)) {
+    throw new Error(`Invalid transition from ${currentStatus} to ${newStatus}. Valid: ${VALID_TRANSITIONS[currentStatus].join(', ')}`);
+  }
+  return true;
+}
 
 Deno.serve(async (req) => {
   try {
