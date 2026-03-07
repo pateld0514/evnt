@@ -792,6 +792,7 @@ export default function BookingsPage() {
                         <>
                           <Button
                             onClick={handleOpenNegotiation}
+                            disabled={updateBookingMutation.isPending}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
                           >
                             <DollarSign className="w-4 h-4 mr-2" />
@@ -802,10 +803,11 @@ export default function BookingsPage() {
                               handleStatusUpdate(selectedBooking.id, "declined");
                               setDetailsOpen(false);
                             }}
+                            disabled={updateBookingMutation.isPending}
                             variant="outline"
                             className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50 font-bold"
                           >
-                            <XCircle className="w-4 h-4 mr-2" />
+                            {updateBookingMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                             Decline Booking
                           </Button>
                         </>
@@ -814,9 +816,10 @@ export default function BookingsPage() {
                       {isVendor && selectedBooking.status === "confirmed" && (
                         <Button
                           onClick={() => handleStatusUpdate(selectedBooking.id, "in_progress")}
+                          disabled={updateBookingMutation.isPending}
                           className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
                         >
-                          <Clock className="w-4 h-4 mr-2" />
+                          {updateBookingMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Clock className="w-4 h-4 mr-2" />}
                           Mark as In Progress
                         </Button>
                       )}
