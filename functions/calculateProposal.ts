@@ -98,6 +98,12 @@ Deno.serve(async (req) => {
     } catch (error) {
       console.warn('Failed to calculate dynamic fee, using base:', error);
     }
+    
+    // SECURITY: If vendor has earned a 0% referral fee, override to zero
+    // This referral discount will be marked as "used" only during payment capture
+    if (vendorZeroFeeApplied) {
+      finalFeePercent = 0;
+    }
 
     // ======= REFERRAL DISCOUNT LOGIC =======
     // Check if client has earned a referral discount and hasn't used it yet
