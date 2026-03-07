@@ -63,12 +63,23 @@ export default function EventDashboardPage() {
     notes: ""
   });
 
-  const { data: currentUser = null, isLoading: userLoading } = useQuery({
+  const { data: currentUser = null, isLoading: userLoading, isError: userError } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (error) {
+        base44.auth.redirectToLogin(createPageUrl('EventDashboard'));
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
+
+  if (userError) {
+    return null;
+  }
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
