@@ -96,40 +96,30 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.VendorTier.create(tierData);
     }
 
-    // Send tier update notification if tier changed
+    // Send tier update notification if tier changed — resolve vendor email first, send once
     if (tierChanged && tierLevel !== 'bronze') {
       try {
-        await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
-          user_email: vendor_id,
-          user_type: 'vendor',
-          old_tier: oldTier,
-          new_tier: tierLevel,
-          _secret: Deno.env.get('INTERNAL_SECRET'),
-          benefits: [
-            `${feeDiscount}% platform fee discount`,
-            'Enhanced profile visibility',
-            tierLevel === 'gold' ? 'Featured vendor badge' : 'Priority support'
-          ]
-        });
-
-        // Get vendor email
         const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
-        if (vendors.length > 0) {
-          const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id });
-          if (vendorUsers.length > 0) {
-            await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
-              user_email: vendorUsers[0].email,
-              user_type: 'vendor',
-              old_tier: oldTier,
-              new_tier: tierLevel,
-              _secret: Deno.env.get('INTERNAL_SECRET'),
-              benefits: [
-                `${feeDiscount}% platform fee discount`,
-                'Enhanced profile visibility',
-                tierLevel === 'gold' ? 'Featured vendor badge' : 'Priority support'
-              ]
-            });
-          }
+        const vendorUsers = vendors.length > 0
+          ? await base44.asServiceRole.entities.User.filter({ vendor_id })
+          : [];
+        const notifyEmail = vendorUsers.length > 0
+          ? vendorUsers[0].email
+          : (vendors[0]?.contact_email || null);
+
+        if (notifyEmail) {
+          await base44.asServiceRole.functions.invoke('sendTierUpdateNotification', {
+            user_email: notifyEmail,
+            user_type: 'vendor',
+            old_tier: oldTier,
+            new_tier: tierLevel,
+            _secret: Deno.env.get('INTERNAL_SECRET'),
+            benefits: [
+              `${feeDiscount}% platform fee discount`,
+              'Enhanced profile visibility',
+              tierLevel === 'gold' ? 'Featured vendor badge' : 'Priority support'
+            ]
+          });
         }
       } catch (error) {
         console.error('Failed to send tier notification:', error);
