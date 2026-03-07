@@ -101,49 +101,49 @@ export default function EventDashboardPage() {
   }, [currentUser?.email, queryClient]);
 
   const createEventMutation = useMutation({
-    mutationFn: (data) => base44.entities.Event.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
-      setCreateOpen(false);
-      resetForm();
-      toast.success("Event created!");
-    },
+   mutationFn: (data) => base44.entities.Event.create(data),
+   onSuccess: () => {
+     queryClient.invalidateQueries({ queryKey: ['events'] });
+     setCreateOpen(false);
+     resetForm();
+     toast.success("Event created!");
+   },
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
-      const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
-        throw new Error("Unauthorized: You can only edit your own events");
-      }
-      return await base44.entities.Event.update(id, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
-      setEditingEvent(null);
-      resetForm();
-      toast.success("Event updated!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update event");
-    },
+   mutationFn: async ({ id, data }) => {
+     const event = events.find(e => e.id === id);
+     if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+       throw new Error("Unauthorized: You can only edit your own events");
+     }
+     return await base44.entities.Event.update(id, data);
+   },
+   onSuccess: () => {
+     queryClient.invalidateQueries({ queryKey: ['events'] });
+     setEditingEvent(null);
+     resetForm();
+     toast.success("Event updated!");
+   },
+   onError: (error) => {
+     toast.error(error.message || "Failed to update event");
+   },
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: async (id) => {
-      const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
-        throw new Error("Unauthorized: You can only delete your own events");
-      }
-      return await base44.entities.Event.delete(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['events']);
-      toast.success("Event deleted");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete event");
-    },
+   mutationFn: async (id) => {
+     const event = events.find(e => e.id === id);
+     if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+       throw new Error("Unauthorized: You can only delete your own events");
+     }
+     return await base44.entities.Event.delete(id);
+   },
+   onSuccess: () => {
+     queryClient.invalidateQueries({ queryKey: ['events'] });
+     toast.success("Event deleted");
+   },
+   onError: (error) => {
+     toast.error(error.message || "Failed to delete event");
+   },
   });
 
   const resetForm = () => {
