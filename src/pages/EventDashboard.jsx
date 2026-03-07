@@ -132,13 +132,14 @@ export default function EventDashboardPage() {
   const updateEventMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const event = events.find(e => e.id === id);
-      if (!event || (event.owner_email !== currentUser.email && event.created_by !== currentUser.email)) {
+      if (!event || (event.owner_email !== currentUser?.email && event.created_by !== currentUser?.email)) {
         throw new Error("Unauthorized: You can only edit your own events");
       }
       return await base44.entities.Event.update(id, data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
+    onSuccess: async () => {
+      const freshUser = await base44.auth.me();
+      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
       setEditingEvent(null);
       resetForm();
       setSelectedVendors([]);
