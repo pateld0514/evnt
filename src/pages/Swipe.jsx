@@ -522,6 +522,7 @@ export default function SwipePage() {
               vendor={vendor}
               onSwipe={index === 0 ? handleSwipe : null}
               isRemoving={vendor.id === animatingVendorId}
+              removingDirection={vendor.id === animatingVendorId ? (swipeHistory[swipeHistory.length]?.direction || pendingSwipeDirection) : null}
               completedBookingsCount={0}
               style={{
                 position: 'absolute',
