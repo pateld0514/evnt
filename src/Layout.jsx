@@ -11,6 +11,7 @@ import { InstallPrompt } from "@/components/mobile/MobileFeatures";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('viewMode') || 'desktop';
   });
