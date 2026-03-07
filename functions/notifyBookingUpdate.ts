@@ -48,10 +48,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing vendor_id on booking' }, { status: 400 });
     }
 
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    let vendors;
+    try {
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    } catch (e) {
+      console.warn('[notifyBookingUpdate] Vendor lookup threw:', e.message, '— skipping notification');
+      return Response.json({ success: true, message: 'Vendor lookup failed, skipping notification' });
+    }
     if (!vendors || vendors.length === 0) {
-      console.error('Vendor not found:', booking.vendor_id);
-      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+      console.warn('[notifyBookingUpdate] Vendor not found:', booking.vendor_id, '— skipping notification');
+      return Response.json({ success: true, message: 'Vendor not found, skipping notification' });
     }
     
     const vendor = vendors[0];
@@ -199,7 +205,7 @@ Deno.serve(async (req) => {
     ${content}
     <div class="footer">
      <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-     <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
+     <p style="margin: 8px 0;">Questions? Email <a href="mailto:${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}" style="color: #000000; text-decoration: none; font-weight: 600;">${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}</a></p>
      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
        <a href="${getEmailLink(recipientEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
        <a href="${appUrl}/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
