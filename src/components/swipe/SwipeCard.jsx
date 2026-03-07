@@ -135,7 +135,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           transition: { type: "spring", stiffness: 300, damping: 30 }
         } : {}}
       >
-        <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+        <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`} style={{ pointerEvents: onSwipe && !isRemoving ? 'none' : 'auto' }}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
             <img
               src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=800&h=600&fit=crop`}
