@@ -102,21 +102,21 @@ export default function SavedPage() {
   }, [currentUser?.email, queryClient]);
 
   const deleteMutation = useMutation({
-    mutationFn: async (savedVendorId) => {
-      const saved = savedVendors.find(s => s.id === savedVendorId);
-      if (!saved || saved.created_by !== currentUser.email) {
-        throw new Error("Unauthorized: You can only remove your own saved vendors");
-      }
-      return await base44.entities.SavedVendor.delete(savedVendorId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['saved-vendors']);
-      queryClient.invalidateQueries(['user-swipes']);
-      toast.success("Removed from favorites");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to remove vendor");
-    },
+   mutationFn: async (savedVendorId) => {
+     const saved = savedVendors.find(s => s.id === savedVendorId);
+     if (!saved || saved.created_by !== currentUser.email) {
+       throw new Error("Unauthorized: You can only remove your own saved vendors");
+     }
+     return await base44.entities.SavedVendor.delete(savedVendorId);
+   },
+   onSuccess: () => {
+     queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
+     queryClient.invalidateQueries({ queryKey: ['user-swipes'] });
+     toast.success("Removed from favorites");
+   },
+   onError: (error) => {
+     toast.error(error.message || "Failed to remove vendor");
+   },
   });
 
   // Get unique categories from saved vendors

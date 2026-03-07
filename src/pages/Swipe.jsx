@@ -325,8 +325,8 @@ export default function SwipePage() {
       
       setSwipeHistory(prev => prev.slice(0, -1));
       
-      queryClient.invalidateQueries(['user-swipes']);
-      queryClient.invalidateQueries(['saved-vendors']);
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'] });
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors'] });
       
       toast.success("Undone!");
     } catch (error) {
@@ -358,9 +358,7 @@ export default function SwipePage() {
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
       clearFilters();
-      queryClient.invalidateQueries(['user-swipes']);
-      // Rebuild deck after reset
-      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries({ queryKey: ['user-swipes'] });
       toast.success("Passed vendors restored! Saved vendors remain.");
     } catch (error) {
       toast.error("Failed to reset");
