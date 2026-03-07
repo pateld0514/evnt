@@ -134,6 +134,12 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
           opacity: style?.opacity || 1,
           transition: { type: "spring", stiffness: 300, damping: 30 }
         } : {}}
+        onPointerDown={(e) => {
+          const isButton = e.target.closest('button');
+          if (isButton && onSwipe) {
+            e.preventDefault();
+          }
+        }}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
