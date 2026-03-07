@@ -85,13 +85,11 @@ export default function Layout({ children, currentPageName }) {
       if (!currentUserEmail) return [];
 
       if (userType === "vendor") {
-        // Get all bookings and filter by vendor
-        const allBookings = await base44.entities.Booking.list();
-        const allVendors = await base44.entities.Vendor.list();
-        const myVendor = allVendors.find(v => v.created_by === currentUserEmail);
-        
+        // Fetch only this vendor's profile, then filter bookings by their vendor_id
+        const myVendors = await base44.entities.Vendor.filter({ created_by: currentUserEmail });
+        const myVendor = myVendors[0];
         if (myVendor) {
-          return allBookings.filter(b => b.vendor_id === myVendor.id);
+          return await base44.entities.Booking.filter({ vendor_id: myVendor.id });
         }
         return [];
       } else if (userType === "client") {
