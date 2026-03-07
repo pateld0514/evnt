@@ -222,6 +222,9 @@ Provide 4-5 specific, actionable insights in this JSON format:
         }
       });
       setAiInsights(insights);
+      // Start cooldown
+      localStorage.setItem('insights_last_generated', Date.now().toString());
+      setInsightsCooldown(true);
     } catch (error) {
       console.error("Failed to generate insights:", error);
     } finally {
