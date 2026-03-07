@@ -104,14 +104,6 @@ export default function EventDashboardPage() {
     refetchOnWindowFocus: true,
   });
 
-  // Refetch all user data when user resolves
-  useEffect(() => {
-    if (currentUser?.email) {
-      queryClient.invalidateQueries(['events']);
-      queryClient.invalidateQueries(['bookings']);
-    }
-  }, [currentUser?.email, queryClient]);
-
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
     onSuccess: () => {
