@@ -689,10 +689,12 @@ export default function BookingsPage() {
                 )}
 
                 {/* Vendor Document Upload Section */}
+                {/* SECURITY: Use vendor_id from the booking record (server-authoritative),
+                    not currentUser.vendor_id (client-side, tamperable) */}
                 {isVendor && (selectedBooking.status === "confirmed" || selectedBooking.status === "in_progress" || selectedBooking.status === "completed") && (
                   <VendorDocumentUpload 
                     booking={selectedBooking} 
-                    vendorId={currentUser.vendor_id}
+                    vendorId={selectedBooking.vendor_id}
                     onUploadComplete={() => queryClient.invalidateQueries(['bookings'])}
                   />
                 )}
