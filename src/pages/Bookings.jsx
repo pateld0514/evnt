@@ -812,23 +812,11 @@ export default function BookingsPage() {
 
                       {isVendor && selectedBooking.status === "in_progress" && (
                         <Button
-                          onClick={async () => {
+                          onClick={() => {
+                            // ISSUE 3 FIX: Do NOT call capturePayment here.
+                            // processVendorPayout automation handles payment capture automatically
+                            // when status changes to "completed". Calling it here caused a race condition.
                             handleStatusUpdate(selectedBooking.id, "completed");
-                            
-                            // Capture payment after marking as completed
-                            try {
-                              const response = await base44.functions.invoke('capturePayment', { 
-                                bookingId: selectedBooking.id 
-                              });
-                              
-                              if (response.data?.success) {
-                                toast.success('Booking completed and payment released!');
-                              }
-                            } catch (error) {
-                              console.error('Payment capture error:', error);
-                              toast.error('Booking marked as completed, but payment capture failed. Please contact support.');
-                            }
-                            
                             setDetailsOpen(false);
                           }}
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
