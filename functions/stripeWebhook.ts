@@ -141,12 +141,17 @@ Deno.serve(async (req) => {
           const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
           const booking = bookings[0];
           if (booking) {
-            try { validateTransition(booking.status, 'confirmed'); } catch (e) { console.error(`[${webhookId}]`, e.message); }
-            await base44.asServiceRole.entities.Booking.update(bookingId, {
-              payment_status: 'escrow',
-              status: 'confirmed',
-              payment_intent_id: paymentIntent.id,
-            });
+            // H-7 FIX: Guard transition
+            try {
+              validateTransition(booking.status, 'confirmed');
+              await base44.asServiceRole.entities.Booking.update(bookingId, {
+                payment_status: 'escrow',
+                status: 'confirmed',
+                payment_intent_id: paymentIntent.id,
+              });
+            } catch (e) {
+              console.warn(`[${webhookId}] Skipping payment_intent.amount_capturable_updated — invalid transition from ${booking.status}: ${e.message}`);
+            }
           }
           const bookings2 = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
           const booking2 = bookings2[0];
