@@ -15,16 +15,22 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Get vendor — non-fatal if not found
-    const vendorList = await base44.asServiceRole.entities.Vendor.filter({ id: review.vendor_id });
-    if (!vendorList || vendorList.length === 0) {
-      console.warn('Vendor not found for vendor_id:', review.vendor_id, '— skipping notification');
-      return Response.json({ success: true, message: 'Vendor not found, skipping notification' });
+    // Get vendor — ISSUE 2 FIX: non-fatal if vendor or user not found
+    let vendor, vendorUsers;
+    try {
+      const vendorList = await base44.asServiceRole.entities.Vendor.filter({ id: review.vendor_id });
+      if (!vendorList || vendorList.length === 0) {
+        console.warn('Vendor not found for vendor_id:', review.vendor_id, '— skipping notification');
+        return Response.json({ success: true, message: 'Vendor not found, skipping notification' });
+      }
+      vendor = vendorList[0];
+    } catch(e) {
+      console.warn('Vendor lookup failed:', e.message, '— skipping notification');
+      return Response.json({ success: true, message: 'Vendor lookup failed, skipping notification' });
     }
-    const vendor = vendorList[0];
 
-    // Get vendor user email — ISSUE 2 FIX: non-fatal if vendor user not found
-    const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
+    // Get vendor user email
+    vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
     if (!vendorUsers || vendorUsers.length === 0) {
       console.warn('Vendor user not found for vendor_id:', review.vendor_id, '— skipping notification');
       return Response.json({ success: true, message: 'Vendor user not found, skipping notification' });
