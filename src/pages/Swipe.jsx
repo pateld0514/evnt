@@ -170,6 +170,7 @@ export default function SwipePage() {
     }).sort((a, b) => {
       const tierA = getVendorTier(a.id);
       const tierB = getVendorTier(b.id);
+      // Tier sorting removed (no bookings data); fall through to location/specialty/rating sort
       if (tierA !== tierB) return tierB - tierA;
       
       const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
