@@ -278,6 +278,23 @@ export default function SwipePage() {
     return [...new Set(cats)];
   }, [vendors]);
 
+  // Fetch completed bookings count for visible vendors
+  const { data: vendorBookingCounts = {} } = useQuery({
+    queryKey: ['vendor-booking-counts', visibleVendors?.map(v => v.id)],
+    queryFn: async () => {
+      const counts = {};
+      for (const vendor of visibleVendors) {
+        const completedBookings = await base44.entities.Booking.filter({
+          vendor_id: vendor.id,
+          status: "completed"
+        });
+        counts[vendor.id] = completedBookings.length;
+      }
+      return counts;
+    },
+    enabled: visibleVendors.length > 0,
+  });
+
   const currentVendor = displayableVendors[0];
 
   const handleSwipe = (direction) => {
