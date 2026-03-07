@@ -62,10 +62,10 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
-    // Calculate totals with validation
+    // M-1 FIX: Enforce minimum booking price of $1 to prevent negative payout edge cases
     const price = parseFloat(agreedPrice);
-    if (price <= 0) {
-      return Response.json({ error: 'Agreed price must be greater than 0' }, { status: 400 });
+    if (price < 1) {
+      return Response.json({ error: 'Minimum booking price is $1.00' }, { status: 400 });
     }
     
     const fees = additionalFees || [];
