@@ -18,11 +18,22 @@ Deno.serve(async (req) => {
     const booking = payload.data || payload.booking;
     const oldStatus = payload.old_data?.status || payload.old_status;
     const newStatus = booking?.status;
-    
+
     if (!booking || !newStatus) {
       return Response.json({ 
         error: 'booking data and status are required' 
       }, { status: 400 });
+    }
+
+    // ISSUE 1 FIX: If old_data is null/missing (e.g. service-role writes, Stripe webhook updates),
+    // we cannot determine if the status actually changed — skip to avoid spurious notifications.
+    if (payload.old_data === null || payload.old_data === undefined) {
+      if (!payload.old_status) {
+        return Response.json({ 
+          success: true, 
+          message: 'No old_data available — skipping to avoid duplicate notifications' 
+        });
+      }
     }
 
     // Only send notifications on status changes

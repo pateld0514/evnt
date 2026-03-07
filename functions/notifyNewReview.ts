@@ -21,10 +21,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
-    // Get vendor user email
+    // Get vendor user email — ISSUE 2 FIX: non-fatal if vendor user not found
     const vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
     if (!vendorUsers || vendorUsers.length === 0) {
-      return Response.json({ error: 'Vendor user not found' }, { status: 404 });
+      console.warn('Vendor user not found for vendor_id:', review.vendor_id, '— skipping notification');
+      return Response.json({ success: true, message: 'Vendor user not found, skipping notification' });
     }
 
     const vendorEmail = vendorUsers[0].email;
