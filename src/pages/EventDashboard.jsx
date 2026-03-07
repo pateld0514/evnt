@@ -115,8 +115,10 @@ export default function EventDashboardPage() {
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', currentUser?.email] });
+    onSuccess: async () => {
+      // Refetch fresh user data to ensure email is current
+      const freshUser = await base44.auth.me();
+      queryClient.invalidateQueries({ queryKey: ['events', freshUser?.email] });
       setCreateOpen(false);
       resetForm();
       toast.success("Event created!");
