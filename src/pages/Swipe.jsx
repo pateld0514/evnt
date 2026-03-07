@@ -255,6 +255,7 @@ export default function SwipePage() {
           queryClient.invalidateQueries(['saved-vendors']);
         }
         setAnimatingVendorId(null);
+        setAnimatingDirection(null);
         setIsProcessing(false);
       }, 400);
     },
