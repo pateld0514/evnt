@@ -308,12 +308,19 @@ Deno.serve(async (req) => {
         if (booking) {
           const refundAmount = charge.amount_refunded / 100;
           const isFullRefund = charge.refunded;
+          // H-7 FIX: Guard refund transition
+          let newStatus = booking.status;
           if (isFullRefund) {
-            try { validateTransition(booking.status, 'cancelled'); } catch (e) { console.error(`[${webhookId}]`, e.message); }
+            try {
+              validateTransition(booking.status, 'cancelled');
+              newStatus = 'cancelled';
+            } catch (e) {
+              console.warn(`[${webhookId}] charge.refunded — cannot transition from ${booking.status} to cancelled: ${e.message}`);
+            }
           }
           await base44.asServiceRole.entities.Booking.update(booking.id, {
             payment_status: isFullRefund ? 'refunded' : 'partially_refunded',
-            status: isFullRefund ? 'cancelled' : booking.status,
+            status: newStatus,
             refund_amount: refundAmount,
           });
           try {
