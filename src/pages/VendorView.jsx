@@ -30,12 +30,19 @@ export default function VendorViewPage() {
     retry: false,
   });
 
-  const { data: allVendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+  const { data: vendor = null, isLoading: vendorLoading } = useQuery({
+    queryKey: ['vendor', vendorId],
+    queryFn: async () => {
+      const result = await base44.entities.Vendor.filter({ id: vendorId });
+      if (result.length > 0) {
+        // Track view
+        await base44.entities.VendorView.create({ vendor_id: vendorId });
+        return result[0];
+      }
+      return null;
+    },
+    enabled: !!vendorId,
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    initialData: [],
   });
 
   const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
