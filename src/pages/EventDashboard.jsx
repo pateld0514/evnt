@@ -77,10 +77,12 @@ export default function EventDashboardPage() {
     retry: false,
   });
 
-  if (userError) {
-    navigate(createPageUrl('Profile'));
-    return null;
-  }
+  // Handle auth redirect safely in a useEffect, never in render body
+  useEffect(() => {
+    if (userError) {
+      navigate(createPageUrl('Profile'));
+    }
+  }, [userError, navigate]);
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
