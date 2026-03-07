@@ -53,9 +53,10 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState(null);
   const completedBookings = completedBookingsCount;
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+  const rotate = useTransform(x, [-300, 300], [-30, 30]);
 
   const getTier = (completedCount) => {
     if (completedCount >= 100) return { name: "Elite", icon: "👑", color: "bg-purple-100 text-purple-800 border-purple-300" };
