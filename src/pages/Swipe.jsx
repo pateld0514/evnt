@@ -39,6 +39,8 @@ export default function SwipePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [animatingVendorId, setAnimatingVendorId] = useState(null);
   const [animatingDirection, setAnimatingDirection] = useState(null);
+  // Track locally-swiped vendor IDs so they never reappear even if the query re-fetches before backend syncs
+  const [locallySwipedIds, setLocallySwipedIds] = useState(new Set());
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [filters, setFilters] = useState(() => {
     try {
