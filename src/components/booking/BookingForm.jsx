@@ -112,11 +112,6 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       return;
     }
 
-    if (!formData.event_id) {
-      toast.error("Please select or create an event first");
-      return;
-    }
-
     if (!formData.event_type || !formData.event_date) {
       toast.error("Please fill in all required fields");
       return;
@@ -206,7 +201,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
           }
         }}>
           <SelectTrigger className="border-2 border-gray-300">
-            <SelectValue placeholder="Select your event" />
+            <SelectValue placeholder="Link to existing event or create new" />
           </SelectTrigger>
           <SelectContent>
             {events.length > 0 && events.map(event => (
@@ -214,11 +209,12 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
                 {event.name} - {formatDate(event.event_date)}
               </SelectItem>
             ))}
+            <SelectItem value={null}>Book Without Event Link</SelectItem>
           </SelectContent>
         </Select>
         {events.length === 0 && (
-          <p className="text-sm text-red-600 mt-1 font-semibold">
-            You need to create an event first. Go to your Events page and create one, then come back to book vendors.
+          <p className="text-sm text-gray-600 mt-1">
+            You haven't created any events yet. You can create one from your Events dashboard or proceed with just vendor details.
           </p>
         )}
       </div>
