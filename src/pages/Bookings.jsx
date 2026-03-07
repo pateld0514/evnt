@@ -172,13 +172,11 @@ export default function BookingsPage() {
 
   const isVendor = currentUser?.user_type === "vendor" || currentUser?.user_type === "test_vendor" || currentUser?.demo_mode === "vendor";
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['all-users'],
-    queryFn: () => base44.entities.User.list(),
-    enabled: isVendor,
-    initialData: [],
-    staleTime: 10 * 60 * 1000,
-  });
+  // H-6 FIX: Do NOT fetch all users — client phone is looked up per-booking only when needed.
+  // Phone number is stored on the booking's client or fetched minimally.
+  // We derive the needed client info from booking fields already present (client_name, client_email).
+  // For phone: vendors see it only if stored on the booking itself (client_phone field).
+  const allUsers = []; // Removed global user list fetch — PII protection
 
   const updateBookingMutation = useMutation({
     mutationFn: async ({ bookingId, data, oldStatus, expectedUpdatedDate }) => {
