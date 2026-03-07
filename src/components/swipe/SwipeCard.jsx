@@ -159,7 +159,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
 
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
+              style={{ opacity: useTransform(x, [20, 120], [0, 1]) }}
             >
               <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
                 LIKE
@@ -168,7 +168,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
             
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
+              style={{ opacity: useTransform(x, [-120, -20], [1, 0]) }}
             >
               <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
                 PASS
