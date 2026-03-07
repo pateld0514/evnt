@@ -218,7 +218,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, complete
               <Button
                 variant="outline"
                 className="border-2 border-black hover:bg-black hover:text-white font-bold h-11 md:h-12 text-sm md:text-base"
-                onClick={() => navigate(createPageUrl("VendorView") + `?id=${vendor.id}`)}
+                onClick={() => navigate(`${createPageUrl("VendorView")}?id=${vendor.id}`)}
               >
                 View Profile
               </Button>
