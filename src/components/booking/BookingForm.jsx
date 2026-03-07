@@ -35,11 +35,40 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
 
   const { data: events = [] } = useQuery({
     queryKey: ['user-events', currentUser?.email],
-    queryFn: () => base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
+    queryFn: async () => {
+      const [byCreated, byOwner] = await Promise.all([
+        base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
+        base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
+      ]);
+      // Merge and deduplicate by id
+      const all = [...byCreated, ...byOwner];
+      return all.filter((e, i) => all.findIndex(x => x.id === e.id) === i);
+    },
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
+
+  // When eventId prop is provided and events are loaded, pre-fill from that event
+  useEffect(() => {
+    if (!eventId || events.length === 0) return;
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+    let normalizedDate = "";
+    if (event.event_date) {
+      const d = new Date(event.event_date);
+      normalizedDate = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : event.event_date.split('T')[0];
+    }
+    setFormData(prev => ({
+      ...prev,
+      event_id: eventId,
+      event_type: event.event_type || prev.event_type,
+      event_date: normalizedDate || prev.event_date,
+      location: event.location || prev.location,
+      guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
+      budget: event.budget ? String(event.budget) : prev.budget,
+    }));
+  }, [eventId, events]);
 
   const bookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
