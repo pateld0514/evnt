@@ -226,7 +226,6 @@ export default function EventDashboardPage() {
       notes: event.notes || "",
       status: event.status
     });
-    setSelectedVendors([]);
     setCreateOpen(true);
   };
 
