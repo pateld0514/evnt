@@ -185,7 +185,6 @@ export default function EventDashboardPage() {
     });
     setCreateOpen(false);
     setEditingEvent(null);
-    setSelectedVendors([]);
   };
 
   const handleSubmit = (e) => {
