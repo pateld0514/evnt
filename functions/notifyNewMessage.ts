@@ -83,15 +83,19 @@ Deno.serve(async (req) => {
       console.warn('Message email failed (non-fatal):', emailErr.message);
     }
 
-    // Create in-app notification
-    await base44.asServiceRole.entities.Notification.create({
-      recipient_email: message.recipient_email,
-      type: "new_message",
-      title: `💬 New message from ${senderName}`,
-      message: messagePreview,
-      link: `/Messages?conversation=${message.conversation_id}`,
-      read: false
-    });
+    // ISSUE 16 FIX: Wrap Notification.create in try/catch so it doesn't crash the automation
+    try {
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: message.recipient_email,
+        type: "new_message",
+        title: `💬 New message from ${senderName}`,
+        message: messagePreview,
+        link: `/Messages?conversation=${message.conversation_id}`,
+        read: false
+      });
+    } catch (notifErr) {
+      console.warn('Message notification create failed (non-fatal):', notifErr.message);
+    }
 
     return Response.json({ 
       success: true,

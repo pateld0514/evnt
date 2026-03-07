@@ -162,8 +162,10 @@ Deno.serve(async (req) => {
 
     // Professional email template wrapper
     // Provide client/vendor email dynamically
+    // ISSUE 12 FIX: Use APP_URL env var instead of hardcoded domain
+    const appUrl = Deno.env.get('APP_URL') || 'https://joinevnt.com';
     const getEmailLink = (recipientEmail) => {
-     return `https://evnt.com/unsubscribe?email=${encodeURIComponent(recipientEmail || 'noreply@evnt.com')}`;
+     return `${appUrl}/unsubscribe?email=${encodeURIComponent(recipientEmail || '')}`;
     };
 
     const wrapEmail = (content, preheader, recipientEmail) => `
@@ -200,8 +202,8 @@ Deno.serve(async (req) => {
      <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a> or text <a href="tel:6094423524" style="color: #000000; text-decoration: none; font-weight: 600;">609-442-3524</a></p>
      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
        <a href="${getEmailLink(recipientEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> | 
-       <a href="https://evnt.com/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
-       <a href="https://evnt.com/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
+       <a href="${appUrl}/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> | 
+         <a href="${appUrl}/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
      </p>
     </div>
     </div>

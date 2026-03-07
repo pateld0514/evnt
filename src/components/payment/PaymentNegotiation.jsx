@@ -347,12 +347,17 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               >
                 Decline Proposal
               </Button>
+              {/* ISSUE 13 FIX: Counter Offer button was broken (input was disabled for clients).
+                  Replace with "Request Changes via Message" which is the correct UX flow. */}
               <Button
-                onClick={() => setAgreedPrice("")}
+                onClick={() => {
+                  onClose();
+                  window.dispatchEvent(new CustomEvent('open-messages', { detail: { bookingId: booking.id } }));
+                }}
                 variant="outline"
                 className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
               >
-                Counter Offer
+                Request Changes
               </Button>
             </div>
           )}
