@@ -543,7 +543,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                 </div>
                 <Button
                   onClick={generateAIInsights}
-                  disabled={loadingInsights || bookings.length === 0}
+                  disabled={loadingInsights || bookings.length === 0 || insightsCooldown}
                   className="bg-white text-purple-600 hover:bg-gray-100 font-bold"
                 >
                   {loadingInsights ? (
@@ -551,6 +551,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Analyzing...
                     </>
+                  ) : insightsCooldown ? (
+                    `Wait ${cooldownSecondsLeft}s`
                   ) : (
                     "Generate Insights"
                   )}
