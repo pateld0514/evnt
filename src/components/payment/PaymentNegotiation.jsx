@@ -103,8 +103,11 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
               totalAmount: calc.total_amount_charged,
               vendorPayout: calc.vendor_payout,
               finalFeePercent: calc.platform_fee_percent,
-              appliedDiscount: calc.discount_applied || 0,
-              discountSource: calc.discount_applied > 0 ? 'referral_perk' : ''
+              appliedDiscount: calc.client_referral_discount_applied || 0,
+              discountSource: calc.client_referral_discount_applied > 0 ? 'referral_perk' : '',
+              clientReferralInfo: calc.client_referral_info || null,
+              vendorZeroFeeApplied: calc.vendor_referral_fee_waived || false,
+              vendorReferralInfo: calc.vendor_referral_info || null
             });
           }
         } catch (error) {
