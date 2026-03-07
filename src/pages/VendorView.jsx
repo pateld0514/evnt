@@ -194,6 +194,7 @@ export default function VendorViewPage() {
         {vendor?.id ? (
           <BookingForm
             vendor={vendor}
+            eventId={eventId}
             onSuccess={() => setBookingOpen(false)}
             onCancel={() => setBookingOpen(false)}
           />
