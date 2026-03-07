@@ -48,6 +48,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Set vendor_id on User entity to pass Booking RLS checks
+    const users = await base44.entities.User.filter({ email: 'evnttestvendor@gmail.com' });
+    if (users.length > 0) {
+      await base44.auth.updateMe({ vendor_id: vendor.id });
+    }
+
     // Create fake bookings
     const bookingData = [
       {
