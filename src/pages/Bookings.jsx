@@ -272,14 +272,17 @@ export default function BookingsPage() {
     }
   };
 
-  const handleCancelBooking = (bookingId) => {
-    const booking = bookings.find(b => b.id === bookingId);
-    updateBookingMutation.mutate({
-      bookingId,
-      data: { status: "cancelled" },
-      oldStatus: booking?.status,
-      expectedUpdatedDate: booking?.updated_date
-    });
+  // ISSUE 9 FIX: Use cancelBooking backend function so Stripe escrow is also cancelled
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      await base44.functions.invoke('cancelBooking', { bookingId, reason: 'Cancelled by client' });
+      queryClient.invalidateQueries(['bookings']);
+      setDetailsOpen(false);
+      toast.success("Booking cancelled successfully");
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Failed to cancel booking";
+      toast.error(errMsg);
+    }
   };
 
   // Real-time subscription for messages
@@ -369,7 +372,8 @@ export default function BookingsPage() {
       {/* Status Tabs */}
       <div className="mb-6 md:mb-8 flex justify-center">
         <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="w-full max-w-4xl">
-          <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-gray-100 border-2 border-black">
+          {/* ISSUE 17 FIX: Responsive grid for mobile */}
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto p-1 bg-gray-100 border-2 border-black">
             <TabsTrigger value="all" className="py-1.5 md:py-2 text-xs md:text-sm data-[state=active]:bg-black data-[state=active]:text-white font-bold">
               All
               <Badge className="ml-1 md:ml-2 bg-black text-white text-xs px-1.5 py-0.5 data-[state=active]:bg-white data-[state=active]:text-black">
