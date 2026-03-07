@@ -17,7 +17,7 @@ export default function VendorDashboard() {
   const navigate = useNavigate();
   const [aiInsights, setAiInsights] = useState(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
-  // ISSUE 18 FIX: 60-second cooldown after generating insights
+  // M-2 FIX: Cooldown initialized from BOTH localStorage and vendor.last_insights_generated (server-side)
   const [insightsCooldown, setInsightsCooldown] = useState(() => {
     const last = localStorage.getItem('insights_last_generated');
     if (!last) return false;
