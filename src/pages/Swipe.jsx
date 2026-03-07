@@ -359,14 +359,16 @@ export default function SwipePage() {
     setResetConfirmOpen(false);
     try {
       setIsProcessing(true);
-      await Promise.all(swipedVendors.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
+      // Only delete left-swipes (passed vendors), keep right-swipes (saved vendors) hidden
+      const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
+      await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
       setLocallySwipedIds(new Set());
       clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
       queryClient.invalidateQueries(['reviews']);
-      toast.success("Swipe history cleared! All vendors restored.");
+      toast.success("Passed vendors restored! Saved vendors remain hidden.");
     } catch (error) {
       toast.error("Failed to reset");
     } finally {
