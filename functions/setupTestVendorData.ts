@@ -9,22 +9,40 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Find the test vendor by email or search all approved vendors
-    let vendors = await base44.asServiceRole.entities.Vendor.filter({
-      created_by: 'evnttestvendor@gmail.com'
-    });
-
-    // If not found by creator, search by business name containing "test"
-    if (vendors.length === 0) {
-      const allVendors = await base44.asServiceRole.entities.Vendor.list();
-      vendors = allVendors.filter(v => v.business_name?.toLowerCase().includes('test'));
+    // Find or create the test vendor
+    let vendor = null;
+    
+    // Try to find by ID first
+    try {
+      vendor = await base44.asServiceRole.entities.Vendor.get('69ab4d57efd7f8b8d0af9876');
+    } catch (e) {
+      // ID might be different, search by email
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({
+        created_by: 'evnttestvendor@gmail.com'
+      });
+      if (vendors.length > 0) {
+        vendor = vendors[0];
+      }
     }
 
-    if (vendors.length === 0) {
-      return Response.json({ error: 'Test vendor not found. Create vendor first.' }, { status: 404 });
+    if (!vendor) {
+      // Create test vendor if doesn't exist
+      vendor = await base44.asServiceRole.entities.Vendor.create({
+        business_name: 'EVNT Test Vendor',
+        category: 'Event Planning',
+        description: 'Professional event planning and coordination services',
+        contact_email: 'evnttestvendor@gmail.com',
+        location: 'Washington, DC',
+        approval_status: 'approved',
+        profile_complete: true,
+        is_test_vendor: false,
+        starting_price: 1500,
+        price_range: '$$',
+        specialties: ['Wedding', 'Corporate', 'Birthday', 'Dinner']
+      });
     }
 
-    const vendorId = vendors[0].id;
+    const vendorId = vendor.id;
 
     // Create portfolio items
     const portfolioItems = [
