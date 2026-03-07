@@ -75,7 +75,12 @@ export default function EventDashboardPage() {
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
+      return await base44.entities.Event.filter({
+        $or: [
+          { owner_email: currentUser.email },
+          { created_by: currentUser.email }
+        ]
+      }, '-event_date');
     },
     enabled: !!currentUser?.email,
     initialData: [],
@@ -301,11 +306,17 @@ export default function EventDashboardPage() {
                     <div className="flex-1">
                       <CardTitle className="text-2xl font-black mb-2">{event.name}</CardTitle>
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={statusConfig[event.status].color}>
-                          {statusConfig[event.status].label}
-                        </Badge>
-                        <Badge variant="outline">{event.event_type}</Badge>
-                      </div>
+                         {event.status && statusConfig[event.status] ? (
+                           <Badge className={statusConfig[event.status].color}>
+                             {statusConfig[event.status].label}
+                           </Badge>
+                         ) : (
+                           <Badge className={statusConfig.planning.color}>
+                             {statusConfig.planning.label}
+                           </Badge>
+                         )}
+                         <Badge variant="outline">{event.event_type}</Badge>
+                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -399,13 +410,19 @@ export default function EventDashboardPage() {
                       </div>
                       <div className="space-y-2">
                         {eventBookings.map(booking => (
-                          <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <p className="font-bold">{booking.vendor_name}</p>
-                              <Badge className={`${bookingStatusConfig[booking.status].color} text-xs`}>
-                                {bookingStatusConfig[booking.status].label}
-                              </Badge>
-                            </div>
+                           <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                             <div className="flex-1">
+                               <p className="font-bold">{booking.vendor_name}</p>
+                               {booking.status && bookingStatusConfig[booking.status] ? (
+                                 <Badge className={`${bookingStatusConfig[booking.status].color} text-xs`}>
+                                   {bookingStatusConfig[booking.status].label}
+                                 </Badge>
+                               ) : (
+                                 <Badge className={`${bookingStatusConfig.pending.color} text-xs`}>
+                                   {bookingStatusConfig.pending.label}
+                                 </Badge>
+                               )}
+                             </div>
                             <Button
                               size="sm"
                               variant="outline"
