@@ -75,7 +75,9 @@ export default function EventDashboardPage() {
     queryKey: ['events', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return [];
-      return await base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date');
+      // Filter by both owner_email and created_by since events can be created either way
+      const allEvents = await base44.entities.Event.list('-event_date');
+      return allEvents.filter(e => e.owner_email === currentUser.email || e.created_by === currentUser.email);
     },
     enabled: !!currentUser?.email,
     initialData: [],
