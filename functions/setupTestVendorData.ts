@@ -9,13 +9,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Find the test vendor
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({
+    // Find the test vendor by email or search all approved vendors
+    let vendors = await base44.asServiceRole.entities.Vendor.filter({
       created_by: 'evnttestvendor@gmail.com'
     });
 
+    // If not found by creator, search by business name containing "test"
     if (vendors.length === 0) {
-      return Response.json({ error: 'Test vendor not found' }, { status: 404 });
+      const allVendors = await base44.asServiceRole.entities.Vendor.list();
+      vendors = allVendors.filter(v => v.business_name?.toLowerCase().includes('test'));
+    }
+
+    if (vendors.length === 0) {
+      return Response.json({ error: 'Test vendor not found. Create vendor first.' }, { status: 404 });
     }
 
     const vendorId = vendors[0].id;
