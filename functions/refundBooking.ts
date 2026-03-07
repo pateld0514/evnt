@@ -44,11 +44,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Booking ID required' }, { status: 400 });
     }
 
+    // SECURITY: Admin check runs FIRST — before any DB read.
+    // This prevents non-admins from probing whether a booking ID exists
+    // (timing oracle / enumeration attack).
+    requireAdmin(user);
+
     const bookings = await base44.asServiceRole.entities.Booking.filter({ id: bookingId });
     const booking = bookings[0];
-
-    // SECURITY FIX: Admin check BEFORE 404 to prevent booking ID enumeration by non-admins
-    requireAdmin(user);
 
     if (!booking) {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
