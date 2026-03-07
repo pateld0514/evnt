@@ -95,7 +95,7 @@ export default function BookingsPage() {
       toast.success('Payment successful! Your booking is confirmed.');
       // Clean URL
       window.history.replaceState({}, '', createPageUrl("Bookings"));
-      queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
     } else if (paymentStatus === 'cancelled' && bookingId) {
       toast.error('Payment cancelled. You can try again anytime.');
       // Clean URL
