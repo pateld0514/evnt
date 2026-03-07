@@ -48,8 +48,8 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       });
     },
     enabled: !!currentUser?.email,
-    initialData: [],
-    staleTime: 2 * 60 * 1000,
+    refetchOnMount: 'stale',
+    staleTime: 0,
   });
 
   // Auto-fill form when eventId is provided and events are loaded
