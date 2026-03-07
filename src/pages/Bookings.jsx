@@ -145,12 +145,20 @@ export default function BookingsPage() {
     return () => unsubscribe();
   }, [currentUser, refetch]);
 
+  // H-5 FIX: Only fetch vendors referenced in the user's own bookings — not all vendors
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryKey: ['booking-vendors', bookings.map(b => b.vendor_id).join(',')],
+    queryFn: async () => {
+      const vendorIds = [...new Set(bookings.map(b => b.vendor_id).filter(Boolean))];
+      if (vendorIds.length === 0) return [];
+      const results = await Promise.all(
+        vendorIds.map(id => base44.entities.Vendor.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: bookings.length > 0,
     initialData: [],
     staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
 
   // ISSUE 15 FIX: Filter by client_email instead of created_by to catch all reviews
