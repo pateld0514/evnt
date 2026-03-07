@@ -111,15 +111,19 @@ Deno.serve(async (req) => {
       body: emailContent
     });
 
-    // Create in-app notification
-    await base44.asServiceRole.entities.Notification.create({
-      recipient_email: vendorEmail,
-      type: "review_received",
-      title: `⭐ New ${review.rating}-Star Review`,
-      message: `${review.client_name} left you a review: "${review.description.substring(0, 100)}..."`,
-      link: `/VendorDashboard`,
-      read: false
-    });
+    // ISSUE 5 FIX: Wrap Notification.create in try/catch so it doesn't crash the automation
+    try {
+      await base44.asServiceRole.entities.Notification.create({
+        recipient_email: vendorEmail,
+        type: "review_received",
+        title: `⭐ New ${review.rating}-Star Review`,
+        message: `${review.client_name} left you a review: "${review.description.substring(0, 100)}${review.description.length > 100 ? '...' : ''}"`,
+        link: `/VendorDashboard`,
+        read: false
+      });
+    } catch (notifErr) {
+      console.warn('Review notification create failed (non-fatal):', notifErr.message);
+    }
 
     return Response.json({ 
       success: true,
