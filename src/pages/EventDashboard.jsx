@@ -53,6 +53,7 @@ export default function EventDashboardPage() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [selectedVendors, setSelectedVendors] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     event_type: "",
@@ -92,6 +93,19 @@ export default function EventDashboardPage() {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: vendors = [] } = useQuery({
+    queryKey: ['vendors-list'],
+    queryFn: async () => {
+      return await base44.entities.Vendor.filter({ 
+        approval_status: "approved",
+        profile_complete: true,
+        is_test_vendor: false
+      });
+    },
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
+  });
+
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.Event.create(data),
     onSuccess: () => {
@@ -114,10 +128,23 @@ export default function EventDashboardPage() {
       queryClient.invalidateQueries(['events']);
       setEditingEvent(null);
       resetForm();
+      setSelectedVendors([]);
       toast.success("Event updated!");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update event");
+    },
+  });
+
+  const createBookingMutation = useMutation({
+    mutationFn: (bookingData) => base44.entities.Booking.create(bookingData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
+      setSelectedVendors([]);
+      toast.success("Vendor added to event!");
+    },
+    onError: () => {
+      toast.error("Failed to add vendor");
     },
   });
 
@@ -150,6 +177,7 @@ export default function EventDashboardPage() {
     });
     setCreateOpen(false);
     setEditingEvent(null);
+    setSelectedVendors([]);
   };
 
   const handleSubmit = (e) => {
@@ -186,7 +214,31 @@ export default function EventDashboardPage() {
       notes: event.notes || "",
       status: event.status
     });
+    setSelectedVendors([]);
     setCreateOpen(true);
+  };
+
+  const handleAddVendorsToEvent = () => {
+    if (selectedVendors.length === 0) {
+      toast.error("Please select at least one vendor");
+      return;
+    }
+
+    selectedVendors.forEach(vendorId => {
+      const vendor = vendors.find(v => v.id === vendorId);
+      if (vendor) {
+        createBookingMutation.mutate({
+          event_id: editingEvent.id,
+          vendor_id: vendorId,
+          vendor_name: vendor.business_name,
+          client_email: currentUser.email,
+          client_name: currentUser.full_name,
+          event_type: editingEvent.event_type,
+          event_date: editingEvent.event_date,
+          status: "pending"
+        });
+      }
+    });
   };
 
   const getEventBookings = (eventId) => {
@@ -483,20 +535,74 @@ export default function EventDashboardPage() {
             </div>
 
             {editingEvent && (
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planning">Planning</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2 border-t pt-4">
+                  <Label>Add Vendors to This Event</Label>
+                  <Select 
+                    value={selectedVendors[selectedVendors.length - 1] || ""} 
+                    onValueChange={(vendorId) => {
+                      if (!selectedVendors.includes(vendorId)) {
+                        setSelectedVendors([...selectedVendors, vendorId]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select vendors to add..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map(vendor => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          {vendor.business_name} ({vendor.category})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {selectedVendors.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Selected Vendors ({selectedVendors.length}):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedVendors.map(vendorId => {
+                          const vendor = vendors.find(v => v.id === vendorId);
+                          return (
+                            <Badge key={vendorId} variant="secondary" className="flex items-center gap-1">
+                              {vendor?.business_name}
+                              <button
+                                onClick={() => setSelectedVendors(selectedVendors.filter(id => id !== vendorId))}
+                                className="ml-1 text-xs hover:text-red-600"
+                              >
+                                ✕
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleAddVendorsToEvent}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Add Selected Vendors to Event
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
