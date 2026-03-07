@@ -11,12 +11,21 @@ import { InstallPrompt } from "@/components/mobile/MobileFeatures";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
-  const [userType, setUserType] = useState(null);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState(null);
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('viewMode') || 'desktop';
   });
+
+  // Single source of truth from React Query cache
+  const { data: currentUser = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const currentUserEmail = currentUser?.email;
+  const userType = currentUser?.demo_mode ? currentUser?.demo_user_type : (currentUser?.role === "admin" ? "admin" : currentUser?.user_type);
+  const onboardingComplete = currentUser?.demo_mode ? currentUser?.demo_onboarding_complete : currentUser?.onboarding_complete || (currentUser?.role === "admin");
 
   const { data: messages = [] } = useQuery({
     queryKey: ['unread-messages', currentUserEmail],
@@ -30,43 +39,17 @@ export default function Layout({ children, currentPageName }) {
   });
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUserEmail(user.email);
+    if (!currentUserEmail) return;
 
-        // Check for demo mode
-        if (user.demo_mode) {
-          setUserType(user.demo_user_type);
-          setOnboardingComplete(user.demo_onboarding_complete || false);
-        } else if (user.role === "admin") {
-          // CRITICAL: Admin check uses ONLY role-based authorization
-          setUserType("admin");
-          setOnboardingComplete(true);
-        } else if (user.user_type === "test_vendor") {
-          setUserType("vendor");
-          setOnboardingComplete(true);
-        } else {
-          setUserType(user.user_type);
-          setOnboardingComplete(user.onboarding_complete || false);
-        }
-      } catch (error) {
-        // User not authenticated - this is fine for public pages
-        setUserType(null);
-        setOnboardingComplete(false);
-      }
-    };
-    loadUser();
-
-    // Subscribe to user updates to refresh when profile changes
+    // Subscribe to user updates and invalidate cache
     const unsubscribe = base44.entities.User.subscribe((event) => {
       if (event.type === 'update' && event.data.email === currentUserEmail) {
-        loadUser();
+        queryClient.invalidateQueries({ queryKey: ['current-user'] });
       }
     });
 
     return () => unsubscribe();
-  }, [location, currentUserEmail]);
+  }, [currentUserEmail, queryClient]);
 
   const unreadCount = messages.filter(m => !m.read && m.recipient_email === currentUserEmail).length;
 
