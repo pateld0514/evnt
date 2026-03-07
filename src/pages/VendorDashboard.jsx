@@ -83,8 +83,8 @@ export default function VendorDashboard() {
       // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
       const vendorId = vendor?.id || currentUser?.vendor_id;
       if (!vendorId) return [];
-      const allMessages = await base44.entities.Message.list('-created_date');
-      return allMessages.filter(m => m.vendor_id === vendorId);
+      // ISSUE 17 FIX: Filter server-side instead of fetching all messages
+      return await base44.entities.Message.filter({ vendor_id: vendorId }, '-created_date');
     },
     enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
