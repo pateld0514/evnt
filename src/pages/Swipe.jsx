@@ -79,8 +79,10 @@ export default function SwipePage() {
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
