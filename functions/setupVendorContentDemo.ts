@@ -15,10 +15,12 @@ Deno.serve(async (req) => {
     
     if (vendorByEmail.length > 0) {
       vendor = vendorByEmail[0];
-      // Update vendor to ensure it's properly linked
+      // Update vendor to ensure it's properly linked and Stripe is set for test
       await base44.entities.Vendor.update(vendor.id, {
         approval_status: 'approved',
-        profile_complete: true
+        profile_complete: true,
+        stripe_account_id: 'acct_test_evnttestvendor',
+        stripe_account_verified: true
       });
     } else {
       // Create vendor if doesn't exist
@@ -40,7 +42,9 @@ Deno.serve(async (req) => {
         years_in_business: 15,
         willing_to_travel: true,
         travel_radius: 100,
-        profile_complete: true
+        profile_complete: true,
+        stripe_account_id: 'acct_test_evnttestvendor',
+        stripe_account_verified: true
       });
     }
 
