@@ -327,31 +327,25 @@ export default function SwipePage() {
     sessionStorage.setItem('swipe_filters', JSON.stringify(filters));
   }, [filters]);
 
-  const handleReset = async () => {
+  // M-3 FIX: Separate "clear filters" (safe) from "reset seen vendors" (destructive, needs confirmation)
+  const clearFilters = () => {
+    const emptyFilters = { category: "all", priceRange: "all", minPrice: "", maxPrice: "", location: "", minRating: "all" };
+    setFilters(emptyFilters);
+    sessionStorage.removeItem('swipe_filters');
+  };
+
+  const handleResetSwipes = async () => {
     if (isProcessing) return;
-    
+    setResetConfirmOpen(false);
     try {
       setIsProcessing(true);
-      
       const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
-
       setSwipeHistory([]);
-      const resetFilters = {
-        category: "all",
-        priceRange: "all",
-        minPrice: "",
-        maxPrice: "",
-        location: "",
-        minRating: "all"
-      };
-      setFilters(resetFilters);
-      sessionStorage.removeItem('swipe_filters');
-      
+      clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
       queryClient.invalidateQueries(['reviews']);
-      
       toast.success("Passed vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
