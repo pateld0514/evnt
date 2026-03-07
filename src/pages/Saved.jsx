@@ -65,8 +65,6 @@ export default function SavedPage() {
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
     retry: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
@@ -91,11 +89,9 @@ export default function SavedPage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 0,
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchInterval: 30000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   const deleteMutation = useMutation({

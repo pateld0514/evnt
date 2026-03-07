@@ -67,8 +67,6 @@ export default function SwipePage() {
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
     retry: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   // Redirect if onboarding not complete
@@ -83,10 +81,11 @@ export default function SwipePage() {
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 30 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
@@ -95,31 +94,27 @@ export default function SwipePage() {
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
-    staleTime: 30 * 1000,
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   // User-specific queries — enabled as soon as email is known
-  const { data: swipedVendors = [], isLoading: swipesLoading } = useQuery({
+  const { data: swipedVendors = [] } = useQuery({
     queryKey: ['user-swipes', currentUser?.email],
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 30 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
-  const { data: savedVendors = [], isLoading: savedLoading } = useQuery({
+  const { data: savedVendors = [] } = useQuery({
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 30 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   // Real-time subscription for vendors
@@ -252,8 +247,7 @@ export default function SwipePage() {
       return { swipeId: swipeResult.id, savedVendorId };
     },
     onSuccess: (result, variables) => {
-      // PHASE 2 FIX: Immediately mark as swiped locally so it never reappears even after query re-fetches
-      // This is the source of truth for UI visibility — not server data
+      // Immediately mark as swiped locally so it never reappears even after query re-fetches
       setLocallySwipedIds(prev => new Set([...prev, variables.vendorId]));
 
       setSwipeHistory(prev => [...prev, { 
@@ -264,13 +258,12 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // Remove card from display immediately via locallySwipedIds
+      // After animation completes, remove card and refresh
       setTimeout(() => {
         setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
         setAnimatingVendorId(null);
         setAnimatingDirection(null);
         setIsProcessing(false);
-        // Refetch user swipes after animation to sync with server
         queryClient.invalidateQueries(['user-swipes']);
         if (variables.direction === "right") {
           queryClient.invalidateQueries(['saved-vendors']);

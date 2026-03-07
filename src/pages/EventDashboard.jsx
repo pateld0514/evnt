@@ -68,8 +68,6 @@ export default function EventDashboardPage() {
     queryFn: () => base44.auth.me(),
     staleTime: 5 * 60 * 1000,
     retry: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   const { data: events = [], isLoading } = useQuery({
@@ -84,10 +82,7 @@ export default function EventDashboardPage() {
     },
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: bookings = [] } = useQuery({
@@ -95,10 +90,7 @@ export default function EventDashboardPage() {
     queryFn: () => base44.entities.Booking.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const createEventMutation = useMutation({
