@@ -100,10 +100,12 @@ Deno.serve(async (req) => {
     }
 
     // Check for referral credits the client has earned (as a referred person)
+    // Single lookup — reused for both referral credit check and state fallback (no duplicate query)
     let appliedDiscount = 0;
-    const clientUsers = await base44.asServiceRole.entities.User.filter({ email: booking.client_email });
-    if (clientUsers.length > 0 && clientUsers[0].referral_credit > 0) {
-      appliedDiscount = Math.min(clientUsers[0].referral_credit, agreedAmount);
+    const clientUserRecords = await base44.asServiceRole.entities.User.filter({ email: booking.client_email });
+    const clientUserRecord = clientUserRecords[0] || null;
+    if (clientUserRecord && clientUserRecord.referral_credit > 0) {
+      appliedDiscount = Math.min(clientUserRecord.referral_credit, agreedAmount);
     }
 
     // Apply discount to agreed amount
@@ -113,7 +115,7 @@ Deno.serve(async (req) => {
     const platformFeeAmount = (discountedAmount * finalFeePercent) / 100;
 
     // Get state for tax calculation - prioritize provided state, then booking location, then user profile
-    let stateAbbr = clientState;
+    let stateAbbr = clientState ? clientState.trim().toUpperCase() : null;
     
     if (!stateAbbr && booking.location) {
       // Extract state from "City, ST" format
@@ -123,12 +125,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!stateAbbr) {
-      // Fallback to user's state
-      const clientUsers = await base44.asServiceRole.entities.User.filter({ email: booking.client_email });
-      if (clientUsers.length > 0 && clientUsers[0].state) {
-        stateAbbr = clientUsers[0].state;
-      }
+    if (!stateAbbr && clientUserRecord?.state) {
+      // Fallback to user's profile state — no extra DB query needed (reuse record fetched above)
+      stateAbbr = clientUserRecord.state.trim().toUpperCase();
     }
 
     // Calculate sales tax
