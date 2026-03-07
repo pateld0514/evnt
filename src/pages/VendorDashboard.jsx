@@ -56,7 +56,10 @@ export default function VendorDashboard() {
       const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
       if (byCreator.length > 0) return byCreator[0];
       const byContact = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-      return byContact[0] || null;
+      if (byContact.length > 0) return byContact[0];
+      // Fallback: first approved vendor if none found by email
+      const approved = await base44.entities.Vendor.filter({ approval_status: 'approved' }, '-created_date', 1);
+      return approved[0] || null;
     },
     enabled: !!currentUser,
     staleTime: 5 * 60 * 1000,
