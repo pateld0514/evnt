@@ -126,7 +126,7 @@ export default function BookingsPage() {
         return await base44.entities.Booking.filter({ client_email: currentUser.email }, '-created_date');
       }
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.email,
     initialData: [],
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -166,6 +166,8 @@ export default function BookingsPage() {
     queryKey: ['reviews', currentUser?.email],
     queryFn: () => base44.entities.Review.filter({ client_email: currentUser.email }),
     enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 2 * 60 * 1000,
   });
@@ -215,7 +217,7 @@ export default function BookingsPage() {
       return updated;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
       setDetailsOpen(false);
       toast.success("Booking updated!");
     },
@@ -283,7 +285,7 @@ export default function BookingsPage() {
   const handleCancelBooking = async (bookingId) => {
     try {
       await base44.functions.invoke('cancelBooking', { bookingId, reason: 'Cancelled by client' });
-      queryClient.invalidateQueries(['bookings']);
+      queryClient.invalidateQueries({ queryKey: ['bookings', currentUser?.email] });
       setDetailsOpen(false);
       toast.success("Booking cancelled successfully");
     } catch (error) {

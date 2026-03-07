@@ -72,10 +72,13 @@ export default function SwipePage() {
     }
   }, [currentUser, navigate]);
 
-  // All data queries fire in parallel immediately (vendors/bookings/reviews/users don't need auth)
+  // All data queries fire in parallel — enabled after user session is confirmed
   const { data: vendors = [], isLoading } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: ['vendors', currentUser?.email],
     queryFn: () => base44.entities.Vendor.list(),
+    enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -84,8 +87,11 @@ export default function SwipePage() {
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
   // Tier badges now use VendorTier entity data embedded on vendor record (no user/booking leak)
   const { data: reviews = [] } = useQuery({
-    queryKey: ['reviews'],
+    queryKey: ['reviews', currentUser?.email],
     queryFn: () => base44.entities.Review.list(),
+    enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

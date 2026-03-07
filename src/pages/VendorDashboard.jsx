@@ -92,6 +92,7 @@ export default function VendorDashboard() {
     enabled: !!(vendor?.id || currentUser?.vendor_id),
     initialData: [],
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
     staleTime: 0,
   });
 

@@ -59,6 +59,8 @@ export default function MessagesPage() {
       );
     },
     enabled: !!currentUser,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     refetchInterval: selectedConversation ? 10000 : false,
     staleTime: 30 * 1000,
   });
@@ -75,14 +77,17 @@ export default function MessagesPage() {
   }, [currentUser, queryClient]);
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: ['vendors', currentUser?.email],
     queryFn: () => base44.entities.Vendor.list(),
+    enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
   const { data: bookings = [] } = useQuery({
-    queryKey: ['bookings-for-messages'],
+    queryKey: ['bookings-for-messages', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
       if (isVendor && vendorData) {
@@ -92,6 +97,8 @@ export default function MessagesPage() {
       }
     },
     enabled: !!currentUser && (isVendor ? !!vendorData : true),
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     staleTime: 2 * 60 * 1000,
   });
 
@@ -104,7 +111,7 @@ export default function MessagesPage() {
       return await base44.entities.Message.create(messageData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['messages']);
+      queryClient.invalidateQueries({ queryKey: ['messages', currentUser?.email] });
       setMessageText("");
     },
     onError: (error) => {

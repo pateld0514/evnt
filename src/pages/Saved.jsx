@@ -73,10 +73,13 @@ export default function SavedPage() {
     }
   }, [currentUser, navigate]);
 
-  // Vendors load immediately — no auth needed
+  // Vendors load after user session is confirmed
   const { data: allVendors = [], isLoading: loadingVendors } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: ['vendors', currentUser?.email],
     queryFn: () => base44.entities.Vendor.list(),
+    enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -87,6 +90,8 @@ export default function SavedPage() {
     queryKey: ['saved-vendors', currentUser?.email],
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }, '-created_date'),
     enabled: !!currentUser?.email,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -101,8 +106,8 @@ export default function SavedPage() {
       return await base44.entities.SavedVendor.delete(savedVendorId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['saved-vendors']);
-      queryClient.invalidateQueries(['user-swipes']);
+      queryClient.invalidateQueries({ queryKey: ['saved-vendors', currentUser?.email] });
+      queryClient.invalidateQueries({ queryKey: ['user-swipes', currentUser?.email] });
       toast.success("Removed from favorites");
     },
     onError: (error) => {
