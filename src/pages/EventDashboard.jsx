@@ -72,14 +72,7 @@ export default function EventDashboardPage() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', currentUser?.email],
-    queryFn: async () => {
-      const [byOwner, byCreated] = await Promise.all([
-        base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
-        base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date'),
-      ]);
-      const all = [...byOwner, ...byCreated];
-      return all.filter((e, i) => all.findIndex(x => x.id === e.id) === i);
-    },
+    queryFn: () => base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date'),
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
@@ -241,7 +234,7 @@ export default function EventDashboardPage() {
         <div className="grid gap-6">
           {events.map(event => {
             const eventBookings = getEventBookings(event.id);
-            const confirmedBookings = eventBookings.filter(b => b.status === "confirmed" || b.status === "in_progress").length;
+            const acceptedBookings = eventBookings.filter(b => b.status === "accepted").length;
             
             return (
               <Card key={event.id} className="border-2 border-black">
@@ -341,28 +334,18 @@ export default function EventDashboardPage() {
                   {eventBookings.length > 0 ? (
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold">Vendors ({eventBookings.length})</h3>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-green-600 text-white">
-                            {confirmedBookings} Confirmed
-                          </Badge>
-                          <Button
-                            size="sm"
-                            className="bg-black text-white hover:bg-gray-800 font-bold"
-                            onClick={() => navigate(createPageUrl("Swipe") + `?eventId=${event.id}`)}
-                          >
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Vendor
-                          </Button>
-                        </div>
+                        <h3 className="font-bold">Bookings ({eventBookings.length})</h3>
+                        <Badge className="bg-green-600 text-white">
+                          {acceptedBookings} Confirmed
+                        </Badge>
                       </div>
                       <div className="space-y-2">
                         {eventBookings.map(booking => (
                           <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex-1">
                               <p className="font-bold">{booking.vendor_name}</p>
-                              <Badge className={`${bookingStatusConfig[booking.status]?.color || "bg-gray-100 text-gray-800"} text-xs`}>
-                                {bookingStatusConfig[booking.status]?.label || booking.status}
+                              <Badge className={`${bookingStatusConfig[booking.status].color} text-xs`}>
+                                {bookingStatusConfig[booking.status].label}
                               </Badge>
                             </div>
                             <Button
@@ -381,7 +364,7 @@ export default function EventDashboardPage() {
                     <div className="text-center py-8 bg-gray-50 rounded-lg">
                       <p className="text-gray-500 mb-4">No vendors booked yet</p>
                       <Button
-                        onClick={() => navigate(createPageUrl("Swipe") + `?eventId=${event.id}`)}
+                        onClick={() => navigate(createPageUrl("Swipe"))}
                         variant="outline"
                         className="border-2 border-black"
                       >

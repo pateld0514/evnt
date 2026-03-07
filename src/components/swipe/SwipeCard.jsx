@@ -48,14 +48,14 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removingDirection, completedBookingsCount = 0, eventId = null }) {
+export default function SwipeCard({ vendor, onSwipe, style, isRemoving, completedBookingsCount = 0 }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [viewTracked, setViewTracked] = useState(false);
   const completedBookings = completedBookingsCount;
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 300], [-30, 30]);
+  const rotate = useTransform(x, [-200, 200], [-25, 25]);
 
   const getTier = (completedCount) => {
     if (completedCount >= 100) return { name: "Elite", icon: "👑", color: "bg-purple-100 text-purple-800 border-purple-300" };
@@ -102,14 +102,9 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
   const handleDragEnd = (event, info) => {
     if (!onSwipe || isRemoving) return;
     
-    const swipeThreshold = 80;
-    const velocityThreshold = 500;
-    const shouldSwipe =
-      Math.abs(info.offset.x) > swipeThreshold ||
-      Math.abs(info.velocity.x) > velocityThreshold;
-
-    if (shouldSwipe) {
-      const direction = info.offset.x > 0 || info.velocity.x > 0 ? "right" : "left";
+    const threshold = 80;
+    if (Math.abs(info.offset.x) > threshold) {
+      const direction = info.offset.x > 0 ? "right" : "left";
       onSwipe(direction);
     }
   };
@@ -119,22 +114,25 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
       <motion.div
         style={{ 
           ...style,
-          x: !isRemoving ? x : undefined,
-          rotate: !isRemoving ? rotate : undefined,
+          x: onSwipe && !isRemoving ? x : 0,
+          rotate: onSwipe && !isRemoving ? rotate : 0,
         }}
         drag={onSwipe && !isRemoving ? "x" : false}
-        dragConstraints={{ left: -1000, right: 1000 }}
-        dragElastic={0.9}
-        dragMomentum={false}
+        dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
         whileTap={onSwipe && !isRemoving ? { cursor: "grabbing" } : {}}
         animate={isRemoving ? {
-          x: removingDirection === "left" ? -1200 : 1200,
-          y: -80,
-          rotate: removingDirection === "left" ? -30 : 30,
+          x: 1000,
+          y: -100,
+          rotate: -30,
           opacity: 0,
-        } : undefined}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+          transition: { duration: 0.3 }
+        } : !onSwipe ? { 
+          scale: style?.transform?.includes('scale') ? parseFloat(style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1,
+          y: style?.transform?.includes('translateY') ? parseFloat(style.transform.match(/translateY\((-?[\d.]+)px\)/)?.[1] || 0) : 0,
+          opacity: style?.opacity || 1,
+          transition: { type: "spring", stiffness: 300, damping: 30 }
+        } : {}}
       >
         <Card className={`h-full bg-white shadow-2xl border-4 border-black flex flex-col overflow-hidden ${onSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}>
           <div className="relative flex-shrink-0" style={{ height: '55%' }}>
@@ -157,7 +155,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
 
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [20, 120], [0, 1]) }}
+              style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
             >
               <div className="bg-green-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[-20deg]">
                 LIKE
@@ -166,7 +164,7 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
             
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
-              style={{ opacity: useTransform(x, [-120, -20], [1, 0]) }}
+              style={{ opacity: useTransform(x, [-100, 0], [1, 0]) }}
             >
               <div className="bg-red-500 text-white text-4xl font-black px-8 py-4 rounded-2xl border-4 border-white rotate-[20deg]">
                 PASS
@@ -450,10 +448,9 @@ export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removing
           </DialogHeader>
           
           <BookingForm
-           vendor={vendor}
-           eventId={eventId}
-           onSuccess={() => setBookingOpen(false)}
-           onCancel={() => setBookingOpen(false)}
+            vendor={vendor}
+            onSuccess={() => setBookingOpen(false)}
+            onCancel={() => setBookingOpen(false)}
           />
         </DialogContent>
       </Dialog>

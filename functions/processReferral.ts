@@ -42,9 +42,9 @@ Deno.serve(async (req) => {
 
     const results = [];
 
-    // Process client referral - pass bookingData so vendor can be rewarded too
+    // Process client referral
     if (bookingData.client_email) {
-      const clientResult = await processForPerson(base44, bookingData.client_email, 'client', bookingData);
+      const clientResult = await processForPerson(base44, bookingData.client_email, 'client');
       results.push({ type: 'client', result: clientResult });
     }
 
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       if (vendorRecords.length > 0) {
         const vendorEmail = vendorRecords[0].created_by || vendorRecords[0].contact_email;
         if (vendorEmail) {
-          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor', bookingData);
+          const vendorResult = await processForPerson(base44, vendorEmail, 'vendor');
           results.push({ type: 'vendor', result: vendorResult });
         }
       }
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function processForPerson(base44, referred_email, referred_type, bookingData = null) {
+async function processForPerson(base44, referred_email, referred_type) {
   // Check if this person was referred and has pending rewards
   const pendingReferrals = await base44.asServiceRole.entities.ReferralReward.filter({
     referred_email,
@@ -187,31 +187,6 @@ async function processForPerson(base44, referred_email, referred_type, bookingDa
           message: `You've completed your first booking! You've earned 1 commission-free booking as a welcome bonus.`,
           read: false
         });
-      }
-    }
-
-    // --- If a CLIENT was referred, also reward the VENDOR they booked ---
-    // The vendor who served the referred client's first booking earns a commission-free booking too
-    if (referred_type === 'client' && bookingData?.vendor_id) {
-      const bookedVendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: bookingData.vendor_id });
-      if (bookedVendorRecords.length > 0) {
-        const bookedVendorEmail = bookedVendorRecords[0].created_by || bookedVendorRecords[0].contact_email;
-        if (bookedVendorEmail) {
-          const bookedVendorUsers = await base44.asServiceRole.entities.User.filter({ email: bookedVendorEmail });
-          if (bookedVendorUsers.length > 0) {
-            const bookedVendorUser = bookedVendorUsers[0];
-            await base44.asServiceRole.entities.User.update(bookedVendorUser.id, {
-              commission_free_bookings: (bookedVendorUser.commission_free_bookings || 0) + 1
-            });
-            await base44.asServiceRole.entities.Notification.create({
-              recipient_email: bookedVendorEmail,
-              type: 'payment_received',
-              title: 'Referral Reward: 0% EVNT Fee! 🎉',
-              message: `A referred client completed their first booking with you! You've earned 1 commission-free (0% EVNT fee) booking as a thank-you.`,
-              read: false
-            });
-          }
-        }
       }
     }
 

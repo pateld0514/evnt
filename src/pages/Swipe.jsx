@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Heart, Loader2, SlidersHorizontal, Undo, RotateCcw, RefreshCw, Calendar as CalendarIcon } from "lucide-react";
+import { X, Heart, Loader2, SlidersHorizontal, Undo, RotateCcw } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -38,9 +38,6 @@ export default function SwipePage() {
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [animatingVendorId, setAnimatingVendorId] = useState(null);
-  const [animatingDirection, setAnimatingDirection] = useState(null);
-  // Track locally-swiped vendor IDs so they never reappear even if the query re-fetches before backend syncs
-  const [locallySwipedIds, setLocallySwipedIds] = useState(new Set());
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [filters, setFilters] = useState(() => {
     try {
@@ -59,7 +56,6 @@ export default function SwipePage() {
   });
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('event') || 'event';
-  const eventId = urlParams.get('eventId') || null;
 
   // Load current user - fires immediately
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
@@ -81,11 +77,8 @@ export default function SwipePage() {
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
@@ -105,7 +98,6 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
-    refetchInterval: 30000,
   });
 
   const { data: savedVendors = [] } = useQuery({
@@ -114,7 +106,6 @@ export default function SwipePage() {
     enabled: !!currentUser?.email,
     initialData: [],
     staleTime: 2 * 60 * 1000,
-    refetchInterval: 30000,
   });
 
   // Real-time subscription for vendors
@@ -126,8 +117,8 @@ export default function SwipePage() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (isLoading) return;
-    if (vendors.length === 0) {
+    if (userLoading) return;
+    if (!currentUser || vendors.length === 0) {
       setDisplayableVendors([]);
       return;
     }
@@ -137,8 +128,8 @@ export default function SwipePage() {
       const profileComplete = vendor.profile_complete === true;
       // Use the is_test_vendor flag directly — no User list fetch needed
       const isTestVendor = vendor.is_test_vendor === true;
-      // Exclude ALL swiped vendors (both left passes and right likes) AND saved vendors — once seen/saved, never shown again
-      const notSwiped = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id) && !locallySwipedIds.has(vendor.id) && !savedVendors.some(saved => saved.vendor_id === vendor.id);
+      const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
+      const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
       const matchesPriceRange = filters.priceRange === "all" || vendor.price_range === filters.priceRange;
       
@@ -177,10 +168,10 @@ export default function SwipePage() {
       }
       if (!minPriceValid || !maxPriceValid) return false;
       
-      return isApproved && profileComplete && !isTestVendor && notSwiped && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
+      return isApproved && profileComplete && !isTestVendor && notSwipedLeft && notSaved && matchesCategory && matchesPriceRange && matchesPrice && matchesLocation && matchesRating;
     }).sort((a, b) => {
       
-      const userLocation = currentUser?.location?.toLowerCase() || filters.location?.toLowerCase() || "";
+      const userLocation = currentUser.location?.toLowerCase() || filters.location?.toLowerCase() || "";
       const aLocationMatch = a.location?.toLowerCase() === userLocation;
       const bLocationMatch = b.location?.toLowerCase() === userLocation;
       if (aLocationMatch && !bLocationMatch) return -1;
@@ -209,7 +200,7 @@ export default function SwipePage() {
       return 0;
     });
     setDisplayableVendors(filteredAndSorted);
-  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, isLoading, locallySwipedIds]);
+  }, [vendors, swipedVendors, savedVendors, filters, reviews, currentUser, eventType, userLoading]);
 
   const swipeMutation = useMutation({
     mutationFn: async ({ vendorId, direction, vendor }) => {
@@ -247,9 +238,6 @@ export default function SwipePage() {
       return { swipeId: swipeResult.id, savedVendorId };
     },
     onSuccess: (result, variables) => {
-      // Immediately mark as swiped locally so it never reappears even after query re-fetches
-      setLocallySwipedIds(prev => new Set([...prev, variables.vendorId]));
-
       setSwipeHistory(prev => [...prev, { 
         swipeId: result.swipeId, 
         savedId: result.savedVendorId,
@@ -258,17 +246,15 @@ export default function SwipePage() {
         vendor: variables.vendor 
       }]);
       
-      // After animation completes, remove card and refresh
+      // Wait for animation to complete before refreshing data
       setTimeout(() => {
-        setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
-        setAnimatingVendorId(null);
-        setAnimatingDirection(null);
-        setIsProcessing(false);
         queryClient.invalidateQueries(['user-swipes']);
         if (variables.direction === "right") {
           queryClient.invalidateQueries(['saved-vendors']);
         }
-      }, 350);
+        setAnimatingVendorId(null);
+        setIsProcessing(false);
+      }, 400);
     },
     onError: () => {
       toast.error("Failed to process swipe");
@@ -291,7 +277,6 @@ export default function SwipePage() {
     
     setIsProcessing(true);
     setAnimatingVendorId(currentVendor.id);
-    setAnimatingDirection(direction);
     
     swipeMutation.mutate({
       vendorId: currentVendor.id,
@@ -325,11 +310,6 @@ export default function SwipePage() {
       }
       
       setSwipeHistory(prev => prev.slice(0, -1));
-      setLocallySwipedIds(prev => {
-        const next = new Set(prev);
-        next.delete(lastSwipe.vendorId);
-        return next;
-      });
       
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['saved-vendors']);
@@ -359,16 +339,14 @@ export default function SwipePage() {
     setResetConfirmOpen(false);
     try {
       setIsProcessing(true);
-      // Only delete left-swipes (passed vendors), keep right-swipes (saved vendors) hidden
       const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
-      setLocallySwipedIds(new Set());
       clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
       queryClient.invalidateQueries(['reviews']);
-      toast.success("Passed vendors restored! Saved vendors remain hidden.");
+      toast.success("Passed vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
     } finally {
@@ -376,11 +354,11 @@ export default function SwipePage() {
     }
   };
 
-  if (userLoading || isLoading) {
+  if (userLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-black mb-4" />
-        <p className="text-gray-600 font-medium">Loading vendors...</p>
+        <p className="text-gray-600 font-medium">Loading...</p>
       </div>
     );
   }
@@ -396,12 +374,6 @@ export default function SwipePage() {
         <p className="text-base md:text-lg lg:text-xl text-gray-600 font-medium">
           Swipe right to save, left to pass
         </p>
-        {eventId && (
-          <div className="mt-3 inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm font-bold">
-            <CalendarIcon className="w-4 h-4" />
-            Adding vendor to your event
-          </div>
-        )}
       </div>
 
       <div className="mb-4 md:mb-6">
@@ -522,19 +494,13 @@ export default function SwipePage() {
                 Clear Filters
               </Button>
               <Button
-                onClick={() => {
-                  queryClient.invalidateQueries(['vendors']);
-                  queryClient.invalidateQueries(['user-swipes']);
-                  queryClient.invalidateQueries(['saved-vendors']);
-                  queryClient.invalidateQueries(['reviews']);
-                  toast.success("Refreshed!");
-                }}
+                onClick={() => setResetConfirmOpen(true)}
                 variant="outline"
-                className="w-full border-2 border-gray-400 text-gray-700 hover:bg-gray-50"
+                className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50"
                 disabled={isProcessing}
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh Vendors
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset Seen Vendors
               </Button>
             </div>
           </SheetContent>
@@ -549,9 +515,7 @@ export default function SwipePage() {
               vendor={vendor}
               onSwipe={index === 0 ? handleSwipe : null}
               isRemoving={vendor.id === animatingVendorId}
-              removingDirection={vendor.id === animatingVendorId ? animatingDirection : null}
               completedBookingsCount={0}
-              eventId={eventId}
               style={{
                 position: 'absolute',
                 width: '100%',
@@ -570,43 +534,26 @@ export default function SwipePage() {
                 <Heart className="w-12 h-12 text-white" />
               </div>
               <h3 className="text-2xl font-black text-black mb-3">
-                You've Seen All Vendors!
+                No More Vendors!
               </h3>
               <p className="text-gray-600 mb-6">
-                Check your saved vendors or reset to browse passed ones again.
+                You've seen all vendors matching your filters.
               </p>
-              <div className="flex flex-col gap-3 items-center">
-                <Button
-                  onClick={() => {
-                    queryClient.invalidateQueries(['vendors']);
-                    queryClient.invalidateQueries(['user-swipes']);
-                    queryClient.invalidateQueries(['saved-vendors']);
-                    queryClient.invalidateQueries(['reviews']);
-                    toast.success("Refreshed!");
-                  }}
-                  variant="outline"
-                  className="w-full border-2 border-black font-bold"
-                  disabled={isProcessing}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh Session
-                </Button>
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="w-full border-2 border-gray-400 font-bold text-gray-700"
-                >
-                  Clear Filters
-                </Button>
-                <Button
-                  onClick={() => setResetConfirmOpen(true)}
-                  className="w-full bg-black text-white hover:bg-gray-800 font-bold"
-                  disabled={isProcessing}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset Passed Vendors
-                </Button>
-              </div>
+              <Button
+                onClick={clearFilters}
+                variant="outline"
+                className="border-2 border-black font-bold mb-2"
+              >
+                Clear Filters
+              </Button>
+              <Button
+                onClick={() => setResetConfirmOpen(true)}
+                className="bg-black text-white hover:bg-gray-800 font-bold"
+                disabled={isProcessing}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset Seen Vendors
+              </Button>
             </div>
           </div>
         )}

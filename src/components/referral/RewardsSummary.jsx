@@ -58,8 +58,8 @@ export default function RewardsSummary({ user, userType }) {
                 <Zap className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="font-black text-gray-900">0% EVNT Fee Bookings</p>
-                <p className="text-xs text-gray-600">Earned from referrals — applied automatically on your next booking</p>
+                <p className="font-black text-gray-900">Commission-Free Bookings</p>
+                <p className="text-xs text-gray-600">Applied automatically on your next completed booking</p>
               </div>
             </div>
             <Badge className="bg-green-600 text-white text-lg px-4 py-2 font-black">
