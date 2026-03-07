@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { Home, Heart, Sparkles, MessageSquare, User, Calendar, Info, LayoutDashboard, Monitor, Smartphone, DollarSign, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import InAppNotifications from "@/components/notifications/InAppNotifications";
 import { InstallPrompt } from "@/components/mobile/MobileFeatures";
 
