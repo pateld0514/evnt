@@ -356,9 +356,9 @@ export default function SwipePage() {
     setResetConfirmOpen(false);
     try {
       setIsProcessing(true);
-      const leftSwipes = swipedVendors.filter(swipe => swipe.direction === "left");
-      await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
+      await Promise.all(swipedVendors.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
+      setLocallySwipedIds(new Set());
       clearFilters();
       queryClient.invalidateQueries(['user-swipes']);
       queryClient.invalidateQueries(['vendors']);
