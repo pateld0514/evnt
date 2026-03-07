@@ -84,9 +84,10 @@ Deno.serve(async (req) => {
     
     const booking = bookings[0];
     
+    // C-4 FIX: Idempotency guard — also handle gracefully if unique constraint fires on concurrent create
     const existingPayouts = await base44.asServiceRole.entities.VendorPayout.filter({ booking_id: booking.id });
     if (existingPayouts.length > 0) {
-      return Response.json({ success: true, message: 'Payout already processed' });
+      return Response.json({ success: true, message: 'Payout already processed', idempotent: true });
     }
 
     if (booking.payment_status !== 'escrow') {
