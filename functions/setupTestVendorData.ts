@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       {
         event_id: null,
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'sarah.j@example.com',
         client_name: 'Sarah Johnson',
         client_phone: '555-0101',
@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
       {
         event_id: null,
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'michael.c@example.com',
         client_name: 'Michael Chen',
         client_phone: '555-0102',
@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
       {
         event_id: null,
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'emma.w@example.com',
         client_name: 'Emma Williams',
         client_phone: '555-0103',
@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
       {
         event_id: null,
         vendor_id: vendorId,
-        vendor_name: vendors[0].business_name,
+        vendor_name: vendor.business_name,
         client_email: 'david.m@example.com',
         client_name: 'David Martinez',
         client_phone: '555-0104',
