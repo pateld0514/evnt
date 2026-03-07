@@ -495,13 +495,19 @@ export default function SwipePage() {
                 Clear Filters
               </Button>
               <Button
-                onClick={() => setResetConfirmOpen(true)}
+                onClick={() => {
+                  queryClient.invalidateQueries(['vendors']);
+                  queryClient.invalidateQueries(['user-swipes']);
+                  queryClient.invalidateQueries(['saved-vendors']);
+                  queryClient.invalidateQueries(['reviews']);
+                  toast.success("Refreshed!");
+                }}
                 variant="outline"
-                className="w-full border-2 border-red-600 text-red-600 hover:bg-red-50"
+                className="w-full border-2 border-gray-400 text-gray-700 hover:bg-gray-50"
                 disabled={isProcessing}
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset Seen Vendors
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh Vendors
               </Button>
             </div>
           </SheetContent>
