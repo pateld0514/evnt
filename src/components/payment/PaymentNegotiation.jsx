@@ -294,19 +294,28 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             <span>Agreed Service Price:</span>
             <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
           </div>
+          {/* CLIENT REFERRAL DISCOUNT DISPLAY */}
           {totals.appliedDiscount > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
-              <span>✨ Referral Credit Applied:</span>
+            <div className="flex justify-between text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
+              <span>✨ Referral Credit Applied (One-time Use):</span>
               <span className="font-bold">-${totals.appliedDiscount.toFixed(2)}</span>
             </div>
           )}
+
+          {/* VENDOR ZERO-FEE DISCOUNT DISPLAY */}
+          {totals.vendorZeroFeeApplied && (
+            <div className="flex justify-between text-sm text-purple-600 bg-purple-50 px-2 py-1 rounded">
+              <span>🎁 Vendor Referral Bonus Applied (0% EVNT Fee, One-time Use)</span>
+            </div>
+          )}
+
           <div className="flex justify-between text-lg font-bold pt-2 border-t-2 border-black">
             <span>Client Pays Total:</span>
             <span className="text-green-600">${totals.totalAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-blue-800 pt-2 border-t border-gray-300"> {/* Fix #37: darken color for better contrast */}
-            <span>EVNT Fee ({(totals.finalFeePercent || platformFeePercent).toFixed(1)}%):</span>
-            <span className="font-bold">-${totals.platformFeeAmount.toFixed(2)}</span>
+            <span>EVNT Fee {totals.vendorZeroFeeApplied ? '(Waived - Referral Bonus)' : `(${(totals.finalFeePercent || platformFeePercent).toFixed(1)}%)`}:</span>
+            <span className="font-bold">{totals.vendorZeroFeeApplied ? 'FREE' : `-$${totals.platformFeeAmount.toFixed(2)}`}</span>
           </div>
           {totals.salesTax > 0 && (
             <div className="flex justify-between text-sm text-blue-800"> {/* Fix #37: darken color */}
