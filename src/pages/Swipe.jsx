@@ -83,11 +83,10 @@ export default function SwipePage() {
     queryKey: ['vendors'],
     queryFn: () => base44.entities.Vendor.list(),
     initialData: [],
-    staleTime: 0,
+    staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchInterval: 30000,
   });
 
   // ISSUE 3 FIX: Removed all-bookings fetch — use vendor.is_test_vendor flag instead (Issue 4 fix too)
@@ -96,11 +95,10 @@ export default function SwipePage() {
     queryKey: ['reviews'],
     queryFn: () => base44.entities.Review.list(),
     initialData: [],
-    staleTime: 0,
+    staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchInterval: 30000,
   });
 
   // User-specific queries — enabled as soon as email is known
@@ -109,8 +107,7 @@ export default function SwipePage() {
     queryFn: () => base44.entities.UserSwipe.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 0,
-    refetchInterval: 30000,
+    staleTime: 30 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
@@ -120,8 +117,7 @@ export default function SwipePage() {
     queryFn: () => base44.entities.SavedVendor.filter({ created_by: currentUser.email }),
     enabled: !!currentUser?.email,
     initialData: [],
-    staleTime: 0,
-    refetchInterval: 30000,
+    staleTime: 30 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
