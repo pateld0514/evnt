@@ -50,8 +50,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Verify user is authorized (vendor, client, or admin)
-    const isVendor = user.vendor_id && booking.vendor_id === user.vendor_id;
+    // C-2 FIX: Cross-validate vendor ownership via Vendor.created_by, not user.vendor_id
+    const vendorAuthRecords = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+    const isVendor = vendorAuthRecords[0]?.created_by === user.email;
     const isClient = booking.client_email === user.email;
     const isAdmin = user.role === "admin";
 

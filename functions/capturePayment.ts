@@ -47,6 +47,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Booking not found' }, { status: 404 });
     }
 
+    // C-1 FIX: Verify caller is admin or the vendor who owns this booking
+    const isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: booking.vendor_id });
+      const isVendorOwner = vendorRecords[0]?.created_by === user.email;
+      if (!isVendorOwner) {
+        return Response.json({ error: 'Forbidden: Only the vendor or admin can capture payment' }, { status: 403 });
+      }
+    }
+
     let idempotencyKey = booking.idempotency_key;
     if (!idempotencyKey) {
       idempotencyKey = requestId;

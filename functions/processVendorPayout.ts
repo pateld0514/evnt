@@ -29,12 +29,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // C-3 FIX: Null-guard before any property access
     const user = await base44.auth.me();
-    const isAdmin = user?.role === 'admin';
-    
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const isAdmin = user.role === 'admin';
     
     const payload = await req.json();
     
