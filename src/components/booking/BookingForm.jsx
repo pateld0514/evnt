@@ -209,7 +209,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
                 {event.name} - {formatDate(event.event_date)}
               </SelectItem>
             ))}
-            <SelectItem value={null}>New Booking (no event link)</SelectItem>
+            <SelectItem value={null}>Book Without Event Link</SelectItem>
           </SelectContent>
         </Select>
         {events.length === 0 && (
