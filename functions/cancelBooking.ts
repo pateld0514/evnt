@@ -99,17 +99,25 @@ Deno.serve(async (req) => {
       if (!booking.payment_intent_id) {
         return Response.json({ error: 'Payment intent ID missing - cannot cancel escrow payment' }, { status: 400 });
       }
+      // ISSUE 8 FIX: If Stripe cancel fails, do NOT mark booking as cancelled.
+      // Return an error and direct to refund flow instead of silently swallowing.
+      let paymentIntent;
       try {
-        const paymentIntent = await stripe.paymentIntents.cancel(booking.payment_intent_id);
+        paymentIntent = await stripe.paymentIntents.cancel(booking.payment_intent_id);
         cancellationResult = { cancelled: true, paymentIntentId: paymentIntent.id };
       } catch (stripeError) {
-        console.error('[cancelBooking] Error canceling payment intent:', stripeError);
+        console.error('[cancelBooking] Stripe cancel failed:', stripeError.message);
+        return Response.json({
+          error: 'Payment is already captured and cannot be cancelled at this stage. Please request a refund instead.',
+          stripe_error: stripeError.message,
+          redirect_to_refund: true
+        }, { status: 400 });
       }
     }
 
     await base44.asServiceRole.entities.Booking.update(bookingId, {
       status: 'cancelled',
-      payment_status: 'cancelled',
+      payment_status: booking.payment_status === 'escrow' ? 'cancelled' : booking.payment_status,
       cancellation_reason: reason || 'Cancelled by user',
       cancelled_date: new Date().toISOString(),
     });
