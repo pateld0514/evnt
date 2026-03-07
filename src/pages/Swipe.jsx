@@ -114,15 +114,6 @@ export default function SwipePage() {
     return () => unsubscribe();
   }, [queryClient]);
 
-  const getVendorTier = (vendorId) => {
-    const completedCount = bookings.filter(b => b.vendor_id === vendorId && b.status === "completed").length;
-    if (completedCount >= 100) return 5;
-    if (completedCount >= 51) return 4;
-    if (completedCount >= 16) return 3;
-    if (completedCount >= 6) return 2;
-    return 1;
-  };
-
   useEffect(() => {
     if (userLoading) return;
     if (!currentUser || vendors.length === 0) {
@@ -133,9 +124,8 @@ export default function SwipePage() {
     const filteredAndSorted = vendors.filter(vendor => {
       const isApproved = vendor.approval_status === "approved";
       const profileComplete = vendor.profile_complete === true;
-      // Exclude vendors owned by test_vendor accounts
-      const ownerUser = allUsers?.find(u => u.email === vendor.created_by);
-      const isTestVendor = ownerUser?.user_type === 'test_vendor';
+      // Use the is_test_vendor flag directly — no User list fetch needed
+      const isTestVendor = vendor.is_test_vendor === true;
       const notSwipedLeft = !swipedVendors.some(swipe => swipe.vendor_id === vendor.id && swipe.direction === "left");
       const notSaved = !savedVendors.some(saved => saved.vendor_id === vendor.id);
       const matchesCategory = filters.category === "all" || vendor.category === filters.category;
