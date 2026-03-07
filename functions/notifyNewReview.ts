@@ -91,7 +91,13 @@ Deno.serve(async (req) => {
     </div>
     <div class="footer">
       <p style="margin: 8px 0;">© ${new Date().getFullYear()} EVNT. All rights reserved.</p>
-      <p style="margin: 8px 0;">Questions? Email <a href="mailto:support@evnt.com" style="color: #000000; text-decoration: none; font-weight: 600;">support@evnt.com</a></p>
+      <p style="margin: 8px 0;">Questions? Email <a href="mailto:${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}" style="color: #000000; text-decoration: none; font-weight: 600;">${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}</a></p>
+      <!-- ISSUE 20 FIX: Add required CAN-SPAM unsubscribe footer -->
+      <p style="margin: 12px 0 8px 0; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 11px;">
+        <a href="${Deno.env.get('APP_URL') || 'https://joinevnt.com'}/unsubscribe?email=${encodeURIComponent(vendorEmail)}" style="color: #0066cc; text-decoration: none;">Unsubscribe</a> |
+        <a href="${Deno.env.get('APP_URL') || 'https://joinevnt.com'}/privacy" style="color: #0066cc; text-decoration: none;">Privacy Policy</a> |
+        <a href="${Deno.env.get('APP_URL') || 'https://joinevnt.com'}/terms" style="color: #0066cc; text-decoration: none;">Terms of Service</a>
+      </p>
     </div>
   </div>
 </body>

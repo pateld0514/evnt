@@ -75,15 +75,14 @@ export default function AdminDashboardPage() {
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['admin-bookings'],
+    // ISSUE 15 FIX: Use already-cached vendors instead of double-fetching getAllVendorsForAdmin
     queryFn: async () => {
-      const [batch, vendorList] = await Promise.all([
-        base44.entities.Booking.list('-created_date', 500),
-        base44.functions.invoke('getAllVendorsForAdmin', {}).then(r => r.data || [])
-      ]);
-      const realVendorIds = new Set(vendorList.map(v => v.id));
+      const batch = await base44.entities.Booking.list('-created_date', 500);
+      const cachedVendors = vendors.length > 0 ? vendors : (await base44.functions.invoke('getAllVendorsForAdmin', {}).then(r => r.data || []));
+      const realVendorIds = new Set(cachedVendors.map(v => v.id));
       return batch.filter(b => realVendorIds.has(b.vendor_id));
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser && vendors.length > 0,
     initialData: [],
   });
 
