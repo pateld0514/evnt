@@ -343,9 +343,10 @@ export default function SwipePage() {
       await Promise.all(leftSwipes.map(swipe => base44.entities.UserSwipe.delete(swipe.id)));
       setSwipeHistory([]);
       clearFilters();
-      // Scope invalidations to user-specific keys only — don't invalidate global vendor/review cache
+      // Refresh user-specific swipe data and the vendor list for this page
       queryClient.invalidateQueries({ queryKey: ['user-swipes', currentUser?.email] });
       queryClient.invalidateQueries({ queryKey: ['saved-vendors', currentUser?.email] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       toast.success("Passed vendors restored!");
     } catch (error) {
       toast.error("Failed to reset");
