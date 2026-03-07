@@ -180,14 +180,21 @@ export default function VendorViewPage() {
     <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">Book {vendor?.business_name}</DialogTitle>
+          <DialogTitle className="text-2xl font-black">
+            {vendor?.business_name ? `Book ${vendor.business_name}` : "Book Vendor"}
+          </DialogTitle>
         </DialogHeader>
-        {vendor && (
+        {vendor?.id ? (
           <BookingForm
             vendor={vendor}
             onSuccess={() => setBookingOpen(false)}
             onCancel={() => setBookingOpen(false)}
           />
+        ) : (
+          <div className="p-4 text-center">
+            <p className="text-gray-600 font-medium">Loading vendor details...</p>
+            <Loader2 className="w-8 h-8 animate-spin text-black mx-auto mt-4" />
+          </div>
         )}
       </DialogContent>
     </Dialog>
