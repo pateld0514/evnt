@@ -48,7 +48,7 @@ const categoryLabels = {
   event_planner: "Event Planner"
 };
 
-export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removingDirection, completedBookingsCount = 0 }) {
+export default function SwipeCard({ vendor, onSwipe, style, isRemoving, removingDirection, completedBookingsCount = 0, eventId = null }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
