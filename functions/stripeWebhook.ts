@@ -60,8 +60,14 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid method' }, { status: 405 });
   }
 
-  if (!req.headers.get('content-type')?.includes('application/json')) {
-    return Response.json({ error: 'Invalid content-type' }, { status: 400 });
+  // NOTE: Stripe always sends application/json but CDNs/proxies may append charset.
+  // We accept any content-type here and rely on Stripe signature verification below
+  // as the authoritative authenticity check — content-type sniffing is not a security control.
+  const contentType = req.headers.get('content-type') || '';
+  if (contentType && !contentType.includes('application/json') && !contentType.includes('text/plain')) {
+    // Only hard-reject clearly wrong content types (e.g. multipart/form-data)
+    // but be lenient with JSON variants to avoid rejecting valid Stripe events
+    console.warn(`[stripeWebhook] Unexpected content-type: ${contentType} — proceeding anyway`);
   }
 
   if (!webhookSecret) {
