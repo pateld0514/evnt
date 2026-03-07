@@ -15,9 +15,24 @@ Deno.serve(async (req) => {
     
     if (vendorByEmail.length > 0) {
       vendor = vendorByEmail[0];
-      // Update vendor to ensure it's properly linked and Stripe is set for test
+      // Always update vendor to ensure all details and Stripe are properly set
       await base44.entities.Vendor.update(vendor.id, {
+        business_name: 'Elite Wedding Events',
+        category: 'wedding_planner',
+        description: 'Premium wedding planning services with 15+ years of experience',
+        contact_phone: '(301) 555-0142',
+        location: 'Washington, DC',
+        price_range: '$$$$',
+        image_url: 'https://images.unsplash.com/photo-1519167271174-1c5e1c69feae?w=800&h=600&fit=crop',
+        website: 'https://eliteweddings.com',
+        instagram: '@eliteweddingdc',
         approval_status: 'approved',
+        starting_price: 5000,
+        average_price: 15000,
+        pricing_type: 'package',
+        years_in_business: 15,
+        willing_to_travel: true,
+        travel_radius: 100,
         profile_complete: true,
         stripe_account_id: 'acct_test_evnttestvendor',
         stripe_account_verified: true
