@@ -244,6 +244,9 @@ export default function SwipePage() {
       return { swipeId: swipeResult.id, savedVendorId };
     },
     onSuccess: (result, variables) => {
+      // Immediately mark as swiped locally so it never reappears even after query re-fetches
+      setLocallySwipedIds(prev => new Set([...prev, variables.vendorId]));
+
       setSwipeHistory(prev => [...prev, { 
         swipeId: result.swipeId, 
         savedId: result.savedVendorId,
@@ -254,7 +257,6 @@ export default function SwipePage() {
       
       // After animation completes, remove card and refresh
       setTimeout(() => {
-        // Optimistically remove the swiped vendor from the display list
         setDisplayableVendors(prev => prev.filter(v => v.id !== variables.vendorId));
         setAnimatingVendorId(null);
         setAnimatingDirection(null);
