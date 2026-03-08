@@ -86,7 +86,11 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-7">
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+        <p className="text-sm text-blue-900 font-medium">💡 Keep your profile up to date so vendors can reach you easily</p>
+      </div>
+
       <div className="space-y-2">
         <Label className="text-base font-bold">Full Name *</Label>
         <Input

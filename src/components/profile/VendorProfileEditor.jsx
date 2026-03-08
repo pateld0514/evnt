@@ -175,10 +175,17 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+        <p className="text-sm text-green-900 font-medium">💼 Your profile is what clients see first—make it count!</p>
+      </div>
+
       {/* Personal Info */}
       <div className="space-y-4">
-        <h3 className="text-lg font-black">Personal Information</h3>
+        <h3 className="text-xl font-black text-black flex items-center gap-2">
+          <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center text-sm font-bold">1</div>
+          Personal Information
+        </h3>
         
         <div className="space-y-2">
           <Label className="text-base font-bold">Full Name *</Label>
@@ -208,8 +215,11 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
       </div>
 
       {/* Business Info */}
-      <div className="space-y-4 pt-4 border-t-2 border-gray-200">
-        <h3 className="text-lg font-black">Business Information</h3>
+      <div className="space-y-4 pt-6 border-t-2 border-gray-200">
+        <h3 className="text-xl font-black text-black flex items-center gap-2">
+          <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center text-sm font-bold">2</div>
+          Business Information
+        </h3>
         
         <div className="space-y-2">
           <Label className="text-base font-bold">Business Name *</Label>
@@ -375,8 +385,11 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
       </div>
 
       {/* Images */}
-      <div className="space-y-4 pt-4 border-t-2 border-gray-200">
-        <h3 className="text-lg font-black">Photos</h3>
+      <div className="space-y-4 pt-6 border-t-2 border-gray-200">
+        <h3 className="text-xl font-black text-black flex items-center gap-2">
+          <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center text-sm font-bold">3</div>
+          Showcase Your Work
+        </h3>
         
         {/* Main Image */}
         <div className="space-y-2">
@@ -451,8 +464,11 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
       </div>
 
       {/* Social Media */}
-      <div className="space-y-4 pt-4 border-t-2 border-gray-200">
-        <h3 className="text-lg font-black">Website & Social Media</h3>
+      <div className="space-y-4 pt-6 border-t-2 border-gray-200">
+        <h3 className="text-xl font-black text-black flex items-center gap-2">
+          <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center text-sm font-bold">4</div>
+          Online Presence
+        </h3>
         
         <div className="space-y-3">
           <div className="space-y-2">
