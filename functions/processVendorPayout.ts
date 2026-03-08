@@ -52,7 +52,13 @@ Deno.serve(async (req) => {
         if (!entityId) {
           return Response.json({ success: true, message: 'payload_too_large and no entity_id — skipping' });
         }
-        const fetchedBookings = await base44.asServiceRole.entities.Booking.filter({ id: entityId });
+        let fetchedBookings;
+        try {
+          fetchedBookings = await base44.asServiceRole.entities.Booking.filter({ id: entityId });
+        } catch (e) {
+          console.warn('[processVendorPayout] payload_too_large fetch failed:', e.message);
+          return Response.json({ success: true, message: 'payload_too_large fetch failed — skipping' });
+        }
         if (!fetchedBookings.length) {
           return Response.json({ success: true, message: 'Booking not found after payload_too_large fetch' });
         }
