@@ -62,8 +62,10 @@ export default function VendorDashboard() {
       return approved[0] || null;
     },
     enabled: !!currentUser,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const vendor = vendorData;
