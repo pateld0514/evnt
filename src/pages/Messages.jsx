@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,22 +76,7 @@ export default function MessagesPage() {
     return () => unsubscribe();
   }, [currentUser, queryClient]);
 
-  // H-7 FIX: Only fetch vendors referenced in this user's bookings (not all vendors platform-wide)
-  const { data: vendors = [] } = useQuery({
-    queryKey: ['message-vendors', currentUser?.email, bookings.map(b => b.vendor_id).join(',')],
-    queryFn: async () => {
-      const vendorIds = [...new Set(bookings.map(b => b.vendor_id).filter(Boolean))];
-      if (vendorIds.length === 0) return [];
-      const results = await Promise.all(
-        vendorIds.map(id => base44.entities.Vendor.filter({ id }).then(r => r[0]).catch(() => null))
-      );
-      return results.filter(Boolean);
-    },
-    enabled: bookings.length > 0,
-    initialData: [],
-    staleTime: 5 * 60 * 1000,
-  });
-
+  // Fetch bookings first (needed for vendors query)
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings-for-messages', currentUser?.email],
     queryFn: async () => {
@@ -106,6 +91,22 @@ export default function MessagesPage() {
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     staleTime: 2 * 60 * 1000,
+  });
+
+  // H-7 FIX: Only fetch vendors referenced in this user's bookings (not all vendors platform-wide)
+  const { data: vendors = [] } = useQuery({
+    queryKey: ['message-vendors', currentUser?.email, bookings.map(b => b.vendor_id).join(',')],
+    queryFn: async () => {
+      const vendorIds = [...new Set(bookings.map(b => b.vendor_id).filter(Boolean))];
+      if (vendorIds.length === 0) return [];
+      const results = await Promise.all(
+        vendorIds.map(id => base44.entities.Vendor.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      return results.filter(Boolean);
+    },
+    enabled: bookings.length > 0,
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
   });
 
   const sendMessageMutation = useMutation({
