@@ -15,11 +15,14 @@ Deno.serve(async (req) => {
     }
 
     // Check if vendor - use vendor's Stripe account ID
-    let stripeAccountId = user.stripe_account_id;
+    // vendor_id may be nested in user.data or at top level
+    const vendorId = user.vendor_id || user.data?.vendor_id;
+    const userType = user.user_type || user.data?.user_type;
+    let stripeAccountId = user.stripe_account_id || user.data?.stripe_account_id;
     
-    if (user.user_type === 'vendor' && user.vendor_id) {
+    if (userType === 'vendor' && vendorId) {
       // Fetch vendor record to get Stripe account
-      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: user.vendor_id });
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
       if (vendors.length > 0 && vendors[0].stripe_account_id) {
         stripeAccountId = vendors[0].stripe_account_id;
       }
