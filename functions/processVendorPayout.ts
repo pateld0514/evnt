@@ -29,13 +29,6 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // C-3 FIX: Null-guard before any property access
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const isAdmin = user.role === 'admin';
-    
     const payload = await req.json();
     
     let booking_id = payload.booking_id || payload.data?.id;
@@ -44,6 +37,14 @@ Deno.serve(async (req) => {
     
     const isAutomationTrigger = payload.event?.type === 'update';
     
+    // Entity automation triggers have no user token — skip auth check for them
+    if (!isAutomationTrigger) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+    }
+
     if (isAutomationTrigger) {
       // ISSUE 11 FIX: Handle payload_too_large — fetch booking directly if data was omitted
       if (payload.payload_too_large) {

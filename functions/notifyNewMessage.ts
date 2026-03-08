@@ -6,9 +6,10 @@ Deno.serve(async (req) => {
     const payload = await req.json();
 
     // Allow entity automation calls (no user token) OR authenticated users OR internal secret
+    const isEntityAutomation = !!payload.event;
     const isAuthenticated = await base44.auth.isAuthenticated();
     const hasSecret = payload._secret === Deno.env.get('INTERNAL_SECRET');
-    if (!isAuthenticated && !hasSecret) {
+    if (!isEntityAutomation && !isAuthenticated && !hasSecret) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

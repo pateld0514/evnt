@@ -104,13 +104,17 @@ Deno.serve(async (req) => {
 </html>
     `;
 
-    // Send email
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: vendorEmail,
-      from_name: "EVNT Reviews",
-      subject: `⭐ New ${review.rating}-Star Review from ${review.client_name}`,
-      body: emailContent
-    });
+    // Send email (non-fatal)
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: vendorEmail,
+        from_name: "EVNT Reviews",
+        subject: `⭐ New ${review.rating}-Star Review from ${review.client_name}`,
+        body: emailContent
+      });
+    } catch (emailErr) {
+      console.warn('[notifyNewReview] Email failed (non-fatal):', emailErr.message);
+    }
 
     // ISSUE 5 FIX: Wrap Notification.create in try/catch so it doesn't crash the automation
     try {
