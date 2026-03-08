@@ -336,7 +336,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
             <p className="text-3xl font-black text-black">{bookings.length}</p>
             <p className="text-sm text-gray-700 font-medium">Total Bookings</p>
             {pendingBookings > 0 && (
-              <p className="text-xs text-red-600 font-bold mt-1">{pendingBookings} pending</p>
+              <p className="text-xs text-red-600 font-bold mt-1">{pluralize(pendingBookings, "Pending")}</p>
             )}
           </CardContent>
         </Card>
@@ -352,7 +352,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
             <p className="text-3xl font-black text-black">{messages.length}</p>
             <p className="text-sm text-gray-700 font-medium">Messages</p>
             {unreadMessages > 0 && (
-              <p className="text-xs text-red-600 font-bold mt-1">{unreadMessages} unread</p>
+              <p className="text-xs text-red-600 font-bold mt-1">{pluralize(unreadMessages, "Unread")}</p>
             )}
           </CardContent>
         </Card>
@@ -392,15 +392,15 @@ Provide 4-5 specific, actionable insights in this JSON format:
                 {bookings.slice(0, 5).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
                     <div>
-                      <p className="font-bold">{booking.client_name}</p>
-                      <p className="text-sm text-gray-700">{booking.event_type}</p>
+                      <p className="font-bold">{booking.client_name || "Unknown Client"}</p>
+                      <p className="text-sm text-gray-700">{toTitleCase(booking.event_type)}</p>
                     </div>
                     <Badge className={
                       booking.status === "pending" ? "bg-yellow-100 text-yellow-800 border-yellow-300" :
                       booking.status === "confirmed" ? "bg-green-100 text-green-800 border-green-300" :
                       "bg-gray-100 text-gray-800 border-gray-300"
                     }>
-                      {booking.status}
+                      {toTitleCase(booking.status)}
                     </Badge>
                   </div>
                 ))}
