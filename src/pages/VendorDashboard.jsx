@@ -425,9 +425,22 @@ Provide 4-5 specific, actionable insights in this JSON format:
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
-              {vendor.image_url && (
-                <img src={vendor.image_url} alt={`${vendor.business_name} profile photo`} className="w-full h-32 object-cover rounded-lg border-2 border-gray-300" />
-              )}
+              <div className="w-full h-32 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
+                {vendor.image_url ? (
+                  <img
+                    src={vendor.image_url}
+                    alt={`${vendor.business_name} profile photo`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                  />
+                ) : null}
+                <div
+                  className="w-full h-full items-center justify-center bg-gray-200"
+                  style={{ display: vendor.image_url ? 'none' : 'flex' }}
+                >
+                  <Store className="w-10 h-10 text-gray-400" />
+                </div>
+              </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Business Name</p>
                 <p className="font-bold">{vendor.business_name}</p>
@@ -479,7 +492,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                 <div className="flex items-center justify-between mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                 </div>
-                <p className="text-3xl font-black text-black">${vendorRevenue.toLocaleString()}</p>
+                <p className="text-3xl font-black text-black">{formatCurrency(vendorRevenue)}</p>
                 <p className="text-sm text-gray-700 font-medium">Net Revenue After Fees</p>
                 <p className="text-xs text-gray-500 mt-1">After EVNT fee & taxes</p>
               </CardContent>
@@ -490,7 +503,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                 <div className="flex items-center justify-between mb-2">
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                 </div>
-                <p className="text-3xl font-black text-black">${avgBookingValue.toFixed(0)}</p>
+                <p className="text-3xl font-black text-black">{formatCurrency(avgBookingValue)}</p>
                 <p className="text-sm text-gray-700 font-medium">Avg Booking Value</p>
               </CardContent>
             </Card>
@@ -521,7 +534,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                       .map(([location, count]) => (
                         <div key={location} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
                           <span className="font-bold">{location}</span>
-                          <Badge className="bg-black text-white">{count} bookings</Badge>
+                          <Badge className="bg-black text-white">{pluralize(count, "Booking")}</Badge>
                         </div>
                       ))}
                   </div>
@@ -543,7 +556,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
                       .map(([eventType, count]) => (
                         <div key={eventType} className="flex items-center justify-between p-3 bg-gray-50 rounded border-2 border-gray-200">
                           <span className="font-bold">{eventType}</span>
-                          <Badge className="bg-black text-white">{count} bookings</Badge>
+                          <Badge className="bg-black text-white">{pluralize(count, "Booking")}</Badge>
                         </div>
                       ))}
                   </div>
