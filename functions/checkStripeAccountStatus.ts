@@ -34,6 +34,18 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Short-circuit for test/demo accounts — never hit the real Stripe API
+    if (stripeAccountId.startsWith('acct_test_')) {
+      return Response.json({
+        connected: true,
+        charges_enabled: true,
+        payouts_enabled: true,
+        details_submitted: true,
+        account_id: stripeAccountId,
+        is_test_account: true
+      });
+    }
+
     // Retrieve account details from Stripe
     const account = await stripe.accounts.retrieve(stripeAccountId);
 
