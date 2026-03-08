@@ -157,13 +157,19 @@ export default function ClientRegistrationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full border-4 border-black">
-        <CardHeader className="bg-black text-white">
-          <CardTitle className="text-3xl font-black">Create Your Client Profile</CardTitle>
-          <p className="text-gray-300 mt-2">Tell us about your events so we can find the perfect vendors</p>
+      <Card className="max-w-2xl w-full border-4 border-black shadow-2xl">
+        <CardHeader className="bg-gradient-to-r from-black to-gray-900 text-white">
+          <div className="space-y-2">
+            <CardTitle className="text-4xl font-black">Let's Get Started!</CardTitle>
+            <p className="text-gray-200 text-lg">Tell us about your events so we can find the perfect vendors for you</p>
+          </div>
         </CardHeader>
         <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-2">
+              <p className="text-sm text-blue-900 font-medium">📍 We'll match you with vendors in your area</p>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-lg font-bold">Phone Number *</Label>

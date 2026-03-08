@@ -138,10 +138,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
-      <div className="text-center mb-6 md:mb-8">
-        <h1 className="text-3xl md:text-4xl font-black text-black mb-2">Profile</h1>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        <div className="text-center mb-8 md:mb-10">
+          <h1 className="text-4xl md:text-5xl font-black text-black mb-3">My Profile</h1>
+          <p className="text-lg text-gray-600 font-medium">{user?.user_type === "vendor" ? "Manage your vendor account" : "Manage your event planning account"}</p>
+        </div>
 
       <Tabs defaultValue="profile" className="mb-6">
         <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -392,6 +394,8 @@ export default function ProfilePage() {
           {user && <BugReportForm user={user} />}
         </TabsContent>
       </Tabs>
+      </div>
+    </div>
 
       {/* Edit Profile Dialog */}
       <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
