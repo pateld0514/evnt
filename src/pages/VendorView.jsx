@@ -9,7 +9,6 @@ import { Loader2, MapPin, DollarSign, Globe, Instagram, Facebook, Twitter, Music
 import { toast } from "sonner";
 import ReviewsList from "../components/vendor/ReviewsList";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BookingForm from "../components/booking/BookingForm";
 
