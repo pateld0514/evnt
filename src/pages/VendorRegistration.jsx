@@ -382,13 +382,19 @@ export default function VendorRegistrationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
-      <Card className="max-w-3xl mx-auto border-4 border-black">
-        <CardHeader className="bg-black text-white">
-          <CardTitle className="text-3xl font-black">Vendor Registration</CardTitle>
-          <p className="text-gray-300 mt-2">Join EVNT and grow your event business</p>
+      <Card className="max-w-3xl mx-auto border-4 border-black shadow-2xl">
+        <CardHeader className="bg-gradient-to-r from-black to-gray-900 text-white">
+          <div className="space-y-2">
+            <CardTitle className="text-4xl font-black">Start Your Vendor Journey</CardTitle>
+            <p className="text-gray-200 text-lg">Join thousands of vendors earning on EVNT</p>
+          </div>
         </CardHeader>
         <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg">
+              <p className="text-sm text-amber-900 font-medium">✨ Fields marked with * are required to activate your vendor profile</p>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-lg font-bold">Business Name *</Label>
               <Input

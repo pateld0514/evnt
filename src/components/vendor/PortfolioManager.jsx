@@ -91,19 +91,22 @@ export default function PortfolioManager({ vendorId }) {
 
   return (
     <Card className="border-4 border-black shadow-lg">
-      <CardHeader className="bg-black text-white">
+      <CardHeader className="bg-gradient-to-r from-black to-gray-900 text-white">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl md:text-3xl font-black">Portfolio Showcases</CardTitle>
+          <div>
+            <CardTitle className="text-3xl font-black">Your Portfolio</CardTitle>
+            <p className="text-gray-300 mt-1 text-sm">Showcase your best work to impress clients</p>
+          </div>
           <Button onClick={() => setIsAdding(!isAdding)} variant="ghost" className="text-white hover:bg-gray-800 font-bold">
             <Plus className="w-5 h-5 mr-2" />
             Add Item
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {isAdding && (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 bg-gray-50">
-            <div className="space-y-4">
+          <div className="border-2 border-dashed border-blue-400 rounded-lg p-6 mb-6 bg-blue-50 mb-8">
+            <div className="space-y-5">
               <div>
                 <Label>Media Type</Label>
                 <Select value={newItem.type} onValueChange={(val) => setNewItem({ ...newItem, type: val })}>
@@ -182,35 +185,39 @@ export default function PortfolioManager({ vendorId }) {
           <div className="text-center py-10 text-gray-500 font-medium text-base">Loading portfolio...</div>
         ) : portfolioItems.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-gray-300">
-              <Image className="w-10 h-10 text-gray-400" />
+            <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-gray-300">
+              <Image className="w-12 h-12 text-gray-400" />
             </div>
-            <p className="text-xl font-black text-gray-700 mb-2">No portfolio items yet</p>
-            <p className="text-base">Add your best work to showcase to clients</p>
+            <p className="text-2xl font-black text-gray-800 mb-2">No Portfolio Yet</p>
+            <p className="text-base text-gray-600 mb-4">Your best work goes here. Start adding photos and videos to impress clients!</p>
+            <Button onClick={() => setIsAdding(true)} className="bg-black text-white hover:bg-gray-800 font-bold">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Item
+            </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {portfolioItems.map((item) => (
-              <div key={item.id} className="border rounded-lg overflow-hidden group relative">
-                <div className="aspect-video bg-gray-100 relative">
+              <div key={item.id} className="border-2 border-gray-200 rounded-xl overflow-hidden group relative shadow-md hover:shadow-xl transition-all duration-300">
+                <div className="aspect-video bg-gray-200 relative overflow-hidden">
                   {item.type === "image" ? (
-                    <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <video src={item.url} className="w-full h-full object-cover" controls />
                   )}
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                     onClick={() => deleteMutation.mutate(item.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="p-3">
-                  <h4 className="font-semibold text-sm mb-1">{item.title}</h4>
+                <div className="p-4 bg-white">
+                  <h4 className="font-bold text-sm text-black mb-2">{item.title}</h4>
                   {item.event_type && (
-                    <p className="text-xs text-gray-500 mb-2">{item.event_type}</p>
+                    <p className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-1 rounded-full mb-2 inline-block">{item.event_type}</p>
                   )}
                   {item.description && (
                     <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>
