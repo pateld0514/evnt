@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
     }
 
     // CRITICAL: Use only standardized stripe_fee_amount field
-    if (!booking.stripe_fee_amount && booking.stripe_fee_amount !== 0) {
+    if (booking.stripe_fee_amount === undefined || booking.stripe_fee_amount === null) {
       console.error(`[${requestId}] CRITICAL: Missing stripe_fee_amount.`);
       return Response.json({ 
         error: 'Stripe fee not calculated. Please recalculate proposal.' 
