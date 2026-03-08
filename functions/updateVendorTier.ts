@@ -28,6 +28,10 @@ Deno.serve(async (req) => {
     
     // Only process if booking was just completed
     if (payload.event?.type === 'update') {
+      // Guard: if old_data is absent, skip to avoid duplicate processing
+      if (payload.old_data === null || payload.old_data === undefined) {
+        return Response.json({ success: true, message: 'No old_data — cannot determine transition, skipping to avoid duplicates' });
+      }
       const justCompleted = bookingData?.status === 'completed' && payload.old_data?.status !== 'completed';
       if (!justCompleted) {
         return Response.json({ success: true, message: 'Not a completion event, skipped' });
