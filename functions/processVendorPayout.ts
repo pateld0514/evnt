@@ -72,7 +72,6 @@ Deno.serve(async (req) => {
         }
       }
     } else {
-      requireAdmin(user);
       if (!payload.booking_id) {
         return Response.json({ error: 'booking_id required' }, { status: 400 });
       }
