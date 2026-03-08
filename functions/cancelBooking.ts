@@ -4,7 +4,7 @@ import Stripe from 'npm:stripe@17.5.0';
 // Inlined from lib/bookingStateMachine.js — no local imports allowed in Deno Deploy
 const VALID_TRANSITIONS = {
   pending: ['negotiating', 'declined', 'cancelled'],
-  negotiating: ['payment_pending', 'cancelled', 'declined'],
+  negotiating: ['payment_pending', 'pending', 'cancelled', 'declined'],
   payment_pending: ['confirmed', 'cancelled'],
   confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
