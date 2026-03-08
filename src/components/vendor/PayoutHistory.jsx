@@ -6,30 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, CheckCircle, Clock, XCircle } from "lucide-react";
 import { format } from "date-fns";
 
-export default function PayoutHistory({ vendorId }) {
-  const { data: payouts = [], isLoading } = useQuery({
-    queryKey: ['payouts', vendorId],
-    queryFn: async () => {
-      if (!vendorId) return [];
-      // Get all bookings for this vendor that are completed
-      const bookings = await base44.entities.Booking.filter({ vendor_id: vendorId, status: 'completed' }, '-created_date');
-      // Return bookings as payout records (since VendorPayout might not have records yet)
-      return bookings.map(b => ({
-        id: b.id,
-        booking_id: b.id,
-        vendor_id: b.vendor_id,
-        gross_amount: b.agreed_price || b.budget || 0,
-        platform_fee: b.platform_fee_amount || 0,
-        net_amount: b.vendor_payout || (b.agreed_price || b.budget || 0),
-        status: 'completed',
-        created_date: b.created_date,
-        payout_date: b.updated_date
-      }));
-    },
-    enabled: !!vendorId,
-    refetchOnMount: true,
-    staleTime: 0,
-  });
+export default function PayoutHistory({ vendorId, completedBookings }) {
+  // Use pre-loaded bookings if provided, otherwise show empty
+  const payouts = (completedBookings || []).map(b => ({
+    id: b.id,
+    booking_id: b.id,
+    vendor_id: b.vendor_id,
+    gross_amount: b.agreed_price || b.budget || 0,
+    platform_fee: b.platform_fee_amount || 0,
+    net_amount: b.vendor_payout || (b.agreed_price || b.budget || 0),
+    status: 'completed',
+    created_date: b.created_date,
+    payout_date: b.updated_date
+  }));
+  const isLoading = false;
 
   const statusConfig = {
     completed: { color: "bg-green-100 text-green-800", icon: CheckCircle, label: "Completed" },
