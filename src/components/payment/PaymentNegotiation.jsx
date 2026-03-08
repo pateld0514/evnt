@@ -77,8 +77,32 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   const [calculationError, setCalculationError] = React.useState(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
 
-  // Fix #39: Debounce the calculateProposal API call to avoid excessive requests
+  // For clients: populate totals from already-saved booking data (do not recalculate to avoid double-counting)
   useEffect(() => {
+    if (!isVendor && booking.base_event_amount > 0) {
+      setTotals({
+        price: booking.agreed_price || 0,
+        additionalTotal: (booking.additional_fees || []).reduce((s, f) => s + (parseFloat(f.amount) || 0), 0),
+        subtotal: booking.base_event_amount || 0,
+        baseEventAmount: booking.base_event_amount || 0,
+        platformFeeAmount: booking.platform_fee_amount || 0,
+        salesTax: booking.sales_tax_amount || 0,
+        salesTaxRate: booking.sales_tax_rate || 0,
+        taxLabel: booking.client_state ? `${booking.client_state} Sales Tax (${((booking.sales_tax_rate || 0) * 100).toFixed(1)}%)` : '',
+        stripeFee: booking.stripe_fee_amount || 0,
+        totalAmount: booking.total_amount_charged || 0,
+        vendorPayout: booking.vendor_payout || 0,
+        finalFeePercent: booking.platform_fee_percent || 0,
+        appliedDiscount: 0,
+        vendorZeroFeeApplied: false
+      });
+    }
+  }, [isVendor, booking.id]);
+
+  // For vendors: recalculate live as they type
+  useEffect(() => {
+    if (!isVendor) return; // clients use stored data above
+
     const debounceTimer = setTimeout(() => {
       const recalc = async () => {
         if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
@@ -95,7 +119,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             agreedPrice: parseFloat(agreedPrice),
             additionalFees: additionalFees.filter(f => f.name && f.amount),
             serviceDescription: serviceDescription,
-            clientState: booking.client_state || null // Fix #12: handle null client_state
+            clientState: booking.client_state || null
           });
 
           if (response.data?.success) {
@@ -128,10 +152,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         }
       };
       recalc();
-    }, 500); // Fix #39: 500ms debounce delay
+    }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [agreedPrice, additionalFees, serviceDescription, booking.id]);
+  }, [isVendor, agreedPrice, additionalFees, serviceDescription, booking.id]);
 
   const addFee = () => {
     setAdditionalFees([...additionalFees, { name: "", amount: 0, description: "" }]);
