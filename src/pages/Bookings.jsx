@@ -919,8 +919,20 @@ export default function BookingsPage() {
                         </>
                       )}
 
-                      {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "negotiating") && (
+                      {!isVendor && (selectedBooking.status === "pending" || selectedBooking.status === "negotiating" || selectedBooking.status === "declined") && (
                         <div className="space-y-2">
+                          {selectedBooking.status === "declined" && (
+                            <Button
+                              onClick={() => {
+                                handleStatusUpdate(selectedBooking.id, "pending");
+                                toast.info("Booking reopened. You can message vendor or browse other options.");
+                              }}
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                            >
+                              <MessageSquare className="w-4 h-4 mr-2" />
+                              Message Vendor & Reopen
+                            </Button>
+                          )}
                           <Button
                             onClick={() => {
                               const daysUntilEvent = Math.ceil((new Date(selectedBooking.event_date) - new Date()) / (1000 * 60 * 60 * 24));
