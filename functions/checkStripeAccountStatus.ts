@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
     const userType = user.user_type || user.data?.user_type;
     let stripeAccountId = user.stripe_account_id || user.data?.stripe_account_id;
     
-    if (userType === 'vendor' && vendorId) {
-      // Fetch vendor record to get Stripe account
-      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
+    if (userType === 'vendor') {
+      // Look up vendor by contact_email (most reliable — id filter doesn't work on top-level id)
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({ contact_email: user.email });
       if (vendors.length > 0 && vendors[0].stripe_account_id) {
         stripeAccountId = vendors[0].stripe_account_id;
       }
