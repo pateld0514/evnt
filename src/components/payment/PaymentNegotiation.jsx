@@ -329,16 +329,24 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             </>
           ) : (
             <>
-              <div className="flex justify-between text-sm">
-                <span>Service Price:</span>
-                <span className="font-bold">${(totals.subtotal || 0).toFixed(2)}</span>
-              </div>
-              {additionalFees.filter(f => f.name).map((fee, idx) => (
-                <div key={idx} className="flex justify-between text-sm text-gray-600">
-                  <span className="pl-4">+ {fee.name}:</span>
-                  <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
-                </div>
-              ))}
+              {(() => {
+                const feesTotal = additionalFees.reduce((s, f) => s + (parseFloat(f.amount) || 0), 0);
+                const baseServicePrice = (totals.subtotal || 0) - feesTotal;
+                return (
+                  <>
+                    <div className="flex justify-between text-sm">
+                      <span>Base Service Price:</span>
+                      <span className="font-bold">${baseServicePrice.toFixed(2)}</span>
+                    </div>
+                    {additionalFees.filter(f => f.name && parseFloat(f.amount) > 0).map((fee, idx) => (
+                      <div key={idx} className="flex justify-between text-sm text-gray-600">
+                        <span className="pl-4">+ {fee.name}:</span>
+                        <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
             </>
           )}
           <div className="flex justify-between text-sm pt-2 border-t-2 border-gray-300">
