@@ -38,7 +38,12 @@ Deno.serve(async (req) => {
     }
 
     // Get vendor user email — fall back to vendor.contact_email
-    vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
+    try {
+      vendorUsers = await base44.asServiceRole.entities.User.filter({ vendor_id: review.vendor_id });
+    } catch (e) {
+      console.warn('[notifyNewReview] User lookup failed:', e.message, '— using contact_email fallback');
+      vendorUsers = [];
+    }
     const vendorEmail = vendorUsers?.[0]?.email || vendor.contact_email;
     if (!vendorEmail) {
       console.warn('No email found for vendor_id:', review.vendor_id, '— skipping notification');
