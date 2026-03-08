@@ -48,7 +48,12 @@ Deno.serve(async (req) => {
 
     // Process vendor referral - find vendor's email from the Vendor record (created_by field)
     if (bookingData.vendor_id) {
-      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: bookingData.vendor_id });
+      let vendorRecords = [];
+      try {
+        vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ id: bookingData.vendor_id });
+      } catch (e) {
+        console.warn('[processReferral] Vendor lookup failed:', e.message);
+      }
       if (vendorRecords.length > 0) {
         const vendorEmail = vendorRecords[0].created_by || vendorRecords[0].contact_email;
         if (vendorEmail) {
