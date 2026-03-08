@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
         recipient_email: vendorEmail,
         type: "review_received",
         title: `⭐ New ${review.rating}-Star Review`,
-        message: `${review.client_name} left you a review: "${review.description.substring(0, 100)}${review.description.length > 100 ? '...' : ''}"`,
+        message: `${review.client_name} left you a review: "${(review.description || '').substring(0, 100)}${(review.description || '').length > 100 ? '...' : ''}"`,
         link: `/VendorDashboard`,
         read: false
       });
