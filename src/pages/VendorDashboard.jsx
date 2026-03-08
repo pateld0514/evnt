@@ -48,18 +48,19 @@ export default function VendorDashboard() {
         const results = await base44.entities.Vendor.list('-created_date', 1);
         return results[0] || null;
       }
-      // Normal vendor: try vendor_id first, then created_by, then contact_email
-      if (currentUser.vendor_id) {
-        const byId = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
-        if (byId.length > 0) return byId[0];
+      // Normal vendor: try contact_email first (most reliable since vendor_id filter by id may not work)
+      const byContact = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
+      if (byContact.length > 0) {
+        // If multiple, prefer the one matching vendor_id
+        if (currentUser.vendor_id && byContact.length > 1) {
+          const match = byContact.find(v => v.id === currentUser.vendor_id);
+          if (match) return match;
+        }
+        return byContact[0];
       }
       const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
       if (byCreator.length > 0) return byCreator[0];
-      const byContact = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-      if (byContact.length > 0) return byContact[0];
-      // Fallback: first approved vendor if none found by email
-      const approved = await base44.entities.Vendor.filter({ approval_status: 'approved' }, '-created_date', 1);
-      return approved[0] || null;
+      return null;
     },
     enabled: !!currentUser,
     staleTime: 0,
