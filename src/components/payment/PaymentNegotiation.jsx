@@ -443,7 +443,7 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={submitProposalMutation.isPending || isCalculating || calculationError || !agreedPrice || parseFloat(agreedPrice) <= 0}
+              disabled={submitProposalMutation.isPending || (isVendor && (isCalculating || calculationError || !agreedPrice || parseFloat(agreedPrice) <= 0))}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold disabled:opacity-50"
             >
               {isCalculating ? "Calculating..." : isVendor ? "Send Proposal" : "Accept & Continue to Payment"}
