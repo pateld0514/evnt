@@ -31,20 +31,25 @@ export default function VendorViewPage() {
     retry: false,
   });
 
+  const viewTracked = React.useRef(false);
+
   const { data: vendor = null, isLoading: vendorLoading } = useQuery({
     queryKey: ['vendor', vendorId],
     queryFn: async () => {
       const result = await base44.entities.Vendor.filter({ id: vendorId });
-      if (result.length > 0) {
-        // Track view
-        await base44.entities.VendorView.create({ vendor_id: vendorId });
-        return result[0];
-      }
-      return null;
+      return result[0] || null;
     },
     enabled: !!vendorId,
     staleTime: 5 * 60 * 1000,
   });
+
+  // Track vendor view exactly once per page visit (not on every refetch)
+  useEffect(() => {
+    if (vendor && vendorId && !viewTracked.current) {
+      viewTracked.current = true;
+      base44.entities.VendorView.create({ vendor_id: vendorId }).catch(() => {});
+    }
+  }, [vendor, vendorId]);
 
   const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
     queryKey: ['vendor-reviews', vendorId],
