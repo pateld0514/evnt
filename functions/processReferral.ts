@@ -32,8 +32,18 @@ Deno.serve(async (req) => {
       }
 
       // Only process when booking transitions to completed + paid
-      const justCompleted = data.status === 'completed' && payload.old_data?.status !== 'completed';
-      const justPaid = data.payment_status === 'paid' && payload.old_data?.payment_status !== 'paid';
+      // Guard: if old_data is missing, only proceed if current status is already completed+paid
+      // (avoids double-processing when payload_too_large forces a re-fetch)
+      const oldStatus = payload.old_data?.status;
+      const oldPaymentStatus = payload.old_data?.payment_status;
+      
+      const justCompleted = data.status === 'completed' && (oldStatus ? oldStatus !== 'completed' : false);
+      const justPaid = data.payment_status === 'paid' && (oldPaymentStatus ? oldPaymentStatus !== 'paid' : false);
+      
+      // If old_data is fully absent (both null), we can't safely determine "just" transitions
+      if (payload.old_data === null || payload.old_data === undefined) {
+        return Response.json({ success: true, message: 'No old_data — cannot determine transition, skipping to avoid duplicates' });
+      }
 
       if (!justCompleted && !justPaid) {
         return Response.json({ success: true, message: 'Not a completion/payment event, skipped' });
