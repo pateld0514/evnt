@@ -56,7 +56,12 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
       toast.error("Failed to submit proposal");
     }
   });
-  const [agreedPrice, setAgreedPrice] = useState(booking.agreed_price || booking.budget || "");
+  // For vendors: start from agreed_price or budget as base price
+  // For clients: start from the actual base_price (agreed_price minus additional fees to avoid display confusion)
+  const initialBasePrice = isVendor
+    ? (booking.agreed_price || booking.budget || "")
+    : (booking.base_event_amount || booking.agreed_price || "");
+  const [agreedPrice, setAgreedPrice] = useState(initialBasePrice);
   const [serviceDescription, setServiceDescription] = useState(booking.service_description || "");
   const [additionalFees, setAdditionalFees] = useState(booking.additional_fees || []);
   const [platformFeePercent, setPlatformFeePercent] = useState(0);
