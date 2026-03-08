@@ -39,18 +39,8 @@ export default function Layout({ children, currentPageName }) {
     refetchInterval: 30000,
   });
 
-  useEffect(() => {
-    if (!currentUserEmail) return;
-
-    // Subscribe to user updates and invalidate cache
-    const unsubscribe = base44.entities.User.subscribe((event) => {
-      if (event.type === 'update' && event.data.email === currentUserEmail) {
-        queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      }
-    });
-
-    return () => unsubscribe();
-  }, [currentUserEmail, queryClient]);
+  // U-2 FIX: Removed user subscription — unnecessary overhead since currentUser is cached with 5 min staleTime
+  // User profile rarely changes, and cache invalidation is expensive. Better to let staleTime expire naturally.
 
   const unreadCount = messages.filter(m => !m.read && m.recipient_email === currentUserEmail).length;
 

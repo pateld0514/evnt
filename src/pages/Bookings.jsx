@@ -135,15 +135,19 @@ export default function BookingsPage() {
 
   // Real-time subscription for booking updates
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser?.email) return;
 
     const unsubscribe = base44.entities.Booking.subscribe((event) => {
-      // Immediately refetch bookings when any booking changes
-      refetch();
+      // Only refetch if the event affects user's own bookings (not all bookings)
+      const bookingId = event.entity_id;
+      const isRelevant = bookings.some(b => b.id === bookingId);
+      if (isRelevant) {
+        refetch();
+      }
     });
 
     return () => unsubscribe();
-  }, [currentUser, refetch]);
+  }, [currentUser?.email, bookings, refetch]);
 
   // H-5 FIX: Only fetch vendors referenced in the user's own bookings — not all vendors
   const { data: vendors = [] } = useQuery({
