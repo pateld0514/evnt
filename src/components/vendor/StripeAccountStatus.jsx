@@ -6,36 +6,29 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
-export default function StripeAccountStatus({ vendorId }) {
+export default function StripeAccountStatus({ vendorId, vendor }) {
   const [checking, setChecking] = React.useState(false);
-  const [isTestVendor, setIsTestVendor] = React.useState(false);
 
-  React.useEffect(() => {
-    const checkTestVendor = async () => {
-      const user = await base44.auth.me();
-      setIsTestVendor(user?.user_type === "test_vendor");
-    };
-    checkTestVendor();
-  }, []);
+  // Detect test account by stripe_account_id prefix — avoids async race condition
+  const isTestAccount = vendor?.stripe_account_id?.startsWith('acct_test_');
 
   const { data: status, isLoading, refetch } = useQuery({
-    queryKey: ['stripe-account-status', vendorId],
+    queryKey: ['stripe-account-status', vendorId, isTestAccount],
     queryFn: async () => {
-      // Bypass Stripe check for test vendors
-      if (isTestVendor) {
+      // Bypass Stripe check for test/demo vendors with fake account IDs
+      if (isTestAccount) {
         return {
-          stripe_account_id: 'acct_test_vendor',
+          stripe_account_id: vendor.stripe_account_id,
           charges_enabled: true,
           payouts_enabled: true,
           details_submitted: true
         };
       }
-      
       const response = await base44.functions.invoke('checkStripeAccountStatus', { vendorId });
       return response.data;
     },
     enabled: !!vendorId,
-    refetchInterval: isTestVendor ? false : 10000, // Don't refetch for test vendors
+    refetchInterval: isTestAccount ? false : 30000,
   });
 
   const handleConnect = async () => {
