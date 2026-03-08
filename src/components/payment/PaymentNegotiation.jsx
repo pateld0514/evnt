@@ -314,19 +314,36 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
         {/* Price Breakdown */}
         <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 space-y-2">
           <h3 className="font-bold mb-3">Price Breakdown</h3>
-          <div className="flex justify-between text-sm">
-            <span>Service Price:</span>
-            <span className="font-bold">${totals.price.toFixed(2)}</span>
-          </div>
-          {additionalFees.length > 0 && additionalFees.map((fee, idx) => (
-            <div key={idx} className="flex justify-between text-sm text-gray-600">
-              <span className="pl-4">+ {fee.name}:</span>
-              <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
-            </div>
-          ))}
+          {isVendor ? (
+            <>
+              <div className="flex justify-between text-sm">
+                <span>Service Price:</span>
+                <span className="font-bold">${(totals.price || 0).toFixed(2)}</span>
+              </div>
+              {additionalFees.filter(f => f.name && f.amount).map((fee, idx) => (
+                <div key={idx} className="flex justify-between text-sm text-gray-600">
+                  <span className="pl-4">+ {fee.name}:</span>
+                  <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between text-sm">
+                <span>Service Price:</span>
+                <span className="font-bold">${(totals.subtotal || 0).toFixed(2)}</span>
+              </div>
+              {additionalFees.filter(f => f.name).map((fee, idx) => (
+                <div key={idx} className="flex justify-between text-sm text-gray-600">
+                  <span className="pl-4">+ {fee.name}:</span>
+                  <span className="font-bold">${(parseFloat(fee.amount) || 0).toFixed(2)}</span>
+                </div>
+              ))}
+            </>
+          )}
           <div className="flex justify-between text-sm pt-2 border-t-2 border-gray-300">
             <span>Agreed Service Price:</span>
-            <span className="font-bold">${totals.subtotal.toFixed(2)}</span>
+            <span className="font-bold">${(totals.subtotal || 0).toFixed(2)}</span>
           </div>
           {/* CLIENT REFERRAL DISCOUNT DISPLAY */}
           {totals.appliedDiscount > 0 && (
