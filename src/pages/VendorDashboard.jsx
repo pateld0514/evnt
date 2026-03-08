@@ -71,7 +71,6 @@ export default function VendorDashboard() {
   });
 
   const vendor = vendorData;
-
   const loading = userLoading || vendorsLoading;
 
   // Redirects
