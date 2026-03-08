@@ -176,11 +176,10 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
 
 
   const handleSubmit = async () => {
-    if (!agreedPrice || parseFloat(agreedPrice) <= 0) {
+    if (isVendor && (!agreedPrice || parseFloat(agreedPrice) <= 0)) {
       toast.error("Please enter a valid price");
       return;
     }
-
     submitProposalMutation.mutate();
   };
 
