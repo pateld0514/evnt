@@ -15,14 +15,30 @@ Deno.serve(async (req) => {
     let bookingData = null;
 
     if (payload.event?.type === 'update') {
+      // Handle payload_too_large: fetch booking data directly if omitted
+      let data = payload.data;
+      if (!data && payload.payload_too_large && payload.event?.entity_id) {
+        try {
+          const fetched = await base44.asServiceRole.entities.Booking.filter({ id: payload.event.entity_id });
+          data = fetched[0] || null;
+        } catch (e) {
+          console.warn('[processReferral] payload_too_large fetch failed:', e.message);
+          return Response.json({ success: true, message: 'payload_too_large and fetch failed — skipping' });
+        }
+      }
+
+      if (!data) {
+        return Response.json({ success: true, message: 'No booking data available, skipping' });
+      }
+
       // Only process when booking transitions to completed + paid
-      const justCompleted = payload.data?.status === 'completed' && payload.old_data?.status !== 'completed';
-      const justPaid = payload.data?.payment_status === 'paid' && payload.old_data?.payment_status !== 'paid';
+      const justCompleted = data.status === 'completed' && payload.old_data?.status !== 'completed';
+      const justPaid = data.payment_status === 'paid' && payload.old_data?.payment_status !== 'paid';
 
       if (!justCompleted && !justPaid) {
         return Response.json({ success: true, message: 'Not a completion/payment event, skipped' });
       }
-      bookingData = payload.data;
+      bookingData = data;
     } else if (!payload.event) {
       // Direct call - requires referred_email + referred_type
       if (payload.referred_email && payload.referred_type) {
