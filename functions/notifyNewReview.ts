@@ -7,12 +7,20 @@ Deno.serve(async (req) => {
     const payload = await req.json();
 
     // Entity automation payload: { event: { type, entity_name, entity_id }, data: {...} }
-    const review = payload.data || payload.review;
-    
+    // Handle payload_too_large: fetch review data directly if omitted
+    let review = payload.data || payload.review;
+
+    if (!review && payload.payload_too_large && payload.event?.entity_id) {
+      try {
+        const reviews = await base44.asServiceRole.entities.Review.filter({ id: payload.event.entity_id });
+        review = reviews[0] || null;
+      } catch (e) {
+        console.warn('[notifyNewReview] payload_too_large fetch failed:', e.message);
+      }
+    }
+
     if (!review || !review.vendor_id) {
-      return Response.json({ 
-        error: 'review data required' 
-      }, { status: 400 });
+      return Response.json({ success: true, message: 'No review data available, skipping' });
     }
 
     // Get vendor — ISSUE 2 FIX: non-fatal if vendor or user not found
