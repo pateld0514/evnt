@@ -431,10 +431,12 @@ export default function VendorViewPage() {
               <CardContent className="p-5 md:p-8">
                 <h3 className="text-xl md:text-2xl font-black mb-4 md:mb-6">Pricing</h3>
                 <div className="space-y-3">
+                  {vendor.starting_price != null && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Starting at</span>
-                    <span className="text-2xl font-black">${vendor.starting_price}</span>
+                    <span className="text-2xl font-black">${Number(vendor.starting_price).toLocaleString()}</span>
                   </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Price Range</span>
                     <span className="text-xl font-bold">{vendor.price_range}</span>

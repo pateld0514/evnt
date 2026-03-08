@@ -42,9 +42,12 @@ const statusConfig = {
 
 const bookingStatusConfig = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800" },
-  accepted: { label: "Accepted", color: "bg-green-100 text-green-800" },
+  confirmed: { label: "Confirmed", color: "bg-green-100 text-green-800" },
+  negotiating: { label: "Negotiating", color: "bg-blue-100 text-blue-800" },
+  payment_pending: { label: "Payment Pending", color: "bg-orange-100 text-orange-800" },
+  in_progress: { label: "In Progress", color: "bg-purple-100 text-purple-800" },
   declined: { label: "Declined", color: "bg-red-100 text-red-800" },
-  completed: { label: "Completed", color: "bg-blue-100 text-blue-800" },
+  completed: { label: "Completed", color: "bg-gray-100 text-gray-800" },
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-800" }
 };
 
@@ -266,7 +269,7 @@ export default function EventDashboardPage() {
         <div className="grid gap-6">
           {events.map(event => {
             const eventBookings = getEventBookings(event.id);
-            const acceptedBookings = eventBookings.filter(b => b.status === "accepted").length;
+            const acceptedBookings = eventBookings.filter(b => b.status === "confirmed" || b.status === "completed" || b.status === "in_progress").length;
             
             return (
               <Card key={event.id} className="border-2 border-black">
