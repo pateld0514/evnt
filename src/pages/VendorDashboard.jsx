@@ -87,67 +87,39 @@ export default function VendorDashboard() {
     }
   }, [currentUser, loading, navigate]);
 
-  const { data: bookings = [] } = useQuery({
-    queryKey: ['vendor-bookings', vendor?.id, currentUser?.vendor_id],
+  const vendorId = vendor?.id || currentUser?.vendor_id;
+
+  // Use backend function to fetch bookings/views/swipes — bypasses RLS issues
+  // when bookings are created by admin/service but belong to this vendor
+  const { data: dashboardData = null } = useQuery({
+    queryKey: ['vendor-dashboard-data', vendorId],
     queryFn: async () => {
-      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
-      const vendorId = vendor?.id || currentUser?.vendor_id;
-      if (!vendorId) return [];
-      // ISSUE 14 FIX: Filter server-side instead of fetching all bookings
-      return await base44.entities.Booking.filter({ vendor_id: vendorId }, '-created_date');
+      if (!vendorId) return null;
+      const res = await base44.functions.invoke('getVendorDashboardData', { vendor_id: vendorId });
+      return res.data;
     },
-    enabled: !!(vendor?.id || currentUser?.vendor_id),
-    initialData: [],
+    enabled: !!vendorId,
+    staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    staleTime: 0,
   });
 
+  const bookings = dashboardData?.bookings || [];
+  const vendorViews = dashboardData?.views || [];
+  const vendorSwipes = dashboardData?.swipes || [];
+
   const { data: messages = [] } = useQuery({
-    queryKey: ['vendor-messages', vendor?.id, currentUser?.vendor_id],
+    queryKey: ['vendor-messages', vendorId],
     queryFn: async () => {
-      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
-      const vendorId = vendor?.id || currentUser?.vendor_id;
       if (!vendorId) return [];
-      // ISSUE 17 FIX: Filter server-side instead of fetching all messages
       return await base44.entities.Message.filter({ vendor_id: vendorId }, '-created_date');
     },
-    enabled: !!(vendor?.id || currentUser?.vendor_id),
+    enabled: !!vendorId,
     initialData: [],
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     staleTime: 0,
     refetchInterval: 30000,
-  });
-
-  const { data: vendorViews = [] } = useQuery({
-    queryKey: ['vendor-views', vendor?.id, currentUser?.vendor_id],
-    queryFn: async () => {
-      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
-      const vendorId = vendor?.id || currentUser?.vendor_id;
-      if (!vendorId) return [];
-      const allViews = await base44.entities.VendorView.filter({ vendor_id: vendorId });
-      return allViews;
-    },
-    enabled: !!(vendor?.id || currentUser?.vendor_id),
-    initialData: [],
-    refetchOnMount: true,
-    staleTime: 0,
-  });
-
-  const { data: vendorSwipes = [] } = useQuery({
-    queryKey: ['vendor-swipes', vendor?.id, currentUser?.vendor_id],
-    queryFn: async () => {
-      // Use vendor.id if available, otherwise use currentUser.vendor_id for test accounts
-      const vendorId = vendor?.id || currentUser?.vendor_id;
-      if (!vendorId) return [];
-      const allSwipes = await base44.entities.UserSwipe.filter({ vendor_id: vendorId });
-      return allSwipes;
-    },
-    enabled: !!(vendor?.id || currentUser?.vendor_id),
-    initialData: [],
-    refetchOnMount: true,
-    staleTime: 0,
   });
 
   // ISSUE 6 FIX: Compute derived stats here so generateAIInsights closure can access them
