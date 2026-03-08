@@ -12,16 +12,29 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
     
-    // Extract vendor_id from payload or event data
-    const vendor_id = payload.vendor_id || payload.data?.vendor_id;
+    // Handle payload_too_large: fetch booking data directly if entity data was omitted
+    let bookingData = payload.data;
+    if (!bookingData && payload.payload_too_large && payload.event?.entity_id) {
+      try {
+        const fetched = await base44.asServiceRole.entities.Booking.filter({ id: payload.event.entity_id });
+        bookingData = fetched[0] || null;
+      } catch (e) {
+        console.warn('[updateVendorTier] payload_too_large fetch failed:', e.message);
+      }
+    }
+
+    // Extract vendor_id from payload or fetched booking data
+    const vendor_id = payload.vendor_id || bookingData?.vendor_id;
     
     // Only process if booking was just completed
-    if (payload.event?.type === 'update' && payload.data?.status === 'completed' && payload.old_data?.status !== 'completed') {
-      // Continue with tier update
+    if (payload.event?.type === 'update') {
+      const justCompleted = bookingData?.status === 'completed' && payload.old_data?.status !== 'completed';
+      if (!justCompleted) {
+        return Response.json({ success: true, message: 'Not a completion event, skipped' });
+      }
     } else if (!payload.event) {
       // Direct call, process normally
     } else {
-      // Not a completion event, skip
       return Response.json({ success: true, message: 'Not a completion event, skipped' });
     }
 
