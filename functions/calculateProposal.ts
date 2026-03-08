@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // Inline tax rates to avoid import issues (no local imports in functions)
 const STATE_TAX_RATES = {
