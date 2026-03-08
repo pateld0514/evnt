@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 // Inlined from lib/bookingStateMachine.js — no local imports allowed in Deno Deploy
 const VALID_TRANSITIONS = {
   pending: ['negotiating', 'declined', 'cancelled'],
-  negotiating: ['payment_pending', 'cancelled', 'declined'],
+  negotiating: ['payment_pending', 'pending', 'cancelled', 'declined'],
   payment_pending: ['confirmed', 'cancelled'],
   confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
