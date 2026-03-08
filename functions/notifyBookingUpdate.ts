@@ -84,6 +84,18 @@ Deno.serve(async (req) => {
 
     // Status-specific notifications
     const notifications = {
+      pending: {
+        client: {
+          title: '📋 Booking Status Reset',
+          message: `Your booking with ${vendor.business_name} has been reset to pending. Feel free to request a new proposal anytime.`,
+          emailSubject: '📋 Booking Updated - ' + vendor.business_name
+        },
+        vendor: {
+          title: '📋 Proposal Dismissed',
+          message: `${booking.client_name} dismissed the pricing proposal. They may request a new one.`,
+          emailSubject: '📋 Proposal Status - ' + booking.client_name
+        }
+      },
       negotiating: {
         client: {
           title: '💬 Price Proposal Received',
