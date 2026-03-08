@@ -231,6 +231,7 @@ export default function EventVendorsPage() {
                 src={vendor.image_url || `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=400&h=300&fit=crop`}
                 alt={vendor.business_name}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.src = `https://images.unsplash.com/photo-1519167758481-83f29da8c556?w=400&h=300&fit=crop`; }}
               />
               <div className="absolute top-3 right-3">
                 <Badge className="bg-white text-black border-2 border-black font-bold">
