@@ -28,8 +28,9 @@ export default function VendorDashboard() {
   const { data: currentUser = null, isLoading: userLoading } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     retry: false,
+    refetchOnMount: true,
   });
 
   // Fetch only the vendor(s) belonging to this user — avoids fetching all vendors platform-wide.
