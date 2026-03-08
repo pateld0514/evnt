@@ -18,29 +18,38 @@ Deno.serve(async (req) => {
     }
     
     // Extract booking data from event or direct call
-    const booking = payload.data || payload.booking;
+    // Handle payload_too_large: fetch booking from DB if entity data was omitted
+    let booking = payload.data || payload.booking;
+    if (!booking && payload.payload_too_large && payload.event?.entity_id) {
+      try {
+        const fetched = await base44.asServiceRole.entities.Booking.filter({ id: payload.event.entity_id });
+        booking = fetched[0] || null;
+      } catch (e) {
+        console.warn('[notifyBookingUpdate] payload_too_large fetch failed:', e.message);
+      }
+    }
+
     const oldStatus = payload.old_data?.status || payload.old_status;
     const newStatus = booking?.status;
 
     if (!booking || !newStatus) {
       return Response.json({ 
-        error: 'booking data and status are required' 
-      }, { status: 400 });
+        success: true,
+        message: 'No booking data available, skipping'
+      });
     }
 
-    // ISSUE 1 FIX: If old_data is null/missing (e.g. service-role writes, Stripe webhook updates),
-    // we cannot determine if the status actually changed — skip to avoid spurious notifications.
-    if (payload.old_data === null || payload.old_data === undefined) {
-      if (!payload.old_status) {
-        return Response.json({ 
-          success: true, 
-          message: 'No old_data available — skipping to avoid duplicate notifications' 
-        });
-      }
+    // If old_data is null/missing AND no explicit old_status, we cannot determine if status changed.
+    // Exception: if payload_too_large, we still proceed since we fetched fresh data.
+    if (!payload.payload_too_large && (payload.old_data === null || payload.old_data === undefined) && !payload.old_status) {
+      return Response.json({ 
+        success: true, 
+        message: 'No old_data available — skipping to avoid duplicate notifications' 
+      });
     }
 
     // Only send notifications on status changes
-    if (oldStatus === newStatus) {
+    if (oldStatus && oldStatus === newStatus) {
       return Response.json({ 
         success: true, 
         message: 'No status change detected' 
