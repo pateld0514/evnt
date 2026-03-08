@@ -127,7 +127,66 @@ Deno.serve(async (req) => {
       console.warn('[notifyNewBooking] In-app notification failed (non-fatal):', notifErr.message);
     }
 
-    return Response.json({ success: true, message: 'New booking notification sent to vendor' });
+    // Also send confirmation to client
+    if (booking.client_email && booking.client_email.includes('@')) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: booking.client_email,
+          from_name: "EVNT Bookings",
+          subject: `✅ Booking Request Submitted — ${vendor.business_name}`,
+          body: `<!DOCTYPE html><html>
+<head><style>
+  body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f3f4f6;color:#1f2937}
+  .wrap{max-width:600px;margin:0 auto;background:#fff}
+  .hdr{background:linear-gradient(135deg,#000 0%,#1f2937 100%);padding:40px 30px;text-align:center}
+  .logo{font-size:40px;font-weight:900;color:#fff;letter-spacing:-1px}
+  .content{padding:40px 30px}
+  .box{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:24px;margin:24px 0}
+  .ftr{background:#f9fafb;padding:30px;text-align:center;border-top:2px solid #e5e7eb;color:#9ca3af;font-size:13px}
+</style></head>
+<body><div class="wrap">
+  <div class="hdr"><div class="logo">EVNT</div></div>
+  <div class="content">
+    <h2 style="color:#000;font-weight:900;">✅ Booking Request Submitted!</h2>
+    <p>Hi ${booking.client_name || 'there'},</p>
+    <p>Your booking request for <strong>${vendor.business_name}</strong> has been received. The vendor will review and respond within 24-48 hours.</p>
+    <div class="box">
+      <h3 style="margin:0 0 12px 0;font-weight:700;color:#15803d;">Booking Summary</h3>
+      <p style="margin:4px 0"><strong>Vendor:</strong> ${vendor.business_name}</p>
+      <p style="margin:4px 0"><strong>Event Type:</strong> ${booking.event_type || 'Not specified'}</p>
+      <p style="margin:4px 0"><strong>Event Date:</strong> ${eventDate}</p>
+      ${booking.location ? `<p style="margin:4px 0"><strong>Location:</strong> ${booking.location}</p>` : ''}
+      ${booking.guest_count ? `<p style="margin:4px 0"><strong>Guests:</strong> ${booking.guest_count}</p>` : ''}
+      <p style="margin:4px 0"><strong>Status:</strong> Pending Vendor Response</p>
+    </div>
+    <p style="font-size:14px;color:#6b7280;">You'll be notified by email and in-app as soon as the vendor responds. You can track your booking at any time from your dashboard.</p>
+  </div>
+  <div class="ftr">
+    <p>© ${new Date().getFullYear()} EVNT. <a href="mailto:${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}" style="color:#000;font-weight:600">${Deno.env.get('SUPPORT_EMAIL') || 'support@joinevnt.com'}</a></p>
+    <p style="font-size:11px"><a href="${appUrl}/unsubscribe?email=${encodeURIComponent(booking.client_email)}" style="color:#0066cc">Unsubscribe</a> | <a href="${appUrl}/terms" style="color:#0066cc">Terms</a></p>
+  </div>
+</div></body></html>`
+        });
+      } catch (clientEmailErr) {
+        console.warn('[notifyNewBooking] Client confirmation email failed (non-fatal):', clientEmailErr.message);
+      }
+
+      // In-app notification for client
+      try {
+        await base44.asServiceRole.entities.Notification.create({
+          recipient_email: booking.client_email,
+          type: 'booking_status',
+          title: '✅ Booking Request Submitted',
+          message: `Your booking request for ${vendor.business_name} (${booking.event_type} on ${eventDate}) has been submitted. Awaiting vendor response.`,
+          link: `/Bookings`,
+          read: false
+        });
+      } catch (notifErr) {
+        console.warn('[notifyNewBooking] Client in-app notification failed (non-fatal):', notifErr.message);
+      }
+    }
+
+    return Response.json({ success: true, message: 'New booking notification sent to vendor and client' });
 
   } catch (error) {
     console.error('[notifyNewBooking] Error:', error);
