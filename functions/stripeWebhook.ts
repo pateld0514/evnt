@@ -37,7 +37,7 @@ async function sendPlatformEmail(base44, { to, subject, content }) {
 // Inlined from lib/bookingStateMachine.js
 const VALID_TRANSITIONS = {
   pending: ['negotiating', 'declined', 'cancelled'],
-  negotiating: ['payment_pending', 'cancelled', 'declined'],
+  negotiating: ['payment_pending', 'pending', 'cancelled', 'declined'],
   payment_pending: ['confirmed', 'cancelled'],
   confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
