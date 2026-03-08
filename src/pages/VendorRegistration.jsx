@@ -323,12 +323,17 @@ export default function VendorRegistrationPage() {
           const referrerUsers = await base44.entities.User.filter({ email: referrerEmail });
           const referrerType = referrerUsers.length > 0 ? referrerUsers[0].user_type : "unknown";
 
+          // Determine referral_type and reward_type based on referrer's type
+          // vendor→vendor and client→vendor both get zero-fee booking reward
+          const refType = referrerType === "vendor" ? "vendor_to_vendor" : "client_to_vendor";
+          const rewardType = "zero_percent_fee"; // vendors get 0% commission on first booking
           await base44.entities.ReferralReward.create({
             referrer_email: referrerEmail,
-            referrer_type: referrerType,
+            referrer_type: referrerType || "client",
             referred_email: user.email,
             referred_type: "vendor",
-            reward_amount: 0,
+            referral_type: refType,
+            reward_type: rewardType,
             status: "pending"
           });
 

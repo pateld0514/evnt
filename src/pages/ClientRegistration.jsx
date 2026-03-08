@@ -118,12 +118,16 @@ export default function ClientRegistrationPage() {
           const referrerUsers = await base44.entities.User.filter({ email: referrerEmail });
           const referrerType = referrerUsers.length > 0 ? referrerUsers[0].user_type : "unknown";
 
+          // Determine referral_type and reward_type based on referrer's type
+          const refType = referrerType === "vendor" ? "vendor_to_client" : "client_to_client";
+          const rewardType = "twenty_five_dollar_credit"; // clients always get $25 credit
           await base44.entities.ReferralReward.create({
             referrer_email: referrerEmail,
-            referrer_type: referrerType,
+            referrer_type: referrerType || "client",
             referred_email: currentUser.email,
             referred_type: "client",
-            reward_amount: 25,
+            referral_type: refType,
+            reward_type: rewardType,
             status: "pending"
           });
 

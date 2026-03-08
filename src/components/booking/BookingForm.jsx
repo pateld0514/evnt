@@ -156,6 +156,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
       vendor_name: vendor.business_name,
       client_email: currentUser.email,
       client_name: currentUser.full_name,
+      client_phone: currentUser.phone || null,
       client_state: clientState,
       event_type: formData.event_type,
       event_date: formData.event_date,
