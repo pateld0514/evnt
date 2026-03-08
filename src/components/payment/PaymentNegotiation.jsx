@@ -25,17 +25,27 @@ export default function PaymentNegotiation({ booking, isVendor, onClose }) {
   });
 
   const submitProposalMutation = useMutation({
-    mutationFn: async (proposalData) => {
-      return await base44.functions.invoke('updateProposal', {
-        bookingId: booking.id,
-        proposalData: {
-          agreedPrice: parseFloat(agreedPrice),
-          additionalFees: additionalFees.filter(f => f.name && f.amount),
-          serviceDescription: serviceDescription,
-          clientState: booking.client_state,
-          newStatus: isVendor ? "negotiating" : "payment_pending"
-        }
-      });
+    mutationFn: async () => {
+      if (isVendor) {
+        // Vendor sends/updates proposal — server recalculates with new price
+        return await base44.functions.invoke('updateProposal', {
+          bookingId: booking.id,
+          proposalData: {
+            agreedPrice: parseFloat(agreedPrice),
+            additionalFees: additionalFees.filter(f => f.name && f.amount),
+            serviceDescription: serviceDescription,
+            clientState: booking.client_state,
+            newStatus: "negotiating"
+          }
+        });
+      } else {
+        // Client accepts proposal — only change status, do NOT recalculate
+        // (recalculating would double-count additional fees since agreed_price already includes them)
+        return await base44.functions.invoke('updateBooking', {
+          bookingId: booking.id,
+          updates: { status: "payment_pending" }
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
