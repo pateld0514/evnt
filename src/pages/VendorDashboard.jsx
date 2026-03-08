@@ -451,7 +451,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
 
         {/* Payout History */}
         <div className="mt-8">
-          <PayoutHistory vendorId={vendor?.id} />
+          <PayoutHistory vendorId={vendorId} completedBookings={bookings.filter(b => b.status === 'completed')} />
         </div>
         </TabsContent>
 
