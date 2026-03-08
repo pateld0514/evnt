@@ -394,8 +394,6 @@ export default function ProfilePage() {
           {user && <BugReportForm user={user} />}
         </TabsContent>
       </Tabs>
-      </div>
-    </div>
 
       {/* Edit Profile Dialog */}
       <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
@@ -457,6 +455,7 @@ export default function ProfilePage() {
           ) : null}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
