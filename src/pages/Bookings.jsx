@@ -848,19 +848,43 @@ export default function BookingsPage() {
                       {!isVendor && selectedBooking.status === "negotiating" && (
                         <>
                           {selectedBooking.agreed_price ? (
-                            <Button
-                              onClick={handleOpenNegotiation}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
-                            >
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              Review Price Proposal
-                            </Button>
+                            <div className="space-y-3">
+                              <Button
+                                onClick={handleOpenNegotiation}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+                              >
+                                <DollarSign className="w-4 h-4 mr-2" />
+                                Review Price Proposal
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  handleStatusUpdate(selectedBooking.id, "pending");
+                                  toast.info("Proposal dismissed. You can request a new one anytime.");
+                                }}
+                                variant="outline"
+                                className="w-full border-2 border-gray-400 text-gray-600 hover:bg-gray-50 font-bold"
+                              >
+                                Dismiss Proposal
+                              </Button>
+                            </div>
                           ) : (
-                            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
-                              <Clock className="w-5 h-5 mx-auto mb-2 text-blue-600" />
-                              <p className="text-sm text-blue-900 font-medium">
-                                Waiting for vendor to send pricing proposal
-                              </p>
+                            <div className="space-y-3">
+                              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
+                                <Clock className="w-5 h-5 mx-auto mb-2 text-blue-600" />
+                                <p className="text-sm text-blue-900 font-medium">
+                                  Waiting for vendor to send pricing proposal
+                                </p>
+                              </div>
+                              <Button
+                                onClick={() => {
+                                  handleStatusUpdate(selectedBooking.id, "pending");
+                                  toast.info("Waiting state cleared. You can message vendor for updates.");
+                                }}
+                                variant="outline"
+                                className="w-full border-2 border-gray-400 text-gray-600 hover:bg-gray-50 font-bold text-sm"
+                              >
+                                Clear & Return to Pending
+                              </Button>
                             </div>
                           )}
                         </>
