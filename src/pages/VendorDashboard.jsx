@@ -132,7 +132,22 @@ export default function VendorDashboard() {
   const vendorRevenue = useMemo(() => completedBookings.reduce((sum, b) => sum + (b.vendor_payout || b.agreed_price || b.budget || 0), 0), [completedBookings]);
   const avgBookingValue = useMemo(() => completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0, [completedBookings, totalRevenue]);
 
-  // Analytics
+  // Analytics — normalize event type to Title Case
+  const toTitleCase = (str) => {
+    if (!str) return "Unknown";
+    return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+  };
+
+  const formatCurrency = (value) => {
+    const num = Number(value) || 0;
+    return "$" + num.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  };
+
+  const pluralize = (count, word) => {
+    const n = Number(count) || 0;
+    return `${n} ${n === 1 ? word : word + "s"}`;
+  };
+
   const bookingsByLocation = useMemo(() => bookings.reduce((acc, b) => {
     const loc = b.location || "Unknown";
     acc[loc] = (acc[loc] || 0) + 1;
@@ -140,7 +155,8 @@ export default function VendorDashboard() {
   }, {}), [bookings]);
 
   const bookingsByEventType = useMemo(() => bookings.reduce((acc, b) => {
-    acc[b.event_type] = (acc[b.event_type] || 0) + 1;
+    const key = toTitleCase(b.event_type || "Unknown");
+    acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {}), [bookings]);
 
