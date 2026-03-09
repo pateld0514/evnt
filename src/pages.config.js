@@ -75,6 +75,8 @@ import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
 import VendorRewards from './pages/VendorRewards';
 import VendorView from './pages/VendorView';
+import ClientRegistration from './pages/ClientRegistration';
+import VendorRegistration from './pages/VendorRegistration';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +109,8 @@ export const PAGES = {
     "VendorProfile": VendorProfile,
     "VendorRewards": VendorRewards,
     "VendorView": VendorView,
+    "ClientRegistration": ClientRegistration,
+    "VendorRegistration": VendorRegistration,
 }
 
 export const pagesConfig = {
