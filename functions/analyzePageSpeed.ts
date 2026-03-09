@@ -57,53 +57,71 @@ Deno.serve(async (req) => {
       ? PAGES_TO_AUDIT.filter(p => p.path === pageFilter || p.label.toLowerCase().includes(pageFilter.toLowerCase()))
       : PAGES_TO_AUDIT;
 
+    // Check for existing pending insights to avoid duplicates
+    const existingInsights = await base44.asServiceRole.entities.AgentInsights.filter({
+      agent_name: 'performance_agent',
+      status: 'pending'
+    });
+    const existingPrefixes = new Set(existingInsights.map(i => i.finding.substring(0, 40)));
+
+    // Run all page audits in parallel (avoids sequential timeout risk)
+    const auditPromises = pages.map(async (page) => {
+      const url = `${APP_URL}${page.path}`;
+      console.log(`[analyzePageSpeed] Auditing ${url} (${strategy})`);
+      try {
+        const psResult = await fetchPageSpeed(url, strategy);
+        return { page, url, metrics: extractMetrics(psResult) };
+      } catch (err) {
+        console.warn(`[analyzePageSpeed] Failed for ${url}:`, err.message);
+        return { page, url, error: err.message };
+      }
+    });
+
+    const auditResults = await Promise.all(auditPromises);
+
     const results = [];
     const insightsCreated = [];
 
-    for (const page of pages) {
-      const url = `${APP_URL}${page.path}`;
-      console.log(`[analyzePageSpeed] Auditing ${url} (${strategy})`);
-      
-      let metrics;
-      try {
-        const psResult = await fetchPageSpeed(url, strategy);
-        metrics = extractMetrics(psResult);
-      } catch (err) {
-        console.warn(`[analyzePageSpeed] Failed for ${url}:`, err.message);
-        results.push({ page: page.label, url, error: err.message });
+    for (const result of auditResults) {
+      const { page, url } = result;
+
+      if (result.error) {
+        results.push({ page: page.label, url, error: result.error });
         continue;
       }
 
+      const { metrics } = result;
       results.push({ page: page.label, url, strategy, metrics });
 
-      // Auto-write critical findings to AgentInsights
-      if (metrics.performance_score < 50) {
+      // Auto-write critical findings to AgentInsights (deduplicated)
+      const perfFinding = metrics.performance_score < 50
+        ? `Critical performance score on ${page.label}: ${metrics.performance_score}/100`
+        : metrics.performance_score < 70
+          ? `Below-target performance on ${page.label}: ${metrics.performance_score}/100`
+          : null;
+
+      if (perfFinding && !existingPrefixes.has(perfFinding.substring(0, 40))) {
         const insight = await base44.asServiceRole.entities.AgentInsights.create({
           agent_name: 'performance_agent',
-          severity: 'P1',
-          finding: `Critical performance score on ${page.label}: ${metrics.performance_score}/100 (${strategy}). LCP: ${metrics.lcp}, FCP: ${metrics.fcp}, TBT: ${metrics.tbt}`,
-          recommendation: `Immediate optimization needed. Top opportunities: ${metrics.opportunities.map(o => o.title).join(', ')}. Focus on LCP and TBT reduction first.`,
-          affected_page: page.path,
-          raw_data: JSON.stringify({ metrics, strategy, url })
-        });
-        insightsCreated.push(insight.id);
-      } else if (metrics.performance_score < 70) {
-        const insight = await base44.asServiceRole.entities.AgentInsights.create({
-          agent_name: 'performance_agent',
-          severity: 'P2',
-          finding: `Below-target performance on ${page.label}: ${metrics.performance_score}/100 (${strategy}). LCP: ${metrics.lcp}, CLS: ${metrics.cls}`,
-          recommendation: `Address these opportunities: ${metrics.opportunities.map(o => `${o.title}${o.savings ? ' (~' + Math.round(o.savings) + 'ms saved)' : ''}`).join('; ')}`,
+          severity: metrics.performance_score < 50 ? 'P1' : 'P2',
+          finding: metrics.performance_score < 50
+            ? `${perfFinding} (${strategy}). LCP: ${metrics.lcp}, FCP: ${metrics.fcp}, TBT: ${metrics.tbt}`
+            : `${perfFinding} (${strategy}). LCP: ${metrics.lcp}, CLS: ${metrics.cls}`,
+          recommendation: metrics.performance_score < 50
+            ? `Immediate optimization needed. Top opportunities: ${metrics.opportunities.map(o => o.title).join(', ')}. Focus on LCP and TBT reduction first.`
+            : `Address these opportunities: ${metrics.opportunities.map(o => `${o.title}${o.savings ? ' (~' + Math.round(o.savings) + 'ms saved)' : ''}`).join('; ')}`,
           affected_page: page.path,
           raw_data: JSON.stringify({ metrics, strategy, url })
         });
         insightsCreated.push(insight.id);
       }
 
-      if (metrics.accessibility_score < 80) {
+      const a11yFinding = `Accessibility issues on ${page.label}: score ${metrics.accessibility_score}`;
+      if (metrics.accessibility_score < 80 && !existingPrefixes.has(a11yFinding.substring(0, 40))) {
         const insight = await base44.asServiceRole.entities.AgentInsights.create({
           agent_name: 'performance_agent',
           severity: 'warning',
-          finding: `Accessibility issues on ${page.label}: score ${metrics.accessibility_score}/100`,
+          finding: `${a11yFinding}/100`,
           recommendation: 'Run axe-core audit and fix missing ARIA labels, color contrast issues, and keyboard navigation gaps on interactive components.',
           affected_page: page.path,
           raw_data: JSON.stringify({ accessibility_score: metrics.accessibility_score })
