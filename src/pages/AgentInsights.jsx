@@ -134,6 +134,14 @@ export default function AgentInsightsPage() {
     refetchInterval: 30000,
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.AgentInsights.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['agent-insights']);
+      toast.success('Insight deleted');
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }) => {
       const user = await base44.auth.me();
