@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     // 1. Run post-launch validation
     let validationResult;
     try {
-      validationResult = await base44.functions.invoke('postLaunchValidation', {});
+      validationResult = await base44.asServiceRole.functions.invoke('postLaunchValidation', {});
       healthReport.checks.validation = {
         status: validationResult.data.report.summary.overall_status,
         details: validationResult.data.report.summary
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     // 2. Run edge case monitor
     let edgeCaseResult;
     try {
-      edgeCaseResult = await base44.functions.invoke('edgeCaseMonitor', {});
+      edgeCaseResult = await base44.asServiceRole.functions.invoke('edgeCaseMonitor', {});
       healthReport.checks.edge_cases = {
         status: edgeCaseResult.data.summary.overall_health,
         details: edgeCaseResult.data.summary
