@@ -69,7 +69,6 @@ Deno.serve(async (req) => {
       to: formattedNumber
     });
 
-    const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER') || 'NOT_SET';
     console.log(`[sendVerificationCode] Twilio SID: ${message.sid} | Status: ${message.status} | To: ${formattedNumber} | From: ${fromNumber} | User: ${user.email}`);
     return Response.json({ success: true, message: 'Verification code sent' });
 
