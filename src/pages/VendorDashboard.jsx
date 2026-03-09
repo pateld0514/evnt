@@ -69,23 +69,23 @@ export default function VendorDashboard() {
     }
   }, [currentUser, loading, navigate]);
 
-  const vendorId = vendor?.id || currentUser?.vendor_id;
+  const vendorId = currentUser?.vendor_id;
 
-  // Use backend function to fetch bookings/views/swipes — bypasses RLS issues
-  // when bookings are created by admin/service but belong to this vendor
-  const { data: dashboardData = null } = useQuery({
-    queryKey: ['vendor-dashboard-data', vendorId],
+  // Use backend function to fetch bookings/views/swipes/vendor — bypasses RLS issues
+  const { data: dashboardData = null, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['vendor-dashboard-data', currentUser?.email, currentUser?.vendor_id],
     queryFn: async () => {
-      if (!vendorId) return null;
-      const res = await base44.functions.invoke('getVendorDashboardData', { vendor_id: vendorId });
+      if (!currentUser) return null;
+      const res = await base44.functions.invoke('getVendorDashboardData', { vendor_id: vendorId || '' });
       return res.data;
     },
-    enabled: !!vendorId,
+    enabled: !!currentUser,
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
+  const vendor = dashboardData?.vendor || null;
   const bookings = dashboardData?.bookings || [];
   const vendorViews = dashboardData?.views || [];
   const vendorSwipes = dashboardData?.swipes || [];
