@@ -113,7 +113,7 @@ export default function ClientProfileEditor({ user, onSave, onCancel }) {
               const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
               setFormData(prev => ({ ...prev, phone: formatPhone(digits) }));
             }}
-            placeholder="(555)-123-4567"
+            placeholder="(555) - 123 - 4567"
             className="flex h-12 w-full rounded-md border-2 border-gray-300 bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             required
           />
