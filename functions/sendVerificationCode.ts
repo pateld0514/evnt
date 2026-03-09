@@ -52,13 +52,13 @@ Deno.serve(async (req) => {
 
     // Send professional branded SMS
     const client = twilio(Deno.env.get('TWILIO_ACCOUNT_SID'), Deno.env.get('TWILIO_AUTH_TOKEN'));
-    await client.messages.create({
+    const message = await client.messages.create({
       body: `EVNT Security Code: ${code}\n\nUse this code to verify your phone number. It expires in 10 minutes.\n\nDo not share this code with anyone. EVNT will never ask for it.`,
       from: Deno.env.get('TWILIO_PHONE_NUMBER'),
       to: formattedNumber
     });
 
-    console.log(`[sendVerificationCode] Code sent to ${formattedNumber} for user ${user.email}`);
+    console.log(`[sendVerificationCode] Twilio SID: ${message.sid} | Status: ${message.status} | To: ${formattedNumber} | From: ${Deno.env.get('TWILIO_PHONE_NUMBER')} | User: ${user.email}`);
     return Response.json({ success: true, message: 'Verification code sent' });
 
   } catch (error) {
