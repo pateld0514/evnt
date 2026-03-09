@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // 2. Check for bookings with missing client_state
-    const bookings = await base44.asServiceRole.entities.Booking.list();
+    const bookings = await base44.asServiceRole.entities.Booking.list('-created_date', 500);
     const missingStateBookings = bookings.filter(b => !b.client_state);
     
     if (missingStateBookings.length > 0) {
@@ -66,12 +66,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Check for legacy bookings missing stripe_fee or sales_tax_rate
+    // 3. Check for legacy bookings missing stripe_fee_amount or sales_tax_rate
     const legacyBookings = bookings.filter(b => 
-      b.stripe_fee === null || 
-      b.stripe_fee === undefined || 
-      b.sales_tax_rate === null || 
-      b.sales_tax_rate === undefined
+      b.stripe_fee_amount == null || 
+      b.sales_tax_rate == null
     );
 
     if (legacyBookings.length > 0) {
@@ -114,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     // 5. Check for pending vendor approvals
-    const vendors = await base44.asServiceRole.entities.Vendor.list();
+    const vendors = await base44.asServiceRole.entities.Vendor.list('-created_date', 500);
     const pendingVendors = vendors.filter(v => v.approval_status === 'pending');
 
     if (pendingVendors.length > 0) {
@@ -166,7 +164,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Post-launch validation error:', error);
     return Response.json({ 
-      error: error.message 
+      error: error?.message || String(error)
     }, { status: 500 });
   }
 });
