@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
       recommendations: []
     };
 
-    const internalKey = Deno.env.get('INTERNAL_SECRET');
+    const internalKey = Deno.env.get('INTERNAL_SECRET') || '';
 
     // 1. Run post-launch validation
     let validationResult;
