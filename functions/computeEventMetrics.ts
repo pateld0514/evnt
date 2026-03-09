@@ -115,6 +115,8 @@ Deno.serve(async (req) => {
     const insightsCreated = [];
 
     if (vendorsWithoutStripe.length > 0) {
+      const finding = `${vendorsWithoutStripe.length} approved vendor(s) have not connected Stripe`;
+      if (!isDuplicate(finding)) {
       const insight = await base44.asServiceRole.entities.AgentInsights.create({
         agent_name: 'event_intelligence',
         severity: 'P2',
