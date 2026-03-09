@@ -13,6 +13,27 @@ import PortfolioManager from "../components/vendor/PortfolioManager";
 import PayoutHistory from "../components/vendor/PayoutHistory";
 import StripeAccountStatus from "../components/vendor/StripeAccountStatus";
 
+function VendorProfileImage({ vendor }) {
+  const [imgError, setImgError] = React.useState(false);
+  if (vendor.image_url && !imgError) {
+    return (
+      <div className="w-full h-32 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-100">
+        <img
+          src={vendor.image_url}
+          alt={`${vendor.business_name} profile photo`}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="w-full h-32 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
+      <Store className="w-10 h-10 text-gray-400" />
+    </div>
+  );
+}
+
 export default function VendorDashboard() {
   const navigate = useNavigate();
   const [aiInsights, setAiInsights] = useState(null);
