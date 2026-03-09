@@ -101,7 +101,17 @@ Deno.serve(async (req) => {
       ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
       : 0;
     
-    // ─── WRITE INSIGHTS ───────────────────────────────────────
+    // ─── WRITE INSIGHTS (deduplicated — skip if a pending insight with same finding prefix exists) ───
+    const existingInsights = await base44.asServiceRole.entities.AgentInsights.filter({
+      agent_name: 'event_intelligence',
+      status: 'pending'
+    });
+    const existingFindings = new Set(existingInsights.map(i => i.finding.substring(0, 40)));
+
+    function isDuplicate(findingText) {
+      return existingFindings.has(findingText.substring(0, 40));
+    }
+
     const insightsCreated = [];
 
     if (vendorsWithoutStripe.length > 0) {
