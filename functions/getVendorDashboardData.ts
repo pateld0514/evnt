@@ -23,13 +23,16 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all data using service role to bypass RLS
-    const [bookings, views, swipes] = await Promise.all([
+    const [bookings, views, swipes, vendorResults] = await Promise.all([
       base44.asServiceRole.entities.Booking.filter({ vendor_id: vendorId }, '-created_date'),
       base44.asServiceRole.entities.VendorView.filter({ vendor_id: vendorId }),
       base44.asServiceRole.entities.UserSwipe.filter({ vendor_id: vendorId }),
+      base44.asServiceRole.entities.Vendor.list('-created_date', 200),
     ]);
 
-    return Response.json({ bookings, views, swipes });
+    const vendor = vendorResults.find(v => v.id === vendorId) || null;
+
+    return Response.json({ bookings, views, swipes, vendor });
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
