@@ -57,7 +57,12 @@ export default function ClientRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.phone || !formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience || !formData.preferred_contact) {
+    if (!phoneVerified) {
+      toast.error("Please verify your phone number before completing registration");
+      return;
+    }
+
+    if (!formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience || !formData.preferred_contact) {
       toast.error("Please fill in all required fields");
       return;
     }

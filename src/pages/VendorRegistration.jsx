@@ -226,8 +226,13 @@ export default function VendorRegistrationPage() {
       return;
     }
 
+    if (!phoneVerified) {
+      toast.error("Please verify your phone number before submitting");
+      return;
+    }
+
     if (!formData.business_name || !formData.category || !formData.description || 
-        !formData.phone || !formData.location || !formData.contact_email || 
+        !formData.location || !formData.contact_email || 
         !formData.id_verification_url || 
         !formData.years_in_business || !formData.average_price ||
         (formData.willing_to_travel && !formData.travel_radius) ||
