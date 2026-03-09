@@ -44,7 +44,7 @@ export default function PayoutHistory({ vendorId, completedBookings }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         {isLoading ? (
           <div className="text-center py-10 text-gray-500 font-medium text-base">Loading payouts...</div>
         ) : payouts.length === 0 ? (
