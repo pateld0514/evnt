@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
+import PhoneVerificationWidget from "../components/forms/PhoneVerificationWidget";
 
 const eventTypes = [
   "Wedding", "Birthday", "Sweet 16", "Baby Shower", 

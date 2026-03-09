@@ -52,6 +52,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminMonitoring from './pages/AdminMonitoring';
 import AdminSetup from './pages/AdminSetup';
 import AdminTransactions from './pages/AdminTransactions';
+import AgentInsights from './pages/AgentInsights';
 import Bookings from './pages/Bookings';
 import ClientRegistration from './pages/ClientRegistration';
 import DemoAccounts from './pages/DemoAccounts';
@@ -76,7 +77,6 @@ import VendorProfile from './pages/VendorProfile';
 import VendorRegistration from './pages/VendorRegistration';
 import VendorRewards from './pages/VendorRewards';
 import VendorView from './pages/VendorView';
-import AgentInsights from './pages/AgentInsights';
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +86,7 @@ export const PAGES = {
     "AdminMonitoring": AdminMonitoring,
     "AdminSetup": AdminSetup,
     "AdminTransactions": AdminTransactions,
+    "AgentInsights": AgentInsights,
     "Bookings": Bookings,
     "ClientRegistration": ClientRegistration,
     "DemoAccounts": DemoAccounts,
@@ -110,7 +111,6 @@ export const PAGES = {
     "VendorRegistration": VendorRegistration,
     "VendorRewards": VendorRewards,
     "VendorView": VendorView,
-    "AgentInsights": AgentInsights,
 }
 
 export const pagesConfig = {

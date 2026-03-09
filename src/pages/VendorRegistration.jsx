@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Upload, CheckCircle, X, CreditCard, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
+import PhoneVerificationWidget from "../components/forms/PhoneVerificationWidget";
 
 const categories = [
   { value: "dj", label: "DJ" },
