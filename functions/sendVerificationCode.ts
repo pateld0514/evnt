@@ -51,10 +51,21 @@ Deno.serve(async (req) => {
     });
 
     // Send professional branded SMS
-    const client = twilio(Deno.env.get('TWILIO_ACCOUNT_SID'), Deno.env.get('TWILIO_AUTH_TOKEN'));
+    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+    
+    console.log(`[sendVerificationCode] Using FROM: ${fromNumber} | ACCOUNT: ${accountSid?.substring(0,10)}...`);
+    
+    if (!accountSid || !authToken || !fromNumber) {
+      console.error('[sendVerificationCode] MISSING Twilio credentials!', { accountSid: !!accountSid, authToken: !!authToken, fromNumber: !!fromNumber });
+      return Response.json({ error: 'SMS service not configured' }, { status: 500 });
+    }
+    
+    const client = twilio(accountSid, authToken);
     const message = await client.messages.create({
       body: `EVNT Security Code: ${code}\n\nUse this code to verify your phone number. It expires in 10 minutes.\n\nDo not share this code with anyone. EVNT will never ask for it.`,
-      from: Deno.env.get('TWILIO_PHONE_NUMBER'),
+      from: fromNumber,
       to: formattedNumber
     });
 
