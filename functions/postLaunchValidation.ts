@@ -4,15 +4,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Admin user required, OR allow service-role internal calls (no user token)
-    const isAuthenticated = await base44.auth.isAuthenticated();
-    if (isAuthenticated) {
-      const user = await base44.auth.me();
-      if (!user || user.role !== "admin") {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-      }
+    // Require admin user, but allow service-role internal calls (user will be null)
+    const user = await base44.auth.me().catch(() => null);
+    if (user !== null && user?.role !== "admin") {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
-    // If not authenticated at all, this is a service-role internal call — allow through
 
     const report = {
       timestamp: new Date().toISOString(),
