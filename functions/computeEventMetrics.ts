@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
     }
 
     const [bookings, vendors, reviews] = await Promise.all([
-      base44.asServiceRole.entities.Booking.list('-created_date', 500),
-      base44.asServiceRole.entities.Vendor.list('-created_date', 200),
-      base44.asServiceRole.entities.Review.list('-created_date', 500),
+      base44.asServiceRole.entities.Booking.list('-created_date', 200),
+      base44.asServiceRole.entities.Vendor.list('-created_date', 100),
+      base44.asServiceRole.entities.Review.list('-created_date', 100),
     ]);
 
     const now = new Date();
