@@ -27,12 +27,12 @@ Deno.serve(async (req) => {
 
     const funnelStages = ['pending', 'negotiating', 'payment_pending', 'confirmed', 'in_progress', 'completed'];
     const funnelConversion = {};
-    let prev = statusCounts['pending'] || 0;
+    let prev = null; // null = no prior stage to compare against
     for (const stage of funnelStages) {
       const count = statusCounts[stage] || 0;
       funnelConversion[stage] = {
         count,
-        rate_from_prev: prev > 0 ? Math.round((count / prev) * 100) : null
+        rate_from_prev: prev !== null && prev > 0 ? Math.round((count / prev) * 100) : null
       };
       prev = count;
     }
