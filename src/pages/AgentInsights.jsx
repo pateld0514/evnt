@@ -293,11 +293,17 @@ export default function AgentInsightsPage() {
                 </CardContent>
               </Card>
             ) : (
-              filteredInsights.map(insight => (
+              [...filteredInsights].sort((a, b) => {
+                const order = { P1: 0, P2: 1, P3: 2, P4: 3, warning: 4, info: 5 };
+                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                if (a.status !== 'pending' && b.status === 'pending') return 1;
+                return (order[a.severity] ?? 6) - (order[b.severity] ?? 6);
+              }).map(insight => (
                 <InsightCard
                   key={insight.id}
                   insight={insight}
                   onUpdate={(id, status) => updateMutation.mutate({ id, status })}
+                  onDelete={(id) => deleteMutation.mutate(id)}
                 />
               ))
             )}
