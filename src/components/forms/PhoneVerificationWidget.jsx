@@ -11,7 +11,7 @@ const formatPhone = (value) => {
   return `(${digits.slice(0, 3)}) - ${digits.slice(3, 6)} - ${digits.slice(6)}`;
 };
 
-export default function PhoneVerificationWidget({ onVerified, onSkip }) {
+export default function PhoneVerificationWidget({ onVerified, onSkip, consentGiven = true }) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [step, setStep] = useState("input"); // "input" | "verify" | "verified"

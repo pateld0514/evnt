@@ -24,6 +24,7 @@ export default function ClientRegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [phoneSkipped, setPhoneSkipped] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState("");

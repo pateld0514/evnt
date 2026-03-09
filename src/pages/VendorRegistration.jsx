@@ -35,6 +35,7 @@ export default function VendorRegistrationPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [phoneSkipped, setPhoneSkipped] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState("");
