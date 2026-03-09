@@ -227,8 +227,8 @@ export default function VendorRegistrationPage() {
       return;
     }
 
-    if (!phoneVerified) {
-      toast.error("Please verify your phone number before submitting");
+    if (!phoneVerified && !phoneSkipped) {
+      toast.error("Please verify your phone number, or choose to skip verification");
       return;
     }
 

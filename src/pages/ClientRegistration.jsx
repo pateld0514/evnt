@@ -58,8 +58,8 @@ export default function ClientRegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!phoneVerified) {
-      toast.error("Please verify your phone number before completing registration");
+    if (!phoneVerified && !phoneSkipped) {
+      toast.error("Please verify your phone number, or choose to skip verification");
       return;
     }
 
