@@ -5,19 +5,34 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, Phone, Sparkles, DollarSign, Star, Gift } from "lucide-react";
 import { toast } from "sonner";
 import CityAutocomplete from "../components/forms/CityAutocomplete";
 import PhoneVerificationWidget from "../components/forms/PhoneVerificationWidget";
 
 const eventTypes = [
-  "Wedding", "Birthday", "Sweet 16", "Baby Shower", 
+  "Wedding", "Birthday", "Sweet 16", "Baby Shower",
   "Anniversary", "Corporate Event", "Other"
 ];
+
+function SectionCard({ icon: Icon, title, subtitle, children }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <p className="font-bold text-gray-900 text-sm">{title}</p>
+          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+        </div>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  );
+}
 
 export default function ClientRegistrationPage() {
   const navigate = useNavigate();
@@ -26,7 +41,6 @@ export default function ClientRegistrationPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
-  const [phoneSkipped, setPhoneSkipped] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState("");
   const [formData, setFormData] = useState({
     phone: "",
@@ -41,10 +55,7 @@ export default function ClientRegistrationPage() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
-    if (ref) {
-      // URL-decode in case the base64 was encoded
-      setReferralCode(decodeURIComponent(ref));
-    }
+    if (ref) setReferralCode(decodeURIComponent(ref));
   }, []);
 
   const handleEventToggle = (event) => {
@@ -58,41 +69,32 @@ export default function ClientRegistrationPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!phoneVerified && !phoneSkipped) {
-      toast.error("Please verify your phone number, or choose to skip verification");
+
+    if (!phoneVerified) {
+      toast.error("Phone verification is required to continue");
       return;
     }
-
-    if (!formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience || !formData.preferred_contact) {
+    if (!formData.location || formData.event_interests.length === 0 || !formData.budget_range || !formData.event_planning_experience) {
       toast.error("Please fill in all required fields");
       return;
     }
-
     if (!termsAccepted) {
-      toast.error("Please confirm you are 18+ and agree to the Terms of Service");
+      toast.error("Please agree to the Terms of Service to continue");
       return;
     }
 
     setLoading(true);
     try {
       const currentUser = await base44.auth.me();
-      
-      // Extract state from location for tax purposes
+
       let userState = null;
       if (formData.location) {
         try {
-          const stateResponse = await base44.functions.invoke('extractStateFromLocation', {
-            location: formData.location
-          });
-          if (stateResponse.data?.state) {
-            userState = stateResponse.data.state;
-          }
-        } catch (error) {
-          console.warn('Failed to extract state:', error);
-        }
+          const stateResponse = await base44.functions.invoke('extractStateFromLocation', { location: formData.location });
+          if (stateResponse.data?.state) userState = stateResponse.data.state;
+        } catch {}
       }
-      
+
       await base44.auth.updateMe({
         ...formData,
         state: userState,
@@ -103,47 +105,30 @@ export default function ClientRegistrationPage() {
         sms_opt_in_date: new Date().toISOString()
       });
 
-      // Send welcome email to client
       try {
         await base44.functions.invoke('sendWelcomeEmail', {
           email: currentUser.email,
           name: currentUser.full_name,
           user_type: 'client'
         });
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
-      }
+      } catch {}
 
-      // Create referral reward if referred - decode referral code to get referrer email
       if (referralCode) {
         try {
-          // Decode the referral code back to email (reverse of btoa encoding)
           let referrerEmail;
-          try {
-            referrerEmail = atob(referralCode);
-          } catch {
-            // If decode fails, referralCode might be the email directly
-            referrerEmail = referralCode;
-          }
-
-          // Get referrer user to determine their type
+          try { referrerEmail = atob(referralCode); } catch { referrerEmail = referralCode; }
           const referrerUsers = await base44.entities.User.filter({ email: referrerEmail });
           const referrerType = referrerUsers.length > 0 ? referrerUsers[0].user_type : "unknown";
-
-          // Determine referral_type and reward_type based on referrer's type
           const refType = referrerType === "vendor" ? "vendor_to_client" : "client_to_client";
-          const rewardType = "twenty_five_dollar_credit"; // clients always get $25 credit
           await base44.entities.ReferralReward.create({
             referrer_email: referrerEmail,
             referrer_type: referrerType || "client",
             referred_email: currentUser.email,
             referred_type: "client",
             referral_type: refType,
-            reward_type: rewardType,
+            reward_type: "twenty_five_dollar_credit",
             status: "pending"
           });
-
-          // Notify referrer that their referral signed up
           try {
             await base44.functions.invoke('sendReferralNotification', {
               referrer_email: referrerEmail,
@@ -151,15 +136,11 @@ export default function ClientRegistrationPage() {
               referred_email: currentUser.email,
               reward_type: 'pending'
             });
-          } catch (e) {
-            console.error("Failed to send referral signup notification:", e);
-          }
-        } catch (error) {
-          console.error("Failed to create referral record:", error);
-        }
+          } catch {}
+        } catch {}
       }
-      
-      toast.success("Profile created successfully! Welcome to EVNT!");
+
+      toast.success("Welcome to EVNT! Let's find your perfect vendors.");
       navigate(createPageUrl("Home"));
     } catch (error) {
       toast.error("Failed to create profile");
@@ -168,136 +149,116 @@ export default function ClientRegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full border-4 border-black shadow-2xl">
-        <CardHeader className="bg-gradient-to-r from-black to-gray-900 text-white">
-          <div className="space-y-2">
-            <CardTitle className="text-4xl font-black">Let's Get Started!</CardTitle>
-            <p className="text-gray-200 text-lg">Tell us about your events so we can find the perfect vendors for you</p>
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      {/* Header */}
+      <div className="max-w-xl mx-auto mb-8 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 bg-black rounded-2xl mb-4">
+          <span className="text-white font-black text-2xl">E</span>
+        </div>
+        <h1 className="text-3xl font-black text-gray-900 mb-2">Create Your Account</h1>
+        <p className="text-gray-500">Find and book the best vendors for your events</p>
+        {referralCode && (
+          <div className="mt-3 inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-sm font-semibold px-4 py-2 rounded-full">
+            <Gift className="w-4 h-4" />
+            Referral applied — $25 credit after your first booking!
           </div>
-        </CardHeader>
-        <CardContent className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-2">
-              <p className="text-sm text-blue-900 font-medium">📍 We'll match you with vendors in your area</p>
-            </div>
+        )}
+      </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                {/* SMS Opt-in consent - required for Twilio A2P compliance */}
-                <div className="flex items-start space-x-3 bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-3">
-                  <Checkbox
-                    id="sms-optin-client"
-                    checked={smsOptIn}
-                    onCheckedChange={(checked) => setSmsOptIn(!!checked)}
-                  />
-                  <label htmlFor="sms-optin-client" className="text-xs leading-relaxed cursor-pointer text-blue-900">
-                    By checking this box, I agree to receive SMS text messages from EVNT for phone verification and important account updates. Message & data rates may apply. Reply STOP to opt out at any time. See our{" "}
-                    <a href="/Privacy" target="_blank" className="underline font-semibold">Privacy Policy</a>.
-                  </label>
-                </div>
-              <Label className="text-lg font-bold">
-                  Phone Number{" "}
-                  {phoneVerified ? (
-                    <span className="text-sm font-normal text-green-600">✓ Verified</span>
-                  ) : phoneSkipped ? (
-                    <span className="text-sm font-normal text-amber-600">⚠ Skipped</span>
-                  ) : (
-                    <span className="text-sm font-normal text-gray-500">(Verification recommended)</span>
-                  )}
-                </Label>
-                {!phoneSkipped ? (
-                  <PhoneVerificationWidget
-                    consentGiven={smsOptIn}
-                    onVerified={(phone) => {
-                      setPhoneVerified(true);
-                      setPhoneSkipped(false);
-                      setVerifiedPhone(phone);
-                      setFormData(prev => ({ ...prev, phone: phone.replace(/\D/g, '') }));
-                    }}
-                    onSkip={() => setPhoneSkipped(true)}
-                  />
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3 p-3 bg-amber-50 border-2 border-amber-300 rounded-xl">
-                      <p className="text-sm text-amber-800">Phone verification skipped. You can verify it later in your profile.</p>
-                    </div>
-                    <button type="button" onClick={() => setPhoneSkipped(false)} className="text-xs text-gray-500 hover:text-gray-700 underline underline-offset-2">
-                      ← Verify my phone instead
-                    </button>
-                  </div>
-                )}
-              </div>
+      <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-4">
 
-              <div className="space-y-2">
-                <Label className="text-lg font-bold">Company Name</Label>
-                <p className="text-sm text-gray-500">Optional - for corporate events only</p>
-                <Input
-                  value={formData.company_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="Leave blank for personal events"
-                  className="border-2 border-gray-300 h-12 text-lg"
-                />
-              </div>
-            </div>
+        {/* Location */}
+        <SectionCard icon={MapPin} title="Your Location" subtitle="We'll match you with vendors in your area">
+          <CityAutocomplete
+            value={formData.location}
+            onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+            placeholder="Search your city..."
+          />
+        </SectionCard>
 
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">Location *</Label>
-              <CityAutocomplete
-                value={formData.location}
-                onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
-                placeholder="Search your city..."
-                className="border-2 border-gray-300 h-12 text-lg"
-              />
-            </div>
+        {/* Phone Verification */}
+        <SectionCard icon={Phone} title="Phone Verification" subtitle="Required — we'll send a one-time code via SMS">
+          {/* SMS Consent */}
+          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <Checkbox
+              id="sms-optin-client"
+              checked={smsOptIn}
+              onCheckedChange={(checked) => setSmsOptIn(!!checked)}
+              className="mt-0.5"
+            />
+            <label htmlFor="sms-optin-client" className="text-xs leading-relaxed cursor-pointer text-blue-900">
+              I agree to receive SMS text messages from EVNT for phone verification and account updates.
+              Message &amp; data rates may apply. Reply STOP to opt out at any time.{" "}
+              <a href="/Privacy" target="_blank" className="underline font-semibold">Privacy Policy</a>.
+            </label>
+          </div>
+          <PhoneVerificationWidget
+            consentGiven={smsOptIn}
+            onVerified={(phone) => {
+              setPhoneVerified(true);
+              setVerifiedPhone(phone);
+              setFormData(prev => ({ ...prev, phone: phone.replace(/\D/g, '') }));
+            }}
+          />
+        </SectionCard>
 
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">What types of events are you planning? *</Label>
-              <p className="text-sm text-gray-500">Select all that apply</p>
-              <div className="grid grid-cols-2 gap-4">
-                {eventTypes.map(event => (
-                  <div key={event} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={event}
-                      checked={formData.event_interests.includes(event)}
-                      onCheckedChange={() => handleEventToggle(event)}
-                    />
-                    <label htmlFor={event} className="text-sm font-medium cursor-pointer">
-                      {event}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Event Interests */}
+        <SectionCard icon={Sparkles} title="Event Types" subtitle="Select everything you're planning">
+          <div className="grid grid-cols-2 gap-3">
+            {eventTypes.map(event => {
+              const selected = formData.event_interests.includes(event);
+              return (
+                <button
+                  key={event}
+                  type="button"
+                  onClick={() => handleEventToggle(event)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all text-left ${
+                    selected
+                      ? "bg-black border-black text-white"
+                      : "bg-white border-gray-200 text-gray-700 hover:border-gray-400"
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${selected ? "bg-white border-white" : "border-gray-300"}`}>
+                    {selected && <span className="w-2 h-2 bg-black rounded-sm block" />}
+                  </span>
+                  {event}
+                </button>
+              );
+            })}
+          </div>
+        </SectionCard>
 
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">Typical Budget Range *</Label>
-              <Select 
-                value={formData.budget_range} 
+        {/* Budget & Experience */}
+        <SectionCard icon={DollarSign} title="Budget & Experience" subtitle="Help vendors understand your needs">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-gray-700">Typical Budget Range *</Label>
+              <Select
+                value={formData.budget_range}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, budget_range: value }))}
               >
-                <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
-                  <SelectValue placeholder="Select budget range" />
+                <SelectTrigger className="h-11 border-gray-200">
+                  <SelectValue placeholder="Select your budget range" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="under_1k">Under $1,000</SelectItem>
-                  <SelectItem value="1k_5k">$1,000 - $5,000</SelectItem>
-                  <SelectItem value="5k_10k">$5,000 - $10,000</SelectItem>
-                  <SelectItem value="10k_25k">$10,000 - $25,000</SelectItem>
-                  <SelectItem value="25k_50k">$25,000 - $50,000</SelectItem>
+                  <SelectItem value="1k_5k">$1,000 – $5,000</SelectItem>
+                  <SelectItem value="5k_10k">$5,000 – $10,000</SelectItem>
+                  <SelectItem value="10k_25k">$10,000 – $25,000</SelectItem>
+                  <SelectItem value="25k_50k">$25,000 – $50,000</SelectItem>
                   <SelectItem value="50k_plus">$50,000+</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">Event Planning Experience *</Label>
-              <Select 
-                value={formData.event_planning_experience} 
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-gray-700">Event Planning Experience *</Label>
+              <Select
+                value={formData.event_planning_experience}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, event_planning_experience: value }))}
               >
-                <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
-                  <SelectValue placeholder="Select your experience level" />
+                <SelectTrigger className="h-11 border-gray-200">
+                  <SelectValue placeholder="Your experience level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="first_time">First time planning an event</SelectItem>
@@ -308,55 +269,70 @@ export default function ClientRegistrationPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-lg font-bold">Preferred Contact Method</Label>
-              <Select 
-                value={formData.preferred_contact} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_contact: value }))}
-              >
-                <SelectTrigger className="border-2 border-gray-300 h-12 text-lg">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
-                  <SelectItem value="both">Both</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {referralCode && (
-              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                <p className="text-sm font-bold text-green-800">
-                  🎉 Referral Code Applied! You'll get $25 credit after your first booking.
-                </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-gray-700">Preferred Contact</Label>
+                <Select
+                  value={formData.preferred_contact}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_contact: value }))}
+                >
+                  <SelectTrigger className="h-11 border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="phone">Phone</SelectItem>
+                    <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            <div className="flex items-start space-x-3 bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
-              <Checkbox
-                id="terms"
-                checked={termsAccepted}
-                onCheckedChange={(checked) => setTermsAccepted(!!checked)}
-              />
-              <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-gray-700">
-                I confirm I am at least <strong>18 years old</strong> and agree to the{" "}
-                <a href="/Terms" target="_blank" className="underline font-semibold text-black">Terms of Service</a>{" "}
-                and{" "}
-                <a href="/Privacy" target="_blank" className="underline font-semibold text-black">Privacy Policy</a>.
-              </label>
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-gray-700">Company <span className="font-normal text-gray-400">(optional)</span></Label>
+                <Input
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="For corporate events"
+                  className="h-11 border-gray-200"
+                />
+              </div>
             </div>
+          </div>
+        </SectionCard>
 
-            <Button
-              type="submit"
-              className="w-full bg-black text-white hover:bg-gray-800 h-14 text-lg font-bold"
-              disabled={loading || !termsAccepted}
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Registration"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        {/* Terms & Submit */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="terms"
+              checked={termsAccepted}
+              onCheckedChange={(checked) => setTermsAccepted(!!checked)}
+              className="mt-0.5"
+            />
+            <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-gray-600">
+              I confirm I am at least <strong className="text-gray-900">18 years old</strong> and agree to the{" "}
+              <a href="/Terms" target="_blank" className="underline font-semibold text-black">Terms of Service</a>{" "}
+              and{" "}
+              <a href="/Privacy" target="_blank" className="underline font-semibold text-black">Privacy Policy</a>.
+            </label>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-black text-white hover:bg-gray-800 h-12 text-base font-bold rounded-xl"
+            disabled={loading || !termsAccepted || !phoneVerified}
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Registration →"}
+          </Button>
+
+          {!phoneVerified && (
+            <p className="text-center text-xs text-amber-600 font-medium">
+              ⚠ Phone verification required before completing registration
+            </p>
+          )}
+        </div>
+
+      </form>
     </div>
   );
 }
