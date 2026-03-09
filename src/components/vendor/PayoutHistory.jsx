@@ -40,7 +40,7 @@ export default function PayoutHistory({ vendorId, completedBookings }) {
           <CardTitle className="text-2xl md:text-3xl font-black">Payout History</CardTitle>
           <div className="text-right">
             <p className="text-sm text-gray-300 font-bold">Total Earned</p>
-            <p className="text-3xl font-black text-green-400">${totalEarned.toFixed(2)}</p>
+            <p className="text-3xl font-black text-green-400">${totalEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </div>
       </CardHeader>
