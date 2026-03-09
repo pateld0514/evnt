@@ -461,14 +461,13 @@ export default function VendorRegistrationPage() {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-lg font-bold">Phone Number *</Label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="(555) 123-4567"
-                  className="border-2 border-gray-300 h-12 text-lg"
-                  required
+                <Label className="text-lg font-bold">Phone Number * <span className="text-sm font-normal text-gray-500">(Verification required)</span></Label>
+                <PhoneVerificationWidget
+                  onVerified={(phone) => {
+                    setPhoneVerified(true);
+                    setVerifiedPhone(phone);
+                    setFormData(prev => ({ ...prev, phone: phone.replace(/\D/g, '') }));
+                  }}
                 />
               </div>
 
