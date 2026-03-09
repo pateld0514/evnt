@@ -443,12 +443,12 @@ Provide 4-5 specific, actionable insights in this JSON format:
 
         {/* Portfolio Section */}
         <div className="mt-8">
-          <PortfolioManager vendorId={vendor?.id} />
+          <PortfolioManager vendorId={vendor?.id} currentUserEmail={currentUser?.email} />
         </div>
 
         {/* Payout History */}
         <div className="mt-8">
-          <PayoutHistory vendorId={vendorId} completedBookings={bookings.filter(b => b.status === 'completed')} />
+          <PayoutHistory vendorId={vendor?.id} completedBookings={bookings.filter(b => b.status === 'completed')} />
         </div>
         </TabsContent>
 
