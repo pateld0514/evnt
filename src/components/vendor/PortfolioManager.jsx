@@ -47,7 +47,7 @@ export default function PortfolioManager({ vendorId, currentUserEmail }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.PortfolioItem.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['portfolio', vendorId]);
+      queryClient.invalidateQueries({ queryKey: ['portfolio', vendorId] });
       setIsAdding(false);
       setNewItem({ type: "image", url: "", title: "", description: "", event_type: "" });
       toast.success("Portfolio item added");
@@ -56,12 +56,16 @@ export default function PortfolioManager({ vendorId, currentUserEmail }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.PortfolioItem.delete(id),
+    mutationFn: async (id) => {
+      const res = await base44.functions.invoke('deletePortfolioItem', { itemId: id });
+      if (res.data?.error) throw new Error(res.data.error);
+      return res.data;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries(['portfolio', vendorId]);
+      queryClient.invalidateQueries({ queryKey: ['portfolio', vendorId] });
       toast.success("Portfolio item deleted");
     },
-    onError: () => toast.error("Failed to delete item")
+    onError: (err) => toast.error(err.message || "Failed to delete item")
   });
 
   const handleFileUpload = async (e) => {
