@@ -425,22 +425,7 @@ Provide 4-5 specific, actionable insights in this JSON format:
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
-              <div className="w-full h-32 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
-                {vendor.image_url ? (
-                  <img
-                    src={vendor.image_url}
-                    alt={`${vendor.business_name} profile photo`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                  />
-                ) : null}
-                <div
-                  className="w-full h-full items-center justify-center bg-gray-200"
-                  style={{ display: vendor.image_url ? 'none' : 'flex' }}
-                >
-                  <Store className="w-10 h-10 text-gray-400" />
-                </div>
-              </div>
+              <VendorProfileImage vendor={vendor} />
               <div>
                 <p className="text-sm text-gray-500 font-medium">Business Name</p>
                 <p className="font-bold">{vendor.business_name}</p>
