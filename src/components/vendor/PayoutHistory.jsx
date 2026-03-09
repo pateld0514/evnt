@@ -79,15 +79,15 @@ export default function PayoutHistory({ vendorId, completedBookings }) {
                   <div className="grid grid-cols-3 gap-3 text-base">
                     <div>
                       <p className="text-gray-600 text-sm font-bold mb-1">Booking Total</p>
-                      <p className="font-black text-lg">${payout.gross_amount.toFixed(2)}</p>
+                      <p className="font-black text-lg">${payout.gross_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                     <div>
                       <p className="text-gray-600 text-sm font-bold mb-1">Platform Fee</p>
-                      <p className="font-black text-lg text-red-600">-${payout.platform_fee.toFixed(2)}</p>
+                      <p className="font-black text-lg text-red-600">-${payout.platform_fee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                     <div>
                       <p className="text-gray-600 text-sm font-bold mb-1">Your Payout</p>
-                      <p className="font-black text-lg text-green-600">${payout.net_amount.toFixed(2)}</p>
+                      <p className="font-black text-lg text-green-600">${payout.net_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                   </div>
 
