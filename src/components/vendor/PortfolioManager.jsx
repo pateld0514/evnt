@@ -24,7 +24,7 @@ const eventTypes = [
   "Graduation", "Holiday Party", "Engagement", "Other"
 ];
 
-export default function PortfolioManager({ vendorId }) {
+export default function PortfolioManager({ vendorId, currentUserEmail }) {
   const [isAdding, setIsAdding] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleteConfirmItem, setDeleteConfirmItem] = useState(null);
