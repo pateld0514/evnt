@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     };
 
     // 1. Check for bookings with null client_state but non-zero amounts
-    const bookings = await base44.asServiceRole.entities.Booking.list();
+    const bookings = await base44.asServiceRole.entities.Booking.list('-created_date', 500);
     const nullStateWithAmount = bookings.filter(b => 
       !b.client_state && 
       b.total_amount_charged > 0 && 
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     }
 
     // 4. Check for vendors without Stripe accounts attempting to receive payments
-    const vendors = await base44.asServiceRole.entities.Vendor.list();
+    const vendors = await base44.asServiceRole.entities.Vendor.list('-created_date', 500);
     const vendorsWithoutStripe = vendors.filter(v => 
       v.approval_status === 'approved' && 
       !v.stripe_account_id
@@ -98,32 +98,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 5. Check for recent booking update conflicts (same booking updated within 5 seconds)
-    const recentBookings = bookings.filter(b => 
-      new Date(b.updated_date) > new Date(Date.now() - 60 * 60 * 1000)
-    );
-    
-    const updateConflicts = recentBookings.reduce((conflicts, booking) => {
-      const similar = recentBookings.filter(b => 
-        b.id === booking.id && 
-        Math.abs(new Date(b.updated_date) - new Date(booking.updated_date)) < 5000
-      );
-      if (similar.length > 1) conflicts.push(booking.id);
-      return conflicts;
-    }, []);
-
-    if (updateConflicts.length > 0) {
-      alerts.info.push({
-        type: 'potential_race_conditions',
-        severity: 'low',
-        count: updateConflicts.length,
-        message: 'Bookings updated multiple times within 5 seconds',
-        recommendation: 'Monitor for race conditions',
-        booking_ids: [...new Set(updateConflicts)]
-      });
-    }
-
-    // 6. Check for failed Stripe webhooks (payment_status processing > 10 minutes)
+    // 5. Check for failed Stripe webhooks (payment_status processing > 10 minutes)
     const stuckProcessing = bookings.filter(b => 
       b.payment_status === 'processing' && 
       new Date(b.updated_date) < new Date(Date.now() - 10 * 60 * 1000)
@@ -159,7 +134,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Edge case monitor error:', error);
     return Response.json({ 
-      error: error.message 
+      error: error?.message || String(error)
     }, { status: 500 });
   }
 });
