@@ -315,7 +315,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error(`[${requestId}] === CHECKOUT REQUEST FAILED ===`);
-    console.error(`[${requestId}] Error:`, error.message);
+    console.error(`[${requestId}] Error:`, error?.message || String(error));
     console.error(`[${requestId}] Stack:`, error.stack);
     
     return Response.json({ 

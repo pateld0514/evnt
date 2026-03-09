@@ -348,7 +348,7 @@ Deno.serve(async (req) => {
     return Response.json({ received: true }, { status: 200 });
 
   } catch (error) {
-    console.error(`[${webhookId}] WEBHOOK FAILED:`, error.message);
+    console.error(`[${webhookId}] WEBHOOK FAILED:`, error?.message || String(error));
     return Response.json({ error: 'Webhook processing failed', webhook_id: webhookId }, { status: 500 });
   }
 });

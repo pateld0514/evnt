@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, message: 'Payment captured successfully', amount: capturedIntent.amount / 100, idempotency_key: idempotencyKey });
 
   } catch (error) {
-    console.error(`[${requestId}] CAPTURE PAYMENT FAILED:`, error.message);
-    return Response.json({ error: error.message || 'Failed to capture payment', request_id: requestId }, { status: 500 });
+    console.error(`[${requestId}] CAPTURE PAYMENT FAILED:`, error?.message || String(error));
+    return Response.json({ error: error?.message || 'Failed to capture payment', request_id: requestId }, { status: 500 });
   }
 });
