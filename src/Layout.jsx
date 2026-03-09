@@ -102,6 +102,7 @@ export default function Layout({ children, currentPageName }) {
   const adminNavItems = [
     { name: "Dashboard", path: createPageUrl("AdminDashboard"), icon: LayoutDashboard },
     { name: "Transactions", path: createPageUrl("AdminTransactions"), icon: DollarSign },
+    { name: "AI Agents", path: createPageUrl("AgentInsights"), icon: Brain },
     { name: "Browse", path: createPageUrl("Swipe"), icon: Sparkles },
   ];
 
