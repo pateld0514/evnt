@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+const MAX_ATTEMPTS = 5;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -20,6 +22,17 @@ Deno.serve(async (req) => {
     }
 
     const record = records[0];
+    const attempts = (record.attempts || 0) + 1;
+
+    // Check if locked out from too many attempts
+    if (record.attempts >= MAX_ATTEMPTS) {
+      await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
+      return Response.json({
+        error: 'Too many incorrect attempts. Please request a new code.',
+        locked: true,
+        attemptsLeft: 0
+      }, { status: 429 });
+    }
 
     // Check expiry
     if (new Date() > new Date(record.expiry_date)) {
@@ -29,19 +42,36 @@ Deno.serve(async (req) => {
 
     // Check code match
     if (record.code !== String(code).trim()) {
-      return Response.json({ error: 'Incorrect code. Please try again.' }, { status: 400 });
+      const attemptsLeft = MAX_ATTEMPTS - attempts;
+
+      if (attemptsLeft <= 0) {
+        // Lock — delete the record
+        await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
+        return Response.json({
+          error: 'Too many incorrect attempts. Please request a new code.',
+          locked: true,
+          attemptsLeft: 0
+        }, { status: 429 });
+      }
+
+      // Update attempt count
+      await base44.asServiceRole.entities.PhoneVerification.update(record.id, { attempts });
+
+      return Response.json({
+        error: `Incorrect code. ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} remaining.`,
+        attemptsLeft
+      }, { status: 400 });
     }
 
-    // Mark phone as verified on the user's profile
+    // ✅ Code is correct — mark verified
     await base44.auth.updateMe({ phone_verified: true });
-
-    // Cleanup the verification record
     await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
 
-    console.log(`Phone ${formattedNumber} verified for user ${user.email}`);
+    console.log(`[verifyPhoneNumber] Phone ${formattedNumber} verified for user ${user.email}`);
     return Response.json({ success: true, message: 'Phone number verified successfully' });
+
   } catch (error) {
-    console.error('verifyPhoneNumber error:', error?.message || String(error));
+    console.error('[verifyPhoneNumber] Error:', error?.message || String(error));
     return Response.json({ error: error?.message || 'Failed to verify code' }, { status: 500 });
   }
 });
