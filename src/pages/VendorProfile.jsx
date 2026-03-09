@@ -213,11 +213,17 @@ export default function VendorProfilePage() {
 
               <div className="space-y-2">
                 <Label className="text-lg font-bold">Phone</Label>
-                <Input
-                  type="tel"
+                <input
+                  type="text"
+                  inputMode="numeric"
                   value={formData.contact_phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
-                  className="border-2 border-gray-300 h-12"
+                  onChange={(e) => {
+                    const d = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    const formatted = d.length <= 3 ? (d.length ? `(${d}` : '') : d.length <= 6 ? `(${d.slice(0,3)}) - ${d.slice(3)}` : `(${d.slice(0,3)}) - ${d.slice(3,6)} - ${d.slice(6)}`;
+                    setFormData(prev => ({ ...prev, contact_phone: formatted }));
+                  }}
+                  placeholder="(555) - 123 - 4567"
+                  className="flex h-12 w-full rounded-md border-2 border-gray-300 bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
             </div>
