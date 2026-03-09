@@ -54,7 +54,6 @@ import AdminSetup from './pages/AdminSetup';
 import AdminTransactions from './pages/AdminTransactions';
 import AgentInsights from './pages/AgentInsights';
 import Bookings from './pages/Bookings';
-import ClientRegistration from './pages/ClientRegistration';
 import DemoAccounts from './pages/DemoAccounts';
 import EmailPreview from './pages/EmailPreview';
 import EventDashboard from './pages/EventDashboard';
@@ -74,7 +73,6 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorOnboarding from './pages/VendorOnboarding';
 import VendorPending from './pages/VendorPending';
 import VendorProfile from './pages/VendorProfile';
-import VendorRegistration from './pages/VendorRegistration';
 import VendorRewards from './pages/VendorRewards';
 import VendorView from './pages/VendorView';
 import __Layout from './Layout.jsx';
@@ -88,7 +86,6 @@ export const PAGES = {
     "AdminTransactions": AdminTransactions,
     "AgentInsights": AgentInsights,
     "Bookings": Bookings,
-    "ClientRegistration": ClientRegistration,
     "DemoAccounts": DemoAccounts,
     "EmailPreview": EmailPreview,
     "EventDashboard": EventDashboard,
@@ -108,7 +105,6 @@ export const PAGES = {
     "VendorOnboarding": VendorOnboarding,
     "VendorPending": VendorPending,
     "VendorProfile": VendorProfile,
-    "VendorRegistration": VendorRegistration,
     "VendorRewards": VendorRewards,
     "VendorView": VendorView,
 }
