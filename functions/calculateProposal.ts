@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Calculate proposal error:', error);
     return Response.json({ 
-      error: error.message || 'Failed to calculate proposal' 
+      error: error?.message || 'Failed to calculate proposal' 
     }, { status: 500 });
   }
 });

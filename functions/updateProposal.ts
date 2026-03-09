@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Update proposal error:', error);
     return Response.json({ 
-      error: error.message || 'Failed to update proposal' 
+      error: error?.message || 'Failed to update proposal' 
     }, { status: 500 });
   }
 });
