@@ -452,9 +452,9 @@ export default function BookingsPage() {
                         {isVendor ? booking.client_name : booking.vendor_name}
                       </CardTitle>
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={`${statusConfig[booking.status].color} border-2 font-bold`}>
+                        <Badge className={`${statusEntry.color} border-2 font-bold`}>
                           <StatusIcon className="w-3 h-3 mr-1" />
-                          {statusConfig[booking.status].label}
+                          {statusEntry.label}
                         </Badge>
                         <Badge variant="outline" className="border-2 border-gray-300 font-medium">
                           {booking.event_type}
