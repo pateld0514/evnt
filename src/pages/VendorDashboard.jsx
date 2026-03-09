@@ -54,43 +54,7 @@ export default function VendorDashboard() {
     refetchOnMount: true,
   });
 
-  // Fetch only the vendor(s) belonging to this user — avoids fetching all vendors platform-wide.
-  // Admins get the first vendor returned; demo vendors use a fixed email.
-  const { data: vendorData = null, isLoading: vendorsLoading } = useQuery({
-    queryKey: ['my-vendor', currentUser?.email, currentUser?.vendor_id, currentUser?.role, currentUser?.demo_mode],
-    queryFn: async () => {
-      if (!currentUser) return null;
-      // Demo mode: look up by demo email
-      if (currentUser.demo_mode === "vendor") {
-        const results = await base44.entities.Vendor.filter({ contact_email: "demo_vendor_admin@test.com" });
-        return results[0] || null;
-      }
-      // Admin: fetch first approved vendor for preview purposes
-      if (currentUser.role === "admin") {
-        const results = await base44.entities.Vendor.list('-created_date', 1);
-        return results[0] || null;
-      }
-      // Normal vendor: prioritize vendor_id on user profile (most authoritative)
-      if (currentUser.vendor_id) {
-        const byId = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
-        if (byId.length > 0) return byId[0];
-      }
-      // Fallback to contact_email then created_by
-      const byContact = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-      if (byContact.length > 0) return byContact[0];
-      const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
-      if (byCreator.length > 0) return byCreator[0];
-      return null;
-    },
-    enabled: !!currentUser,
-    staleTime: 0,
-    gcTime: 10 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  });
-
-  const vendor = vendorData;
-  const loading = userLoading || vendorsLoading;
+  const loading = userLoading;
 
   // Redirects
   useEffect(() => {
