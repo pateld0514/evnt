@@ -475,6 +475,18 @@ export default function VendorRegistrationPage() {
                     <a href="/Privacy" target="_blank" className="underline font-semibold">Privacy Policy</a>.
                   </label>
                 </div>
+              {/* SMS Opt-in consent - required for Twilio A2P compliance */}
+                <div className="flex items-start space-x-3 bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-3">
+                  <Checkbox
+                    id="sms-optin-vendor"
+                    checked={smsOptIn}
+                    onCheckedChange={(checked) => setSmsOptIn(!!checked)}
+                  />
+                  <label htmlFor="sms-optin-vendor" className="text-xs leading-relaxed cursor-pointer text-blue-900">
+                    By checking this box, I agree to receive SMS text messages from EVNT for phone verification and important account updates. Message & data rates may apply. Reply STOP to opt out at any time. See our{" "}
+                    <a href="/Privacy" target="_blank" className="underline font-semibold">Privacy Policy</a>.
+                  </label>
+                </div>
               <Label className="text-lg font-bold">
                   Phone Number{" "}
                   {phoneVerified ? (
