@@ -114,10 +114,16 @@ Deno.serve(async (req) => {
 
     const insightsCreated = [];
 
+    // Helper: only create insight if no pending insight with same leading text exists
+    async function createInsightIfNew(data) {
+      if (isDuplicate(data.finding)) return null;
+      const insight = await base44.asServiceRole.entities.AgentInsights.create(data);
+      insightsCreated.push(insight.id);
+      return insight;
+    }
+
     if (vendorsWithoutStripe.length > 0) {
-      const finding = `${vendorsWithoutStripe.length} approved vendor(s) have not connected Stripe`;
-      if (!isDuplicate(finding)) {
-      const insight = await base44.asServiceRole.entities.AgentInsights.create({
+      await createInsightIfNew({
         agent_name: 'event_intelligence',
         severity: 'P2',
         finding: `${vendorsWithoutStripe.length} approved vendor(s) have not connected Stripe — cannot receive payments. Vendors: ${vendorsWithoutStripe.map(v => v.business_name).join(', ')}`,
@@ -126,11 +132,10 @@ Deno.serve(async (req) => {
         affected_page: 'pages/VendorDashboard',
         raw_data: JSON.stringify({ vendor_ids: vendorsWithoutStripe.map(v => v.id) })
       });
-      insightsCreated.push(insight.id);
     }
 
     if (vendorsWithNoBookings.length > 0) {
-      const insight = await base44.asServiceRole.entities.AgentInsights.create({
+      await createInsightIfNew({
         agent_name: 'event_intelligence',
         severity: 'P3',
         finding: `${vendorsWithNoBookings.length} approved vendor(s) have zero bookings: ${vendorsWithNoBookings.slice(0, 5).map(v => v.business_name).join(', ')}${vendorsWithNoBookings.length > 5 ? '...' : ''}`,
@@ -139,12 +144,11 @@ Deno.serve(async (req) => {
         affected_page: 'pages/Swipe',
         raw_data: JSON.stringify({ vendor_ids: vendorsWithNoBookings.map(v => v.id) })
       });
-      insightsCreated.push(insight.id);
     }
 
     if (categoryRankings.length > 0) {
       const topCat = categoryRankings[0];
-      const insight = await base44.asServiceRole.entities.AgentInsights.create({
+      await createInsightIfNew({
         agent_name: 'event_intelligence',
         severity: 'info',
         finding: `Top performing category: ${topCat.category} with ${topCat.completed} completed bookings (${topCat.completion_rate}% completion rate, avg booking $${topCat.avg_booking_value}). Platform revenue this month: $${recentRevenue.toFixed(2)}.`,
@@ -152,11 +156,10 @@ Deno.serve(async (req) => {
         affected_entity: 'Booking',
         raw_data: JSON.stringify({ categoryRankings: categoryRankings.slice(0, 5) })
       });
-      insightsCreated.push(insight.id);
     }
 
     if (vendorsWithStaleBookings.length > 0) {
-      const insight = await base44.asServiceRole.entities.AgentInsights.create({
+      await createInsightIfNew({
         agent_name: 'event_intelligence',
         severity: 'P2',
         finding: `${vendorsWithStaleBookings.length} vendor(s) have booking requests sitting unanswered for 7+ days. This causes client churn.`,
@@ -165,7 +168,6 @@ Deno.serve(async (req) => {
         affected_page: 'pages/Bookings',
         raw_data: JSON.stringify({ vendor_names: vendorsWithStaleBookings.map(v => v.business_name) })
       });
-      insightsCreated.push(insight.id);
     }
 
     return Response.json({
