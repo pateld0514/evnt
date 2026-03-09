@@ -91,12 +91,12 @@ export default function VendorDashboard() {
   const vendorSwipes = dashboardData?.swipes || [];
 
   const { data: messages = [] } = useQuery({
-    queryKey: ['vendor-messages', vendorId],
+    queryKey: ['vendor-messages', vendor?.id],
     queryFn: async () => {
-      if (!vendorId) return [];
-      return await base44.entities.Message.filter({ vendor_id: vendorId }, '-created_date');
+      if (!vendor?.id) return [];
+      return await base44.entities.Message.filter({ vendor_id: vendor.id }, '-created_date');
     },
-    enabled: !!vendorId,
+    enabled: !!vendor?.id,
     initialData: [],
     refetchOnMount: true,
     refetchOnWindowFocus: true,
