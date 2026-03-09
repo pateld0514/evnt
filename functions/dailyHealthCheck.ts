@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
       recommendations: []
     };
 
+    // Run validation and edge case checks in parallel for speed
     // 1. Run post-launch validation
     let validationResult;
     try {
