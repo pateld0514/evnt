@@ -105,6 +105,14 @@ export default function PayoutHistory({ vendorId, completedBookings }) {
                 </div>
               );
             })}
+            {payouts.length > INITIAL_VISIBLE && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="w-full mt-2 py-3 text-sm font-bold text-gray-600 hover:text-black border-2 border-dashed border-gray-300 hover:border-black rounded-xl transition-colors"
+              >
+                {showAll ? `Show Less` : `View More (${payouts.length - INITIAL_VISIBLE} more)`}
+              </button>
+            )}
           </div>
         )}
       </CardContent>
