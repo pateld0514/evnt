@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     if (!user || user.role !== "admin") {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
       validation.checks.push({ name: 'Client State Validation', status: 'passed' });
     }
 
-    // Legacy bookings needing migration
-    const legacy = bookings.filter(b => b.stripe_fee == null || b.sales_tax_rate == null);
+    // Legacy bookings needing migration (field is stripe_fee_amount on the entity)
+    const legacy = bookings.filter(b => b.stripe_fee_amount == null || b.sales_tax_rate == null);
     if (legacy.length > 0) {
       validation.warnings.push({ name: 'Legacy Bookings Need Migration', count: legacy.length, severity: 'medium', recommendation: 'Run backfillStripeFees' });
     } else {
