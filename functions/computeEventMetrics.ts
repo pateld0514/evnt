@@ -48,9 +48,12 @@ Deno.serve(async (req) => {
       : 0;
 
     // ─── CATEGORY PERFORMANCE ─────────────────────────────────
+    // Build O(1) lookup map to avoid O(n×m) nested finds
+    const vendorMap = Object.fromEntries(vendors.map(v => [v.id, v]));
+
     const categoryStats = {};
     for (const booking of bookings) {
-      const vendor = vendors.find(v => v.id === booking.vendor_id);
+      const vendor = vendorMap[booking.vendor_id];
       const cat = vendor?.category || 'unknown';
       if (!categoryStats[cat]) {
         categoryStats[cat] = { total: 0, completed: 0, cancelled: 0, declined: 0, revenue: 0, bookingValues: [] };
