@@ -143,12 +143,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Write insights sequentially for stability
-    const created = [];
-    for (const data of insightsToCreate) {
-      const insight = await base44.asServiceRole.entities.AgentInsights.create(data);
-      created.push(insight.id);
-    }
+    // Write insights in parallel for speed
+    const createdInsights = await Promise.all(
+      insightsToCreate.map(data => base44.asServiceRole.entities.AgentInsights.create(data))
+    );
+    const created = createdInsights.map(i => i.id);
 
     const summary = {
       vendors_audited: approvedVendors.length,

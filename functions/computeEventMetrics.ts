@@ -138,12 +138,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Write insights sequentially (more stable than parallel under CPU limits)
-    const insightsCreated = [];
-    for (const data of insightsToCreate) {
-      const insight = await base44.asServiceRole.entities.AgentInsights.create(data);
-      insightsCreated.push(insight.id);
-    }
+    // Write insights in parallel for lower CPU/wall-clock time
+    const created = await Promise.all(
+      insightsToCreate.map(data => base44.asServiceRole.entities.AgentInsights.create(data))
+    );
+    const insightsCreated = created.map(i => i.id);
 
     return Response.json({
       success: true,
