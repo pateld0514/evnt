@@ -499,6 +499,7 @@ export default function VendorRegistrationPage() {
                 </Label>
                 {!phoneSkipped ? (
                   <PhoneVerificationWidget
+                    consentGiven={smsOptIn}
                     onVerified={(phone) => {
                       setPhoneVerified(true);
                       setPhoneSkipped(false);

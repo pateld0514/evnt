@@ -218,6 +218,7 @@ export default function ClientRegistrationPage() {
                 </Label>
                 {!phoneSkipped ? (
                   <PhoneVerificationWidget
+                    consentGiven={smsOptIn}
                     onVerified={(phone) => {
                       setPhoneVerified(true);
                       setPhoneSkipped(false);
