@@ -36,6 +36,7 @@ export default function VendorRegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneSkipped, setPhoneSkipped] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState("");
   const [uploadingId, setUploadingId] = useState(false);
   const [uploadingMain, setUploadingMain] = useState(false);
