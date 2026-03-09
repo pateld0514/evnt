@@ -54,7 +54,7 @@ export default function VendorDashboard() {
     refetchOnMount: true,
   });
 
-  const loading = userLoading;
+  const loading = userLoading || dashboardLoading;
 
   // Redirects
   useEffect(() => {
