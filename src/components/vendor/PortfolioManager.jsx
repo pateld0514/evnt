@@ -238,6 +238,29 @@ export default function PortfolioManager({ vendorId }) {
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => { if (!open) setDeleteConfirmItem(null); }}>
+        <AlertDialogContent className="border-2 border-black">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black">Delete Portfolio Item?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              Are you sure you want to delete <strong>"{deleteConfirmItem?.title}"</strong>? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end mt-2">
+            <AlertDialogCancel className="border-2 border-gray-300 font-bold">Keep It</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                deleteMutation.mutate(deleteConfirmItem.id);
+                setDeleteConfirmItem(null);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold border-2 border-red-600"
+            >
+              Yes, Delete
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
