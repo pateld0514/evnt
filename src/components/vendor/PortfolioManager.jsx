@@ -27,6 +27,7 @@ const eventTypes = [
 export default function PortfolioManager({ vendorId }) {
   const [isAdding, setIsAdding] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState(null);
   const [newItem, setNewItem] = useState({
     type: "image",
     url: "",
