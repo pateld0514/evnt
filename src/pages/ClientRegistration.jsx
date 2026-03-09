@@ -181,14 +181,36 @@ export default function ClientRegistrationPage() {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-lg font-bold">Phone Number * <span className="text-sm font-normal text-gray-500">(Verification required)</span></Label>
-                <PhoneVerificationWidget
-                  onVerified={(phone) => {
-                    setPhoneVerified(true);
-                    setVerifiedPhone(phone);
-                    setFormData(prev => ({ ...prev, phone: phone.replace(/\D/g, '') }));
-                  }}
-                />
+                <Label className="text-lg font-bold">
+                  Phone Number{" "}
+                  {phoneVerified ? (
+                    <span className="text-sm font-normal text-green-600">✓ Verified</span>
+                  ) : phoneSkipped ? (
+                    <span className="text-sm font-normal text-amber-600">⚠ Skipped</span>
+                  ) : (
+                    <span className="text-sm font-normal text-gray-500">(Verification recommended)</span>
+                  )}
+                </Label>
+                {!phoneSkipped ? (
+                  <PhoneVerificationWidget
+                    onVerified={(phone) => {
+                      setPhoneVerified(true);
+                      setPhoneSkipped(false);
+                      setVerifiedPhone(phone);
+                      setFormData(prev => ({ ...prev, phone: phone.replace(/\D/g, '') }));
+                    }}
+                    onSkip={() => setPhoneSkipped(true)}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-3 bg-amber-50 border-2 border-amber-300 rounded-xl">
+                      <p className="text-sm text-amber-800">Phone verification skipped. You can verify it later in your profile.</p>
+                    </div>
+                    <button type="button" onClick={() => setPhoneSkipped(false)} className="text-xs text-gray-500 hover:text-gray-700 underline underline-offset-2">
+                      ← Verify my phone instead
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
