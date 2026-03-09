@@ -110,23 +110,9 @@ export default function BookingsPage() {
       
       // Handle test_vendor or regular vendor
       if ((currentUser.user_type === "vendor" || currentUser.user_type === "test_vendor")) {
-        // Prioritize vendor_id stored on user (most authoritative), then fallback
-        let myVendor = null;
-        if (currentUser.vendor_id) {
-          const byId = await base44.entities.Vendor.filter({ id: currentUser.vendor_id });
-          if (byId.length > 0) myVendor = byId[0];
-        }
-        if (!myVendor) {
-          const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
-          if (byCreator.length > 0) myVendor = byCreator[0];
-        }
-        if (!myVendor) {
-          const byEmail = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
-          if (byEmail.length > 0) myVendor = byEmail[0];
-        }
-        if (myVendor) {
-          return await base44.entities.Booking.filter({ vendor_id: myVendor.id }, '-created_date');
-        }
+        // Use backend function (service role) to bypass RLS — handles all vendor lookup cases
+        const res = await base44.functions.invoke('getVendorDashboardData', { vendor_id: currentUser.vendor_id || '' });
+        if (res.data?.bookings) return res.data.bookings;
         return [];
       } else if (currentUser.demo_mode === "vendor" && currentUser.demo_vendor_id) {
         return await base44.entities.Booking.filter({ vendor_id: currentUser.demo_vendor_id }, '-created_date');
