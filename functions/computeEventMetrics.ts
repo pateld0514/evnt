@@ -9,11 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const [bookings, vendors, reviews, payouts] = await Promise.all([
+    const [bookings, vendors, reviews] = await Promise.all([
       base44.asServiceRole.entities.Booking.list('-created_date', 500),
       base44.asServiceRole.entities.Vendor.list('-created_date', 200),
       base44.asServiceRole.entities.Review.list('-created_date', 500),
-      base44.asServiceRole.entities.VendorPayout.list('-created_date', 200),
     ]);
 
     const now = new Date();
