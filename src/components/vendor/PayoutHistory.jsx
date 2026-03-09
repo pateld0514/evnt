@@ -55,7 +55,7 @@ export default function PayoutHistory({ vendorId, completedBookings }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {payouts.map((payout) => {
+            {(showAll ? payouts : payouts.slice(0, INITIAL_VISIBLE)).map((payout) => {
               const config = statusConfig[payout.status] || statusConfig.pending;
               const Icon = config.icon;
               
