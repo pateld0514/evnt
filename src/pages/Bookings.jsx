@@ -110,10 +110,20 @@ export default function BookingsPage() {
       
       // Handle test_vendor or regular vendor
       if ((currentUser.user_type === "vendor" || currentUser.user_type === "test_vendor")) {
-        // ISSUE 13 FIX: Use filter by created_by instead of fetching all vendors
-        const myVendors = await base44.entities.Vendor.filter({ created_by: currentUser.email });
-        const myVendor = myVendors[0]
-          || (currentUser.vendor_id ? { id: currentUser.vendor_id } : null);
+        // Try created_by first, then contact_email, then fall back to vendor_id stored on user
+        let myVendor = null;
+        const byCreator = await base44.entities.Vendor.filter({ created_by: currentUser.email });
+        if (byCreator.length > 0) {
+          myVendor = byCreator[0];
+        } else {
+          // Vendor may have been created by admin — look up by contact_email or vendor_id
+          const byEmail = await base44.entities.Vendor.filter({ contact_email: currentUser.email });
+          if (byEmail.length > 0) {
+            myVendor = byEmail[0];
+          } else if (currentUser.vendor_id) {
+            myVendor = { id: currentUser.vendor_id };
+          }
+        }
         if (myVendor) {
           return await base44.entities.Booking.filter({ vendor_id: myVendor.id }, '-created_date');
         }
