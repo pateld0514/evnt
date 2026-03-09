@@ -81,15 +81,19 @@ Deno.serve(async (req) => {
     })).sort((a, b) => b.completed - a.completed);
 
     // ─── VENDOR HEALTH ────────────────────────────────────────
+    // Build booking index by vendor_id for O(1) lookups
+    const bookingsByVendor = {};
+    for (const b of bookings) {
+      if (!bookingsByVendor[b.vendor_id]) bookingsByVendor[b.vendor_id] = [];
+      bookingsByVendor[b.vendor_id].push(b);
+    }
+
     const approvedVendors = vendors.filter(v => v.approval_status === 'approved');
     const vendorsWithoutStripe = approvedVendors.filter(v => !v.stripe_account_id);
-    const vendorsWithNoBookings = approvedVendors.filter(v => {
-      const vendorBookings = bookings.filter(b => b.vendor_id === v.id);
-      return vendorBookings.length === 0;
-    });
+    const vendorsWithNoBookings = approvedVendors.filter(v => !bookingsByVendor[v.id]?.length);
     const vendorsWithStaleBookings = approvedVendors.filter(v => {
-      const pendingBookings = bookings.filter(b => b.vendor_id === v.id && b.status === 'pending');
-      return pendingBookings.some(b => new Date(b.created_date) < sevenDaysAgo);
+      const pending = (bookingsByVendor[v.id] || []).filter(b => b.status === 'pending');
+      return pending.some(b => new Date(b.created_date) < sevenDaysAgo);
     });
 
     // ─── REVIEW METRICS ───────────────────────────────────────
