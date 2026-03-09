@@ -17,9 +17,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No vendor_id found' }, { status: 400 });
     }
 
-    // Security: only allow the vendor themselves or an admin
+    // Security: only allow admin, or the vendor if their vendor_id matches OR they own/created the vendor
     if (user.role !== 'admin' && user.vendor_id !== vendorId) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      // Also allow if they created the vendor or their email matches contact_email
+      const vendorCheck = await base44.asServiceRole.entities.Vendor.list('-created_date', 200);
+      const match = vendorCheck.find(v => v.id === vendorId && (v.created_by === user.email || v.contact_email === user.email));
+      if (!match) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     // Fetch all data using service role to bypass RLS
