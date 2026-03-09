@@ -17,8 +17,13 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString()
     };
 
+    // Fetch bookings and vendors in parallel
+    const [bookings, vendors] = await Promise.all([
+      base44.asServiceRole.entities.Booking.list('-created_date', 500),
+      base44.asServiceRole.entities.Vendor.list('-created_date', 500),
+    ]);
+
     // 1. Check for bookings with null client_state but non-zero amounts
-    const bookings = await base44.asServiceRole.entities.Booking.list('-created_date', 500);
     const nullStateWithAmount = bookings.filter(b => 
       !b.client_state && 
       b.total_amount_charged > 0 && 
@@ -81,7 +86,6 @@ Deno.serve(async (req) => {
     }
 
     // 4. Check for vendors without Stripe accounts attempting to receive payments
-    const vendors = await base44.asServiceRole.entities.Vendor.list('-created_date', 500);
     const vendorsWithoutStripe = vendors.filter(v => 
       v.approval_status === 'approved' && 
       !v.stripe_account_id

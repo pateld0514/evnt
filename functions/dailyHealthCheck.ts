@@ -148,6 +148,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Daily health check error:', error);
-    return Response.json({ error: error.message, platform_status: 'error' }, { status: 500 });
+    return Response.json({ error: error?.message || String(error), platform_status: 'error' }, { status: 500 });
   }
 });

@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, ...summary });
 
   } catch (error) {
-    console.error('[runHostSuccessAnalysis] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[runHostSuccessAnalysis] Error:', error?.message || String(error));
+    return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
 });
