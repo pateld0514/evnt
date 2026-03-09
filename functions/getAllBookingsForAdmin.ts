@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     // H-1 FIX: Server-side admin auth check — cannot be bypassed by stale cache
     if (!user || user.role !== 'admin') {
@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     return Response.json(allBookings);
 
   } catch (error) {
-    console.error('[getAllBookingsForAdmin] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[getAllBookingsForAdmin] Error:', error?.message || String(error));
+    return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
 });
