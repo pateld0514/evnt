@@ -3,11 +3,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    // Admin-only check
-    if (!user || user.role !== "admin") {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Allow internal service calls via INTERNAL_SECRET, otherwise require admin user
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const internalKey = Deno.env.get('INTERNAL_SECRET');
+    const isInternalCall = internalKey && body.internal_key === internalKey;
+
+    if (!isInternalCall) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== "admin") {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
     }
 
     const alerts = {
