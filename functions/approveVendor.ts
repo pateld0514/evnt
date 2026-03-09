@@ -46,6 +46,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Approve vendor error:', error);
-    return Response.json({ error: error.message || 'Failed to approve vendor' }, { status: 500 });
+    return Response.json({ error: error?.message || 'Failed to approve vendor' }, { status: 500 });
   }
 });

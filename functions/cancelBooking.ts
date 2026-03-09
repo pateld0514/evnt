@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
   try {
     const base44 = createClientFromRequest(req);
-    user = await base44.auth.me();
+    user = await base44.auth.me().catch(() => null);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -170,6 +170,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[cancelBooking] Error:', { message: error.message, booking_id: bookingId, user_email: user?.email?.replace(/@.*/, '@...') });
-    return Response.json({ error: error.message || 'Failed to cancel booking' }, { status: 500 });
+    return Response.json({ error: error?.message || 'Failed to cancel booking' }, { status: 500 });
   }
 });

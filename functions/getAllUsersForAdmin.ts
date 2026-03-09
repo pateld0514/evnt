@@ -1,9 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     // Admin-only check
     if (!user || user.role !== "admin") {
@@ -20,6 +20,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Get users error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
 });
