@@ -98,7 +98,9 @@ export default function ClientRegistrationPage() {
         state: userState,
         user_type: "client",
         onboarding_complete: true,
-        referred_by: referralCode || null
+        referred_by: referralCode || null,
+        sms_opt_in: smsOptIn,
+        sms_opt_in_date: new Date().toISOString()
       });
 
       // Send welcome email to client

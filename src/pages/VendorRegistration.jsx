@@ -314,7 +314,9 @@ export default function VendorRegistrationPage() {
         approval_status: "pending",
         stripe_account_id: formData.stripe_account_id || null,
         onboarding_complete: true,
-        referred_by: referralCode || null
+        referred_by: referralCode || null,
+        sms_opt_in: smsOptIn,
+        sms_opt_in_date: new Date().toISOString()
       });
 
       // Create referral reward if referred - decode referral code to get referrer email
