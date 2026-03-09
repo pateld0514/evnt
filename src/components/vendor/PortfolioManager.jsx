@@ -219,7 +219,7 @@ export default function PortfolioManager({ vendorId }) {
                     variant="destructive"
                     size="icon"
                     className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                    onClick={() => deleteMutation.mutate(item.id)}
+                    onClick={() => setDeleteConfirmItem(item)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
