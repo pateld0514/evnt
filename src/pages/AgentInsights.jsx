@@ -28,7 +28,7 @@ const SEVERITY_CONFIG = {
   info: { label: "Info", color: "bg-gray-100 text-gray-700" },
 };
 
-function InsightCard({ insight, onUpdate }) {
+function InsightCard({ insight, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const agent = AGENT_CONFIG[insight.agent_name] || AGENT_CONFIG.event_intelligence;
   const AgentIcon = agent.icon;
