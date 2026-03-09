@@ -186,12 +186,16 @@ export default function PhoneVerificationWidget({ onVerified, onSkip, consentGiv
           <Button
             type="button"
             onClick={handleSendCode}
-            disabled={sendingCode || digits.length !== 10 || countdown > 0}
+            disabled={sendingCode || digits.length !== 10 || countdown > 0 || !consentGiven}
+            title={!consentGiven ? "Please check the SMS consent box above first" : undefined}
             className="bg-black text-white hover:bg-gray-800 h-12 px-4 font-bold whitespace-nowrap"
           >
             {sendingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send Code"}
           </Button>
         </div>
+        {!consentGiven && (
+          <p className="text-xs text-amber-700 font-medium">⚠ Check the SMS consent box above to enable phone verification.</p>
+        )}
         {onSkip && (
           <button
             type="button"
