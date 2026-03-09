@@ -87,22 +87,28 @@ function InsightCard({ insight, onUpdate }) {
               </div>
             )}
 
-            {isActionable && (
-              <div className="flex gap-2 mt-3">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white h-7 text-xs font-bold"
-                  onClick={() => onUpdate(insight.id, "accepted")}>
-                  <CheckCircle className="w-3 h-3 mr-1" /> Accept
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-gray-300"
-                  onClick={() => onUpdate(insight.id, "snoozed")}>
-                  <Clock className="w-3 h-3 mr-1" /> Snooze 7d
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-xs border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={() => onUpdate(insight.id, "dismissed")}>
-                  <XCircle className="w-3 h-3 mr-1" /> Dismiss
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {isActionable && (
+                <>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white h-7 text-xs font-bold"
+                    onClick={() => onUpdate(insight.id, "accepted")}>
+                    <CheckCircle className="w-3 h-3 mr-1" /> Accept
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs border-gray-300"
+                    onClick={() => onUpdate(insight.id, "snoozed")}>
+                    <Clock className="w-3 h-3 mr-1" /> Snooze 7d
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={() => onUpdate(insight.id, "dismissed")}>
+                    <XCircle className="w-3 h-3 mr-1" /> Dismiss
+                  </Button>
+                </>
+              )}
+              <Button size="sm" variant="ghost" className="h-7 text-xs text-gray-400 hover:text-red-600 hover:bg-red-50 ml-auto"
+                onClick={() => onDelete(insight.id)}>
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
