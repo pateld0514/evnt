@@ -4,7 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, CheckCircle, Clock, XCircle } from "lucide-react";
 import { format } from "date-fns";
 
+const INITIAL_VISIBLE = 3;
+
 export default function PayoutHistory({ vendorId, completedBookings }) {
+  const [showAll, setShowAll] = React.useState(false);
   // Use pre-loaded bookings if provided, otherwise show empty
   const payouts = (completedBookings || []).map(b => ({
     id: b.id,
