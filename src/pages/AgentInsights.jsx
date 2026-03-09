@@ -250,8 +250,9 @@ export default function AgentInsightsPage() {
           <CardContent className="p-4">
             <div className="flex flex-wrap gap-2">
               {[
-                { fn: 'analyzePageSpeed', label: 'Performance Audit', icon: Zap, color: 'bg-orange-600 hover:bg-orange-700' },
                 { fn: 'computeEventMetrics', label: 'Intelligence Report', icon: BarChart3, color: 'bg-purple-600 hover:bg-purple-700' },
+                { fn: 'runHostSuccessAnalysis', label: 'Host Success Audit', icon: Heart, color: 'bg-green-600 hover:bg-green-700' },
+                { fn: 'analyzePageSpeed', label: 'Performance Audit', icon: Zap, color: 'bg-orange-600 hover:bg-orange-700' },
               ].map(({ fn, label, icon: Icon, color }) => (
                 <Button key={fn}
                   onClick={() => runAnalysisMutation.mutate(fn)}
