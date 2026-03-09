@@ -552,8 +552,8 @@ export default function BookingsPage() {
                 <BookingStatusTracker status={selectedBooking.status} />
 
                 <div>
-                  <Badge className={`${statusConfig[selectedBooking.status].color} border-2 font-bold text-base px-3 py-1`}>
-                    {statusConfig[selectedBooking.status].label}
+                  <Badge className={`${(statusConfig[selectedBooking.status] || statusConfig.pending).color} border-2 font-bold text-base px-3 py-1`}>
+                    {(statusConfig[selectedBooking.status] || statusConfig.pending).label}
                   </Badge>
                 </div>
 
