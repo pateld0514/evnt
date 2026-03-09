@@ -441,7 +441,8 @@ export default function BookingsPage() {
       ) : (
         <div className="grid gap-6">
           {filteredBookings.map((booking) => {
-            const StatusIcon = statusConfig[booking.status].icon;
+            const statusEntry = statusConfig[booking.status] || statusConfig.pending;
+            const StatusIcon = statusEntry.icon;
             return (
               <Card key={booking.id} className="border-2 border-black hover:shadow-xl transition-shadow">
                 <CardHeader className="pb-4">
