@@ -17,8 +17,13 @@ Deno.serve(async (req) => {
     }
 
     // Fetch the item to verify ownership before deleting
-    const items = await base44.asServiceRole.entities.PortfolioItem.filter({ id: itemId });
-    if (items.length === 0) {
+    let items;
+    try {
+      items = await base44.asServiceRole.entities.PortfolioItem.filter({ id: itemId });
+    } catch {
+      return Response.json({ error: 'Item not found' }, { status: 404 });
+    }
+    if (!items || items.length === 0) {
       return Response.json({ error: 'Item not found' }, { status: 404 });
     }
 
