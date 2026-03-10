@@ -239,11 +239,14 @@ Provide 4-5 specific, actionable insights in this JSON format:
     );
   }
 
-  // Redirect admins to AdminDashboard
-  if (currentUser?.role === "admin") {
-    navigate(createPageUrl("AdminDashboard"));
-    return null;
-  }
+  // Redirect admins to AdminDashboard — done via useEffect to avoid calling navigate during render
+  useEffect(() => {
+    if (!loading && currentUser?.role === "admin") {
+      navigate(createPageUrl("AdminDashboard"));
+    }
+  }, [loading, currentUser, navigate]);
+
+  if (!loading && currentUser?.role === "admin") return null;
 
   if (!vendor) {
     return (
