@@ -54,11 +54,9 @@ export default function VendorDashboard() {
     refetchOnMount: true,
   });
 
-  const loading = userLoading || dashboardLoading;
-
   // Redirects
   useEffect(() => {
-    if (!currentUser || loading) return;
+    if (!currentUser || userLoading) return;
     const isAdmin = currentUser.role === "admin";
     if (!currentUser.demo_mode) {
       if (currentUser.user_type === "vendor" && currentUser.user_type !== "test_vendor" && currentUser.approval_status !== "approved" && !isAdmin) {
