@@ -15,7 +15,9 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
   const [inputValue, setInputValue] = useState(value || "");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState([]);
+  const [dropdownStyle, setDropdownStyle] = useState({});
   const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     setInputValue(value || "");
