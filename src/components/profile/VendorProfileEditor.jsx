@@ -170,6 +170,7 @@ export default function VendorProfileEditor({ user, vendor, onSave, onCancel }) 
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error("Failed to update profile: " + (error.message || "Unknown error"));
+    } finally {
       setSaving(false);
     }
   };
