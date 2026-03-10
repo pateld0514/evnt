@@ -38,8 +38,8 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
       const rect = inputRef.current.getBoundingClientRect();
       setDropdownStyle({
         position: 'fixed',
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
         width: rect.width,
         zIndex: 9999,
       });
