@@ -65,7 +65,7 @@ export default function VendorDashboard() {
         navigate(createPageUrl("Home"));
       }
     }
-  }, [currentUser, loading, navigate]);
+  }, [currentUser, userLoading, navigate]);
 
   const vendorId = currentUser?.vendor_id;
 
