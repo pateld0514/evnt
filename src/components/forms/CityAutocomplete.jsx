@@ -33,6 +33,19 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const updateDropdownPosition = () => {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+  };
+
   const handleInputChange = (e) => {
     const newValue = e.target.value;
     setInputValue(newValue);
@@ -43,6 +56,7 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
         city.toLowerCase().includes(newValue.toLowerCase())
       ).slice(0, 10);
       setFilteredCities(filtered);
+      updateDropdownPosition();
       setShowSuggestions(true);
     } else {
       setFilteredCities([]);
