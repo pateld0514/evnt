@@ -13,17 +13,22 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const user = await base44.auth.me();
-      
-      // Request notification permission on onboarding
-      requestNotificationPermission();
-      
-      if (user.onboarding_complete) {
-        if (user.user_type === "vendor") {
-          navigate(createPageUrl("VendorDashboard"));
-        } else {
-          navigate(createPageUrl("Home"));
+      try {
+        const user = await base44.auth.me();
+        
+        // Request notification permission on onboarding
+        requestNotificationPermission();
+        
+        if (user.onboarding_complete) {
+          if (user.user_type === "vendor") {
+            navigate(createPageUrl("VendorDashboard"));
+          } else {
+            navigate(createPageUrl("Home"));
+          }
         }
+      } catch {
+        // Not authenticated — send to login, return here after
+        base44.auth.redirectToLogin(createPageUrl("Onboarding"));
       }
     };
     checkUser();
