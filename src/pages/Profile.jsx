@@ -46,9 +46,10 @@ export default function ProfilePage() {
         setUser(currentUser);
         setNotificationPref(currentUser.notification_preference || "email");
 
-        // Redirect to onboarding if not complete
+        // Redirect to onboarding if not complete — but only if user_type is already set
+        // (users who haven't chosen client/vendor yet should still be able to see profile/sign out)
         const isAdmin = currentUser.role === "admin";
-        if (!currentUser.onboarding_complete && !isAdmin) {
+        if (!currentUser.onboarding_complete && !isAdmin && currentUser.user_type) {
           navigate(createPageUrl("Onboarding"));
           return;
         }
