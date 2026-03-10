@@ -74,9 +74,10 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <Input
+          ref={inputRef}
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => inputValue && setShowSuggestions(true)}
+          onFocus={() => { if (inputValue) { updateDropdownPosition(); setShowSuggestions(true); } }}
           placeholder={placeholder}
           className={className}
           autoComplete="off"
