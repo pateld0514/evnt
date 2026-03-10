@@ -29,8 +29,17 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
         setShowSuggestions(false);
       }
     };
+    // Close dropdown on scroll or resize so it doesn't appear misaligned
+    const handleScrollOrResize = () => setShowSuggestions(false);
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
   }, []);
 
   const updateDropdownPosition = () => {
