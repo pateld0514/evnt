@@ -55,6 +55,11 @@ export default function ClientRegistrationPage() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) setReferralCode(decodeURIComponent(ref));
+
+    // Auth guard — must be signed in to fill out this form
+    base44.auth.me().catch(() => {
+      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+    });
   }, []);
 
   const handleEventToggle = (event) => {
