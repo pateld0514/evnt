@@ -197,7 +197,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
               guest_count: event.guest_count ? String(event.guest_count) : prev.guest_count,
               budget: event.budget ? String(event.budget) : prev.budget
             }));
-          } else {
+          } else if (value === "none") {
             setFormData(prev => ({ ...prev, event_id: "" }));
           }
         }}>
@@ -210,7 +210,7 @@ export default function BookingForm({ vendor, onSuccess, onCancel, eventId }) {
                 {event.name} - {formatDate(event.event_date)}
               </SelectItem>
             ))}
-            <SelectItem value={null}>Book Without Event Link</SelectItem>
+            <SelectItem value="none">Book Without Event Link</SelectItem>
           </SelectContent>
         </Select>
         {events.length === 0 && (
