@@ -228,6 +228,8 @@ Provide 4-5 specific, actionable insights in this JSON format:
     }
   };
 
+  const loading = userLoading || dashboardLoading;
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
