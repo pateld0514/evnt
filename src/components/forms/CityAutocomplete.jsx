@@ -86,12 +86,12 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
       </div>
       
       {showSuggestions && filteredCities.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border-2 border-black rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div style={dropdownStyle} className="bg-white border-2 border-black rounded-lg shadow-2xl max-h-60 overflow-y-auto">
           {filteredCities.map((city, index) => (
             <button
               key={index}
               type="button"
-              onClick={() => handleSelectCity(city)}
+              onMouseDown={(e) => { e.preventDefault(); handleSelectCity(city); }}
               className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-2 border-b border-gray-200 last:border-0"
             >
               <MapPin className="w-4 h-4 text-gray-400" />
