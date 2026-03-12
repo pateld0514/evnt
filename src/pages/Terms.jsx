@@ -138,9 +138,10 @@ export default function TermsPage() {
               <h2 className="text-2xl md:text-3xl font-black mb-4">6. Cancellations and Refunds</h2>
               <div className="space-y-3 text-gray-700">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Cancellation policies are set by individual vendors</li>
-                  <li>Clients may cancel bookings according to the vendor's policy</li>
-                  <li>Refunds are processed according to the cancellation timeline</li>
+                  <li><strong>Free cancellation:</strong> Clients may cancel any booking free of charge up to 7 days before the event date</li>
+                  <li><strong>Within 7 days:</strong> Cancellations within 7 days of the event are not permitted without admin approval</li>
+                  <li>If payment is in escrow at the time of cancellation, the authorized hold is released back to the client's payment method</li>
+                  <li>Once payment is captured (after event completion), cancellations require a refund request — not a standard cancellation</li>
                   <li>EVNT may deduct non-recoverable payment processing costs where permitted by law</li>
                   <li>Disputes should be reported to info@joinevnt.com within 48 hours of the event</li>
                 </ul>

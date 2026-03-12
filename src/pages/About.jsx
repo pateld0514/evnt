@@ -56,9 +56,9 @@ export default function AboutPage() {
           <h2 className="text-4xl md:text-5xl font-black text-black mb-10 text-center">How EVNT Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { n: 1, title: "Browse & Swipe", desc: "Swipe through curated vendors — DJs, photographers, caterers, and more. Right to save, left to pass." },
-              { n: 2, title: "Connect & Book", desc: "Message vendors directly, negotiate pricing, and send booking requests with your event details." },
-              { n: 3, title: "Manage Everything", desc: "Everything you need to plan your event — in one place. Track bookings, messages, and favorites." },
+              { n: 1, title: "Browse & Swipe", desc: "Swipe through curated vendors — DJs, photographers, caterers, and more. Right to save, left to pass. Filter by event type to find the perfect match." },
+              { n: 2, title: "Connect & Book", desc: "Message vendors directly, negotiate pricing, and send a booking request. Vendors respond with a custom pricing proposal for your event." },
+              { n: 3, title: "Pay & Plan", desc: "Accept a proposal, pay securely through Stripe, and manage everything — bookings, contracts, invoices, and your full event dashboard — in one place." },
             ].map(({ n, title, desc }) => (
               <Card key={n} className="border-4 border-black shadow-lg">
                 <CardHeader>
@@ -121,9 +121,9 @@ export default function AboutPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {[
                 { icon: Heart, title: "Stop Spending Hours Searching", desc: "Swipe-based discovery makes finding the perfect vendor fun, fast, and frictionless." },
-                { icon: Zap, title: "Everything in One Place", desc: "From discovery to payment — browse, message, book, and sign contracts without leaving the app." },
-                { icon: MessageSquare, title: "Talk Directly With Vendors", desc: "No middleman. Message vendors instantly, negotiate pricing, and get answers fast." },
-                { icon: Shield, title: "Know Costs Before You Commit", desc: "Transparent pricing upfront — no surprise fees, no hidden costs when it's time to pay." },
+                { icon: Zap, title: "Everything in One Place", desc: "From discovery to payment — browse, message, book, sign contracts, and manage your full event dashboard without leaving the app." },
+                { icon: MessageSquare, title: "Talk Directly With Vendors", desc: "No middleman. Message vendors instantly, negotiate pricing, and get a custom proposal for your event." },
+                { icon: Shield, title: "Secure Escrow Payments", desc: "Client payments are held in escrow until the event is completed — protecting both sides of every booking." },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4">
                   <Icon className="w-6 h-6 text-black mt-1 flex-shrink-0" />
@@ -183,11 +183,13 @@ export default function AboutPage() {
               <div className="grid md:grid-cols-2 gap-3">
                 {[
                   "Profile with photos, pricing & packages",
-                  "Exposure to thousands of event planners",
+                  "Exposure to clients actively planning events",
                   "Direct messaging with potential clients",
-                  "Booking management dashboard",
-                  "No upfront costs or monthly fees",
-                  "Vendor rewards & tier bonuses",
+                  "Full booking & revenue dashboard",
+                  "No upfront costs or monthly fees — just 10% on completed bookings",
+                  "Vendor tiers: Bronze, Silver & Gold with fee discounts",
+                  "Referral rewards for bringing in new vendors or clients",
+                  "Stripe Connect for fast, secure payouts",
                 ].map(item => (
                   <div key={item} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-black flex-shrink-0" />
