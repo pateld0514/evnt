@@ -28,16 +28,17 @@ Deno.serve(async (req) => {
     if (record.attempts >= MAX_ATTEMPTS) {
       await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
       return Response.json({
+        success: false,
         error: 'Too many incorrect attempts. Please request a new code.',
         locked: true,
         attemptsLeft: 0
-      }, { status: 429 });
+      });
     }
 
     // Check expiry
     if (new Date() > new Date(record.expiry_date)) {
       await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
-      return Response.json({ error: 'Code has expired. Please request a new code.' }, { status: 400 });
+      return Response.json({ success: false, error: 'Code has expired. Please request a new code.' });
     }
 
     // Check code match
@@ -48,19 +49,21 @@ Deno.serve(async (req) => {
         // Lock — delete the record
         await base44.asServiceRole.entities.PhoneVerification.delete(record.id);
         return Response.json({
+          success: false,
           error: 'Too many incorrect attempts. Please request a new code.',
           locked: true,
           attemptsLeft: 0
-        }, { status: 429 });
+        });
       }
 
       // Update attempt count
       await base44.asServiceRole.entities.PhoneVerification.update(record.id, { attempts });
 
       return Response.json({
+        success: false,
         error: `Incorrect code. ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} remaining.`,
         attemptsLeft
-      }, { status: 400 });
+      });
     }
 
     // ✅ Code is correct — mark verified
