@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,15 +52,11 @@ export default function MessagesPage() {
     queryKey: ['messages', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
-      // Fetch only messages involving the current user — two targeted queries instead of listing all
-      const [sent, received] = await Promise.all([
-        base44.entities.Message.filter({ sender_email: currentUser.email }, '-created_date'),
-        base44.entities.Message.filter({ recipient_email: currentUser.email }, '-created_date'),
-      ]);
-      // Merge and deduplicate by id
-      const map = new Map();
-      [...sent, ...received].forEach(m => map.set(m.id, m));
-      return Array.from(map.values()).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      const messages = await base44.entities.Message.list('-created_date');
+      return messages.filter(m => 
+        m.sender_email === currentUser.email || 
+        m.recipient_email === currentUser.email
+      );
     },
     enabled: !!currentUser,
     refetchOnMount: true,
@@ -137,7 +132,7 @@ export default function MessagesPage() {
   };
 
   // Build conversations from messages
-  const conversations = useMemo(() => {
+  const conversations = React.useMemo(() => {
     const conversationMap = new Map();
 
     allMessages.forEach(msg => {
