@@ -137,7 +137,7 @@ export default function MessagesPage() {
   };
 
   // Build conversations from messages
-  const conversations = React.useMemo(() => {
+  const conversations = useMemo(() => {
     const conversationMap = new Map();
 
     allMessages.forEach(msg => {
