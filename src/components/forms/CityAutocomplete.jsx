@@ -23,22 +23,29 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
     setInputValue(value || "");
   }, [value]);
 
+  const dropdownRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target) &&
+          dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
     };
-    // Close dropdown on scroll or resize so it doesn't appear misaligned
-    const handleScrollOrResize = () => setShowSuggestions(false);
+    // Only close on page-level scroll (not inside the dropdown itself)
+    const handleScroll = (event) => {
+      if (dropdownRef.current && dropdownRef.current.contains(event.target)) return;
+      setShowSuggestions(false);
+    };
+    const handleResize = () => setShowSuggestions(false);
 
     document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("scroll", handleScrollOrResize, true);
-    window.addEventListener("resize", handleScrollOrResize);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("scroll", handleScrollOrResize, true);
-      window.removeEventListener("resize", handleScrollOrResize);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
