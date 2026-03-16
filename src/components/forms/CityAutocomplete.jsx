@@ -102,7 +102,7 @@ export default function CityAutocomplete({ value, onChange, placeholder = "City,
       </div>
       
       {showSuggestions && filteredCities.length > 0 && (
-        <div style={dropdownStyle} className="bg-white border-2 border-black rounded-lg shadow-2xl max-h-60 overflow-y-auto">
+        <div ref={dropdownRef} style={dropdownStyle} className="bg-white border-2 border-black rounded-lg shadow-2xl max-h-60 overflow-y-auto">
           {filteredCities.map((city, index) => (
             <button
               key={index}
