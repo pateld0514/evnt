@@ -32,10 +32,10 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Booking.filter({ vendor_id: vendorId }, '-created_date'),
       base44.asServiceRole.entities.VendorView.filter({ vendor_id: vendorId }),
       base44.asServiceRole.entities.UserSwipe.filter({ vendor_id: vendorId }),
-      base44.asServiceRole.entities.Vendor.list('-created_date', 200),
+      base44.asServiceRole.entities.Vendor.filter({ id: vendorId }),
     ]);
 
-    const vendor = vendorResults.find(v => v.id === vendorId) || null;
+    const vendor = vendorResults[0] || null;
 
     return Response.json({ bookings, views, swipes, vendor });
   } catch (error) {
