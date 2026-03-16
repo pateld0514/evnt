@@ -75,12 +75,14 @@ export default function VendorDashboard() {
     queryFn: async () => {
       if (!currentUser) return null;
       const res = await base44.functions.invoke('getVendorDashboardData', { vendor_id: vendorId || '' });
-      return res.data;
+      return res.data || null;
     },
     enabled: !!currentUser,
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    retry: 1,
+    throwOnError: false,
   });
 
   const vendor = dashboardData?.vendor || null;
