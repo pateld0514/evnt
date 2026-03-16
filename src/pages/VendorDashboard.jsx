@@ -58,11 +58,17 @@ export default function VendorDashboard() {
   useEffect(() => {
     if (!currentUser || userLoading) return;
     const isAdmin = currentUser.role === "admin";
-    if (!currentUser.demo_mode) {
-      if (currentUser.user_type === "vendor" && currentUser.user_type !== "test_vendor" && currentUser.approval_status !== "approved" && !isAdmin) {
-        navigate(createPageUrl("VendorPending"));
-      } else if (currentUser.user_type !== "vendor" && currentUser.user_type !== "test_vendor" && !isAdmin) {
+    // Flatten user data — SDK may return nested data or top-level depending on context
+    const userType = currentUser.user_type || currentUser.data?.user_type;
+    const approvalStatus = currentUser.approval_status || currentUser.data?.approval_status;
+    const demoMode = currentUser.demo_mode || currentUser.data?.demo_mode;
+
+    if (!demoMode) {
+      const isVendor = userType === "vendor" || userType === "test_vendor";
+      if (!isVendor && !isAdmin) {
         navigate(createPageUrl("Home"));
+      } else if (userType === "vendor" && approvalStatus !== "approved" && !isAdmin) {
+        navigate(createPageUrl("VendorPending"));
       }
     }
   }, [currentUser, userLoading, navigate]);
