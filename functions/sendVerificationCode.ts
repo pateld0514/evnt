@@ -30,9 +30,10 @@ Deno.serve(async (req) => {
       if (secondsAgo < RATE_LIMIT_SECONDS) {
         const wait = Math.ceil(RATE_LIMIT_SECONDS - secondsAgo);
         return Response.json({
+          success: false,
           error: `Please wait ${wait} second${wait !== 1 ? 's' : ''} before requesting another code.`,
           retryAfter: wait
-        }, { status: 429 });
+        });
       }
 
       // Clean up old code
