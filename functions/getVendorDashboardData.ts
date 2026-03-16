@@ -18,11 +18,12 @@ Deno.serve(async (req) => {
     }
 
     // Security: only allow admin, or the vendor if their vendor_id matches OR they own/created the vendor
-    if (user.role !== 'admin' && user.vendor_id !== vendorId) {
+    const userVendorId = user.vendor_id || user.data?.vendor_id;
+    if (user.role !== 'admin' && userVendorId !== vendorId) {
       // Also allow if they created the vendor or their email matches contact_email
-      const vendorCheck = await base44.asServiceRole.entities.Vendor.list('-created_date', 200);
-      const match = vendorCheck.find(v => v.id === vendorId && (v.created_by === user.email || v.contact_email === user.email));
-      if (!match) {
+      const vendorCheck = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
+      const match = vendorCheck[0];
+      if (!match || (match.created_by !== user.email && match.contact_email !== user.email)) {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
     }

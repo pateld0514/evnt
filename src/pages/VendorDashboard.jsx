@@ -73,7 +73,7 @@ export default function VendorDashboard() {
     }
   }, [currentUser, userLoading, navigate]);
 
-  const vendorId = currentUser?.vendor_id;
+  const vendorId = currentUser?.vendor_id || currentUser?.data?.vendor_id;
 
   // Use backend function to fetch bookings/views/swipes/vendor — bypasses RLS issues
   const { data: dashboardData = null, isLoading: dashboardLoading } = useQuery({
