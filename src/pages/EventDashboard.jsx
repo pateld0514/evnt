@@ -79,8 +79,15 @@ export default function EventDashboardPage() {
     queryFn: async () => {
       if (!currentUser?.email) return [];
       try {
-        const allEvents = await base44.entities.Event.list();
-        return allEvents.filter(e => e.created_by === currentUser.email || e.owner_email === currentUser.email).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+        // Use targeted filter instead of listing all events — much faster
+        const [owned, created] = await Promise.all([
+          base44.entities.Event.filter({ owner_email: currentUser.email }, '-event_date').catch(() => []),
+          base44.entities.Event.filter({ created_by: currentUser.email }, '-event_date').catch(() => []),
+        ]);
+        // Merge and deduplicate by id
+        const map = new Map();
+        [...owned, ...created].forEach(e => map.set(e.id, e));
+        return Array.from(map.values()).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
       } catch (err) {
         console.error('Error fetching events:', err);
         return [];

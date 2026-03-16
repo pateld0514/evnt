@@ -53,11 +53,15 @@ export default function MessagesPage() {
     queryKey: ['messages', currentUser?.email],
     queryFn: async () => {
       if (!currentUser) return [];
-      const messages = await base44.entities.Message.list('-created_date');
-      return messages.filter(m => 
-        m.sender_email === currentUser.email || 
-        m.recipient_email === currentUser.email
-      );
+      // Fetch only messages involving the current user — two targeted queries instead of listing all
+      const [sent, received] = await Promise.all([
+        base44.entities.Message.filter({ sender_email: currentUser.email }, '-created_date'),
+        base44.entities.Message.filter({ recipient_email: currentUser.email }, '-created_date'),
+      ]);
+      // Merge and deduplicate by id
+      const map = new Map();
+      [...sent, ...received].forEach(m => map.set(m.id, m));
+      return Array.from(map.values()).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     },
     enabled: !!currentUser,
     refetchOnMount: true,
