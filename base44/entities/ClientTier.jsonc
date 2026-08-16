@@ -1,0 +1,77 @@
+{
+  "name": "ClientTier",
+  "type": "object",
+  "properties": {
+    "client_email": {
+      "type": "string",
+      "description": "Email of the client"
+    },
+    "tier_level": {
+      "type": "string",
+      "enum": [
+        "starter",
+        "regular",
+        "vip"
+      ],
+      "default": "starter",
+      "description": "Current tier level"
+    },
+    "total_bookings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total bookings made"
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total amount spent on bookings"
+    },
+    "bookings_this_year": {
+      "type": "number",
+      "default": 0,
+      "description": "Bookings made this year"
+    },
+    "last_tier_update": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When tier was last updated"
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Current discount percentage"
+    }
+  },
+  "required": [
+    "client_email"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

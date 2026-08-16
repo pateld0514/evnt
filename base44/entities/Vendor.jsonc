@@ -1,0 +1,245 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Name of the vendor business"
+    },
+    "category": {
+      "type": "string",
+      "description": "Type of vendor service"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of services"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Main image for the vendor"
+    },
+    "additional_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional gallery images"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Price range indicator"
+    },
+    "location": {
+      "type": "string",
+      "description": "Location/area served"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Contact email"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "website": {
+      "type": "string",
+      "description": "Business website"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram handle or URL"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Facebook page URL"
+    },
+    "twitter": {
+      "type": "string",
+      "description": "Twitter/X handle or URL"
+    },
+    "tiktok": {
+      "type": "string",
+      "description": "TikTok handle or URL"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Event types they specialize in"
+    },
+    "starting_price": {
+      "type": "number",
+      "description": "Starting price for services"
+    },
+    "average_price": {
+      "type": "number",
+      "description": "Average booking price"
+    },
+    "pricing_type": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "hourly",
+        "per_person",
+        "package",
+        "contact"
+      ],
+      "default": "contact",
+      "description": "Type of pricing structure"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "description": "Hourly rate if applicable"
+    },
+    "per_person_rate": {
+      "type": "number",
+      "description": "Per person rate if applicable"
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Package options with pricing"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Admin approval status"
+    },
+    "id_verification_url": {
+      "type": "string",
+      "description": "URL of uploaded ID document"
+    },
+    "business_license_url": {
+      "type": "string",
+      "description": "URL of uploaded business license"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Reason if rejected by admin"
+    },
+    "willing_to_travel": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether vendor is willing to travel for events"
+    },
+    "travel_radius": {
+      "type": "number",
+      "description": "Travel radius in miles"
+    },
+    "years_in_business": {
+      "type": "number",
+      "description": "Years of experience"
+    },
+    "insurance_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether insurance is verified"
+    },
+    "profile_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether vendor has completed full profile setup"
+    },
+    "is_test_vendor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a test/demo vendor \u2014 excluded from public swipe deck"
+    },
+    "custom_contract_template_url": {
+      "type": "string",
+      "description": "URL to vendor's custom contract template"
+    },
+    "custom_invoice_template_url": {
+      "type": "string",
+      "description": "URL to vendor's custom invoice template"
+    },
+    "use_custom_documents": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to use custom documents instead of generating them"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for receiving payments"
+    },
+    "stripe_account_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe account is fully verified and can receive payments"
+    }
+  },
+  "required": [
+    "business_name",
+    "category",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "vendor"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "ID of the event this booking is for"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor being booked"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Name of vendor for reference"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email of client making the booking"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Name of client"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Phone number of client (stored at booking time for vendor reference)"
+    },
+    "client_state": {
+      "type": "string",
+      "description": "Client state for tax calculation (e.g., MD, NY, CA)"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event (wedding, birthday, etc.)"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event"
+    },
+    "guest_count": {
+      "type": "number",
+      "description": "Expected number of guests"
+    },
+    "budget": {
+      "type": "number",
+      "description": "Initial budget for this service"
+    },
+    "location": {
+      "type": "string",
+      "description": "Event location"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Additional details or special requests"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "negotiating",
+        "payment_pending",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Status of the booking"
+    },
+    "vendor_response": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Vendor's response or notes"
+    },
+    "base_event_amount": {
+      "type": "number",
+      "description": "Base event price before fees and tax"
+    },
+    "agreed_price": {
+      "type": "number",
+      "description": "Final agreed upon price after negotiation (base amount)"
+    },
+    "platform_fee_percent": {
+      "type": "number",
+      "description": "Platform fee percentage at time of booking"
+    },
+    "platform_fee_amount": {
+      "type": "number",
+      "description": "Calculated platform fee amount in dollars"
+    },
+    "sales_tax_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Sales tax rate applied (e.g., 0.06 for 6%)"
+    },
+    "sales_tax_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Sales tax amount in dollars"
+    },
+    "stripe_fee_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Stripe processing fee (2.9% + $0.30) - standardized field name"
+    },
+    "vendor_payout": {
+      "type": "number",
+      "description": "Net amount vendor receives (base_event_amount - fees - tax - stripe_fee_amount)"
+    },
+    "total_amount_charged": {
+      "type": "number",
+      "description": "Total client pays (agreed_price)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "Currency code"
+    },
+    "additional_fees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Additional fees like travel, hotel, etc."
+    },
+    "payment_intent_id": {
+      "type": "string",
+      "description": "Stripe payment intent ID"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe checkout session ID"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "processing",
+        "escrow",
+        "paid",
+        "failed",
+        "cancelled",
+        "refunded",
+        "partially_refunded"
+      ],
+      "default": "unpaid",
+      "description": "Payment processing status"
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "Generated invoice number"
+    },
+    "service_description": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Description of services to be provided"
+    },
+    "vendor_custom_contract_url": {
+      "type": "string",
+      "description": "URL to vendor's custom contract if uploaded"
+    },
+    "vendor_custom_invoice_url": {
+      "type": "string",
+      "description": "URL to vendor's custom invoice if uploaded"
+    },
+    "contract_signed_client": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether client signed the contract"
+    },
+    "contract_signed_vendor": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether vendor signed the contract"
+    },
+    "contract_signed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When contract was fully signed"
+    },
+    "refund_amount": {
+      "type": "number",
+      "description": "Amount refunded if applicable"
+    },
+    "refund_reason": {
+      "type": "string",
+      "description": "Reason for refund"
+    },
+    "refund_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When refund was processed"
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "description": "Reason for cancellation"
+    },
+    "cancelled_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When booking was cancelled"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Stripe idempotency key for payment capture to prevent double-charges"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "client_email",
+    "event_type",
+    "event_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "client"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

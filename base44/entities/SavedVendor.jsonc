@@ -1,0 +1,84 @@
+{
+  "name": "SavedVendor",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the saved vendor"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Name of vendor for quick reference"
+    },
+    "vendor_category": {
+      "type": "string",
+      "description": "Category of vendor"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Event this vendor is saved for"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes about this vendor"
+    }
+  },
+  "required": [
+    "vendor_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "client"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

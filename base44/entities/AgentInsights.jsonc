@@ -1,0 +1,102 @@
+{
+  "name": "AgentInsights",
+  "type": "object",
+  "properties": {
+    "agent_name": {
+      "type": "string",
+      "enum": [
+        "performance_agent",
+        "ui_ux_agent",
+        "bug_detector",
+        "event_intelligence",
+        "host_success"
+      ],
+      "description": "Which agent produced this insight"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "warning",
+        "info"
+      ],
+      "default": "info",
+      "description": "Priority for admin attention"
+    },
+    "finding": {
+      "type": "string",
+      "description": "The core issue or insight discovered"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Proposed action or fix"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "dismissed",
+        "snoozed"
+      ],
+      "default": "pending",
+      "description": "Human review state"
+    },
+    "affected_page": {
+      "type": "string",
+      "description": "Page or component where the issue was found"
+    },
+    "affected_entity": {
+      "type": "string",
+      "description": "Entity type related to the insight (e.g. Booking, Vendor)"
+    },
+    "raw_data": {
+      "type": "string",
+      "description": "JSON-serialized raw data from the agent analysis"
+    },
+    "snoozed_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "If snoozed, when to resurface this insight"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email of admin who reviewed this insight"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this insight was reviewed"
+    }
+  },
+  "required": [
+    "agent_name",
+    "finding",
+    "recommendation"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "preferred_name": {
+      "type": "string",
+      "description": "User's preferred display name (editable)"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "client",
+        "vendor",
+        "admin",
+        "test_vendor"
+      ],
+      "description": "Type of user account"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of associated vendor profile if vendor"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "description": "Approval status for vendors"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user completed onboarding"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name for clients"
+    },
+    "location": {
+      "type": "string",
+      "description": "User location (City, State format)"
+    },
+    "state": {
+      "type": "string",
+      "description": "State abbreviation for tax calculation (e.g., NY, CA, TX)"
+    },
+    "event_interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of events interested in"
+    },
+    "budget_range": {
+      "type": "string",
+      "description": "Budget range for events"
+    },
+    "event_planning_experience": {
+      "type": "string",
+      "description": "Level of event planning experience"
+    },
+    "preferred_contact": {
+      "type": "string",
+      "enum": [
+        "email",
+        "phone",
+        "text"
+      ],
+      "description": "Preferred contact method"
+    },
+    "notification_preference": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms",
+        "both"
+      ],
+      "default": "email",
+      "description": "How to receive notifications"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID for payments"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for vendors to receive payouts"
+    },
+    "referral_discount_used": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this user has already used their one-time $25 referral discount (for clients) or 0% fee booking (for vendors)"
+    },
+    "referral_discount_booking_id": {
+      "type": "string",
+      "description": "ID of the booking where the one-time referral discount was applied (audit trail)"
+    },
+    "sms_opt_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has consented to receive SMS messages (Twilio A2P compliance)"
+    },
+    "sms_opt_in_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when user gave SMS opt-in consent"
+    }
+  },
+  "required": []
+}

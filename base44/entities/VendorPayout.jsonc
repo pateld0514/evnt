@@ -1,0 +1,87 @@
+{
+  "name": "VendorPayout",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor receiving payout"
+    },
+    "booking_id": {
+      "type": "string",
+      "description": "Related booking ID",
+      "unique": true
+    },
+    "gross_amount": {
+      "type": "number",
+      "description": "Total booking amount"
+    },
+    "platform_fee": {
+      "type": "number",
+      "description": "Platform fee deducted"
+    },
+    "net_amount": {
+      "type": "number",
+      "description": "Amount paid to vendor"
+    },
+    "stripe_transfer_id": {
+      "type": "string",
+      "description": "Stripe transfer ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Payout status"
+    },
+    "payout_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When payout was completed"
+    },
+    "failure_reason": {
+      "type": "string",
+      "description": "Reason if payout failed"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "booking_id",
+    "gross_amount",
+    "platform_fee",
+    "net_amount"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "PortfolioItem",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor who owns this portfolio item"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "description": "Type of media"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL of the media file"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the portfolio item"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the work"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event this work is for"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Order to display items"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "type",
+    "url"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

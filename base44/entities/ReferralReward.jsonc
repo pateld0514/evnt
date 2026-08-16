@@ -1,0 +1,115 @@
+{
+  "name": "ReferralReward",
+  "type": "object",
+  "properties": {
+    "referrer_email": {
+      "type": "string",
+      "description": "Email of person who made referral"
+    },
+    "referrer_type": {
+      "type": "string",
+      "enum": [
+        "vendor",
+        "client"
+      ],
+      "description": "Type of referrer (vendor or client)"
+    },
+    "referred_email": {
+      "type": "string",
+      "description": "Email of referred person"
+    },
+    "referred_type": {
+      "type": "string",
+      "enum": [
+        "vendor",
+        "client"
+      ],
+      "description": "Type of referred person (vendor or client)"
+    },
+    "referral_type": {
+      "type": "string",
+      "enum": [
+        "vendor_to_vendor",
+        "vendor_to_client",
+        "client_to_vendor",
+        "client_to_client"
+      ],
+      "description": "Type of referral relationship (immutable, determines reward type)"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "zero_percent_fee",
+        "twenty_five_dollar_credit"
+      ],
+      "description": "Type of reward for both referrer and referred (vendor\u2192vendor/client\u2192vendor gets 0% fee; client\u2192vendor/vendor\u2192client/client\u2192client gets $25)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "earned",
+        "used"
+      ],
+      "default": "pending",
+      "description": "Status: pending (not yet claimed), earned (person completed first booking), used (discount applied to booking)"
+    },
+    "completion_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the referred person completed their first paid booking (moved from pending to earned)"
+    },
+    "discount_applied_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the discount was actually applied to a booking (moved from earned to used)"
+    },
+    "discount_applied_booking_id": {
+      "type": "string",
+      "description": "ID of the booking where discount was applied (audit trail)"
+    }
+  },
+  "required": [
+    "referrer_email",
+    "referrer_type",
+    "referred_email",
+    "referred_type",
+    "referral_type",
+    "reward_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.referrer_email": "{{user.email}}"
+        },
+        {
+          "data.referred_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

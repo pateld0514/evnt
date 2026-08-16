@@ -1,0 +1,34 @@
+{
+  "name": "PhoneVerification",
+  "type": "object",
+  "properties": {
+    "phone_number": {
+      "type": "string",
+      "description": "The phone number being verified (E.164 format)"
+    },
+    "code": {
+      "type": "string",
+      "description": "6-digit OTP verification code"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the code expires (10 minutes from creation)"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this code was successfully used"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of failed verification attempts"
+    }
+  },
+  "required": [
+    "phone_number",
+    "code",
+    "expiry_date"
+  ]
+}

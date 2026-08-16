@@ -1,0 +1,86 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor being reviewed"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Name of vendor for reference"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email of client who left the review"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Name of client"
+    },
+    "booking_id": {
+      "type": "string",
+      "description": "ID of the completed booking"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Star rating from 1-5"
+    },
+    "description": {
+      "type": "string",
+      "description": "Review text"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "client_email",
+    "rating",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "client"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

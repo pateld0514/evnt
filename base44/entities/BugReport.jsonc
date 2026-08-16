@@ -1,0 +1,104 @@
+{
+  "name": "BugReport",
+  "type": "object",
+  "properties": {
+    "reporter_email": {
+      "type": "string",
+      "description": "Email of user reporting the bug"
+    },
+    "reporter_name": {
+      "type": "string",
+      "description": "Name of user reporting the bug"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "client",
+        "vendor",
+        "admin"
+      ],
+      "description": "Type of user reporting"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the bug or issue"
+    },
+    "current_page_url": {
+      "type": "string",
+      "description": "URL of the page where bug occurred"
+    },
+    "browser_info": {
+      "type": "string",
+      "description": "Browser and device information"
+    },
+    "screenshot_url": {
+      "type": "string",
+      "description": "URL of uploaded screenshot if provided"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "resolved",
+        "closed"
+      ],
+      "default": "open",
+      "description": "Status of the bug report"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes from admin reviewing the bug"
+    }
+  },
+  "required": [
+    "reporter_email",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "client"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "vendor"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

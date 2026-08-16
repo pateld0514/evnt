@@ -1,0 +1,119 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the event"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event (wedding, birthday, etc.)"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event"
+    },
+    "location": {
+      "type": "string",
+      "description": "Event location"
+    },
+    "guest_count": {
+      "type": "number",
+      "description": "Expected number of guests"
+    },
+    "budget": {
+      "type": "number",
+      "description": "Total event budget"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "planning",
+      "description": "Event status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the event"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the user who owns this event (for service-created records)"
+    }
+  },
+  "required": [
+    "name",
+    "event_type",
+    "event_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "user_type": "client"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

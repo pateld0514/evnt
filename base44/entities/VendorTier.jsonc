@@ -1,0 +1,82 @@
+{
+  "name": "VendorTier",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor"
+    },
+    "tier_level": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold"
+      ],
+      "default": "bronze",
+      "description": "Current tier level"
+    },
+    "completed_bookings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total completed bookings"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0,
+      "description": "Average rating from reviews"
+    },
+    "bookings_this_month": {
+      "type": "number",
+      "default": 0,
+      "description": "Bookings completed this month"
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0,
+      "description": "Total revenue earned"
+    },
+    "last_tier_update": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When tier was last updated"
+    },
+    "fee_discount_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Current fee discount percentage"
+    }
+  },
+  "required": [
+    "vendor_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.vendor_id": "{{user.vendor_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
